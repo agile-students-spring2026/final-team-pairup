@@ -116,7 +116,7 @@ The following wireframes represent the key screens and user flows in PairUp. The
 ### 9. Project Details
 ![Project Details](./ux-design/wireframes/Project%20Detail.png)
 
-**Purpose:** Provides deeper context about a collaboration opportunity (project overview, required skills, and expectations). User can send an invite from this screen.
+**Purpose:** Provides deeper context about a collaboration opportunity (project overview, required skills, and expectations). User can send an invite from this screen.   
 **Notes:** Helps users understand whether they are a good fit before sending an invitation.
 
 ---
