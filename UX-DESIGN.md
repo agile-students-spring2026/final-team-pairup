@@ -47,8 +47,6 @@ Overall, the app map reflects PairUp’s main goal: help users quickly find rele
 
 The following wireframes represent the key screens and user flows in PairUp. They focus on layout, information hierarchy, and navigation rather than final visual styling. Together, they show how a user moves from account access to matching, exploring profiles, messaging, and scheduling meetings.
 
-> If you are exporting individual wireframe PNGs, store them in `./ux-design/` and update the image paths below.
-
 ---
 
 ### 1. Landing / Welcome
