@@ -116,20 +116,12 @@ The following wireframes represent the key screens and user flows in PairUp. The
 ### 9. Project Details
 ![Project Details](./ux-design/wireframes/Project%20Detail.png)
 
-**Purpose:** Provides deeper context about a collaboration opportunity (project overview, required skills, and expectations).  
+**Purpose:** Provides deeper context about a collaboration opportunity (project overview, required skills, and expectations). User can send an invite from this screen.
 **Notes:** Helps users understand whether they are a good fit before sending an invitation.
 
 ---
 
-### 10. Invite
-![Invite](./ux-design/wireframes/)
-
-**Purpose:** Allows users to initiate a connection or collaboration request.  
-**Notes:** This is the action step that turns discovery into engagement.
-
----
-
-### 11. Invitation List
+### 10. Invitation List
 ![Invitation List](./ux-design/wireframes/Request%20Page.png)
 
 **Purpose:** Displays incoming invitations/requests and allows users to respond.  
@@ -137,15 +129,15 @@ The following wireframes represent the key screens and user flows in PairUp. The
 
 ---
 
-### 12. Messages (Chat)
-![Messages / Chat](./ux-design/wireframes/Basic%20chatting%20box.png)
+### 11. Messages (Chat)
+![Messages / Chat](./ux-design/wireframes/Chat.png)
 
 **Purpose:** Supports communication between connected users.  
 **Notes:** Messaging is essential for coordinating next steps and clarifying details after a match/invite.
 
 ---
 
-### 13. Schedule Meeting + Confirmation
+### 12. Schedule Meeting + Confirmation
 ![Schedule Meeting](./ux-design/wireframes/Successfully%20scheduled%20(person%20who%20chat%20to%20you%20click%20yes).png)
 
 **Purpose:** Enables users to schedule a meeting by selecting a date/time and adding notes.  
@@ -153,7 +145,7 @@ The following wireframes represent the key screens and user flows in PairUp. The
 
 ---
 
-### 14. Settings Hub
+### 13. Settings Hub
 ![Settings](./ux-design/wireframes/Settings.png)
 
 **Purpose:** Central place for users to manage their account and preferences.  
@@ -161,7 +153,7 @@ The following wireframes represent the key screens and user flows in PairUp. The
 
 ---
 
-### 15. Edit Profile
+### 14. Edit Profile
 ![Edit Profile](./ux-design/wireframes/User_Profile.png)
 
 **Purpose:** Lets users update personal information displayed to others.  
@@ -169,7 +161,7 @@ The following wireframes represent the key screens and user flows in PairUp. The
 
 ---
 
-### 16. Edit Matching Preferences
+### 15. Edit Matching Preferences
 ![Edit Matching Preferences](./ux-design/wireframes/Match%20Preference.png)
 
 **Purpose:** Allows users to customize what kinds of matches they receive.  
@@ -177,7 +169,7 @@ The following wireframes represent the key screens and user flows in PairUp. The
 
 ---
 
-### 17. Schedule Hub / Calendar
+### 16. Schedule Hub / Calendar
 ![Schedule Hub](./ux-design/wireframes/Schedule%20Hub.png)
 ![Calendar](./ux-design/wireframes/Calendar.png)
 
@@ -186,7 +178,7 @@ The following wireframes represent the key screens and user flows in PairUp. The
 
 ---
 
-### 18. Account Security
+### 17. Account Security
 ![Account Security](./ux-design/wireframes/Create%20new%20password.png)
 
 **Purpose:** Allows users to manage password/security-related settings.  
