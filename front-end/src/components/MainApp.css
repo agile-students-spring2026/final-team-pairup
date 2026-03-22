@@ -1,0 +1,20 @@
+.main-app.app-shell {
+  padding: 24px 16px;
+  padding-top: calc(24px + env(safe-area-inset-top, 0));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0));
+}
+
+.main-app__main {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+}
+
+.main-app__card {
+  min-height: min(560px, calc(100vh - 48px));
+  min-height: min(560px, calc(100dvh - 48px));
+}

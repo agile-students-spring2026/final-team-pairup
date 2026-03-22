@@ -1,23 +1,83 @@
-import logo from './logo.svg';
+import { useState } from 'react';
+import OnboardingStepGoal from './components/OnboardingStepGoal';
+import OnboardingStepLevel from './components/OnboardingStepLevel';
+import OnboardingStepAvailability from './components/OnboardingStepAvailability';
+import MainApp from './components/MainApp';
 import './App.css';
 
+function focusKey(practiceFocus) {
+  return [...(practiceFocus ?? [])].sort().join('|');
+}
+
 function App() {
+  const [phase, setPhase] = useState('onboarding');
+  const [step, setStep] = useState(1);
+  const [step1Data, setStep1Data] = useState(null);
+  const [step2Draft, setStep2Draft] = useState(null);
+  const [step2Data, setStep2Data] = useState(null);
+  const [step3Draft, setStep3Draft] = useState(null);
+
+  if (phase === 'main') {
+    return <MainApp />;
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {step === 1 && (
+        <OnboardingStepGoal
+          initialValues={step1Data}
+          onNext={(payload) => {
+            setStep1Data((prev) => {
+              if (prev != null) {
+                const focusChanged =
+                  prev.role !== payload.role ||
+                  focusKey(prev.practiceFocus) !== focusKey(payload.practiceFocus);
+                if (focusChanged) {
+                  setStep2Draft(null);
+                  setStep3Draft(null);
+                }
+              }
+              return payload;
+            });
+            setStep(2);
+          }}
+        />
+      )}
+      {step === 2 && step1Data != null && (
+        <OnboardingStepLevel
+          stepOneData={step1Data}
+          initialValues={step2Draft}
+          onBack={(draft) => {
+            setStep2Draft(draft);
+            setStep(1);
+          }}
+          onNext={(payload) => {
+            setStep2Data((prev) => {
+              if (prev != null && JSON.stringify(prev) !== JSON.stringify(payload)) {
+                setStep3Draft(null);
+              }
+              return payload;
+            });
+            setStep2Draft(null);
+            setStep(3);
+          }}
+        />
+      )}
+      {step === 3 && step1Data != null && step2Data != null && (
+        <OnboardingStepAvailability
+          initialValues={step3Draft}
+          onBack={(draft) => {
+            setStep3Draft(draft);
+            setStep(2);
+          }}
+          onComplete={(payload) => {
+            setStep3Draft(null);
+            // Wire to router / API in later sprints
+            console.log('onboarding complete', { step1: step1Data, step2: step2Data, step3: payload });
+            setPhase('main');
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,0 +1,229 @@
+.partners-list {
+  flex: 1;
+  min-height: 0;
+  padding: 24px 20px 20px;
+  box-sizing: border-box;
+  background: #fff;
+  overflow-y: auto;
+}
+
+.partners-list--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.partners-list__empty-inner {
+  max-width: 320px;
+  text-align: center;
+}
+
+.partners-list__header {
+  margin-bottom: 16px;
+}
+
+.partners-list__title {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #0a2540;
+  letter-spacing: -0.02em;
+}
+
+.partners-list__sub {
+  margin: 4px 0 0;
+  font-size: 0.9375rem;
+  color: #6b7280;
+}
+
+.partners-list__ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.partners-list__li {
+  margin: 0;
+}
+
+.partners-list__card {
+  width: 100%;
+  margin: 0;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.partners-list__card:hover {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1), 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.partners-list__card:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.partners-list__card:active {
+  transform: scale(0.998);
+}
+
+.partners-list__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.partners-list__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f472b6, #ec4899);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.partners-list__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.partners-list__headline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.partners-list__name-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.partners-list__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0a2540;
+}
+
+.partners-list__badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #475569;
+  background: #e2e8f0;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.partners-list__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.partners-list__tag {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #0f766e;
+  background: #ccfbf1;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.partners-list__session-pill {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1e40af;
+  background: #dbeafe;
+  padding: 6px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+  max-width: 100%;
+}
+
+.partners-list__session-sep {
+  opacity: 0.6;
+}
+
+.partners-list__preview {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: #6b7280;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+
+.partners-list__time {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.partners-list__empty-title {
+  margin: 12px 0 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0a2540;
+}
+
+.partners-list__empty-copy {
+  margin: 0 0 20px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.partners-list__empty-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.partners-list__empty-cta:hover {
+  background: #1d4ed8;
+}
+
+.partners-list__empty-cta:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
