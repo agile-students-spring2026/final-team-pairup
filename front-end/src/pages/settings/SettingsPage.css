@@ -1,0 +1,190 @@
+/* ===== PAGE WRAPPER ===== */
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+.settings-page {
+  min-height: 100vh;
+  width: 100%;
+  background: #eef2f5;
+  display: flex;
+  justify-content: center;
+}
+
+/* MOBILE CONTENT WIDTH */
+
+.settings-inner {
+  width: 100%;
+  max-width: 430px;
+  padding: 24px 20px 40px;
+  box-sizing: border-box;
+}
+
+/* ===== HEADER ===== */
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -24px -20px 24px;
+  padding: 20px 20px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #dbe4ea;
+}
+
+.settings-header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #0f2740;
+}
+
+.back-btn {
+  border: none;
+  background: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #5a7186;
+}
+
+/* ===== SECTION TITLE ===== */
+
+.settings-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #8aa0b2;
+  margin: 8px 0 10px;
+}
+
+/* ===== SETTINGS CARD ===== */
+
+.settings-list {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(15, 39, 64, 0.05);
+}
+
+/* ===== ROW ===== */
+
+.settings-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 16px;
+  border-bottom: 1px solid #e6edf2;
+  box-sizing: border-box;
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
+.settings-row-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-row-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f2740;
+  margin-bottom: 6px;
+}
+
+.settings-row-subtitle {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #7c93a6;
+}
+
+.settings-row-right {
+  margin-left: 16px;
+  font-size: 26px;
+  color: #8aa0b2;
+}
+
+/* ===== CLICKABLE ROW ===== */
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background: #f5f8fb;
+}
+
+/* ===== DELETE COLOR ===== */
+
+.danger-text {
+  color: #ef442f;
+}
+
+/* ===== BADGE ===== */
+
+.settings-badge {
+  background: #e7edf2;
+  color: #8aa0b2;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ===== TOGGLE SWITCH ===== */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* toggle background */
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #dbe4ea;
+  border-radius: 999px;
+  transition: 0.25s;
+}
+
+/* toggle circle */
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  top: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.25s;
+}
+
+/* active */
+
+.switch input:checked + .slider {
+  background-color: #2a6f84;
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+}
