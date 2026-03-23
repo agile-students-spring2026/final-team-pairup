@@ -1,23 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import "./App.css";
+import EditProfileForm from "./components/EditProfileForm";
+import ProfilePage from "./components/ProfilePage";
+import { useProfile } from "./context/ProfileContext";
 
 function App() {
+  const [currentView, setCurrentView] = useState("edit");
+  const { successMessage, clearSuccess } = useProfile();
+
+  const goToProfile = () => setCurrentView("profile");
+  const goToEdit = () => {
+    clearSuccess();
+    setCurrentView("edit");
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app-shell">
+      {currentView === "edit" ? (
+        <EditProfileForm onSuccess={goToProfile} />
+      ) : (
+        <ProfilePage
+          onBackToEdit={goToEdit}
+          successMessage={successMessage}
+        />
+      )}
     </div>
   );
 }
