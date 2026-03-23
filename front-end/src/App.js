@@ -1,84 +1,36 @@
-import { useState } from 'react';
-import OnboardingStepGoal from './components/OnboardingStepGoal';
-import OnboardingStepLevel from './components/OnboardingStepLevel';
-import OnboardingStepAvailability from './components/OnboardingStepAvailability';
-import MainApp from './components/MainApp';
-import './App.css';
-
-function focusKey(practiceFocus) {
-  return [...(practiceFocus ?? [])].sort().join('|');
-}
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import OnboardingPage from "./pages/onboarding/OnboardingPage";
+import DiscoverPage from "./pages/discover/DiscoverPage";
+import UserProfilePage from "./pages/profile/UserProfilePage";
+// Like this, we can import other pages as needed in the future
+// Ryan / Saun / Eddie
+// import EditProfilePage from "./pages/settings/EditProfilePage";
+// import MatchPreferencesPage from "./pages/settings/MatchPreferencesPage";
+// import RequestsListPage from "./pages/requests/RequestsListPage";
+// import ChatBoardPage from "./pages/chat/ChatBoardPage";
 
 function App() {
-  const [phase, setPhase] = useState('onboarding');
-  const [step, setStep] = useState(1);
-  const [step1Data, setStep1Data] = useState(null);
-  const [step2Draft, setStep2Draft] = useState(null);
-  const [step2Data, setStep2Data] = useState(null);
-  const [step3Draft, setStep3Draft] = useState(null);
-
-  if (phase === 'main') {
-    return <MainApp />;
-  }
-
   return (
-    <div className="App">
-      {step === 1 && (
-        <OnboardingStepGoal
-          initialValues={step1Data}
-          onNext={(payload) => {
-            setStep1Data((prev) => {
-              if (prev != null) {
-                const focusChanged =
-                  prev.role !== payload.role ||
-                  focusKey(prev.practiceFocus) !== focusKey(payload.practiceFocus);
-                if (focusChanged) {
-                  setStep2Draft(null);
-                  setStep3Draft(null);
-                }
-              }
-              return payload;
-            });
-            setStep(2);
-          }}
-        />
-      )}
-      {step === 2 && step1Data != null && (
-        <OnboardingStepLevel
-          stepOneData={step1Data}
-          initialValues={step2Draft}
-          onBack={(draft) => {
-            setStep2Draft(draft);
-            setStep(1);
-          }}
-          onNext={(payload) => {
-            setStep2Data((prev) => {
-              if (prev != null && JSON.stringify(prev) !== JSON.stringify(payload)) {
-                setStep3Draft(null);
-              }
-              return payload;
-            });
-            setStep2Draft(null);
-            setStep(3);
-          }}
-        />
-      )}
-      {step === 3 && step1Data != null && step2Data != null && (
-        <OnboardingStepAvailability
-          initialValues={step3Draft}
-          onBack={(draft) => {
-            setStep3Draft(draft);
-            setStep(2);
-          }}
-          onComplete={(payload) => {
-            setStep3Draft(null);
-            // Wire to router / API in later sprints
-            console.log('onboarding complete', { step1: step1Data, step2: step2Data, step3: payload });
-            setPhase('main');
-          }}
-        />
-      )}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
+
+        <Route path="/discover" element={<DiscoverPage />} />
+        <Route path="/profile/:id" element={<UserProfilePage />} />
+
+        {/* Ryan / Saun / Eddie* Like this/}
+        {/* <Route path="/edit-profile" element={<EditProfilePage />} /> */}
+        {/* <Route path="/match-preferences" element={<MatchPreferencesPage />} /> */}
+        {/* <Route path="/requests" element={<RequestsListPage />} /> */}
+        {/* <Route path="/chat" element={<ChatBoardPage />} /> */}
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
