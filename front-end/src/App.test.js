@@ -2,8 +2,12 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 
+beforeEach(() => {
+  window.history.pushState({}, '', '/onboarding/goal');
+});
+
 test('renders onboarding step 1 with progress and disabled Next until complete', async () => {
-  render(<App />);
+  render(<App initialIsAuthenticated />);
 
   expect(screen.getByRole('heading', { name: /what are you preparing for/i })).toBeInTheDocument();
   expect(screen.getByText(/step 1 of 3/i)).toBeInTheDocument();
@@ -24,7 +28,7 @@ test('renders onboarding step 1 with progress and disabled Next until complete',
 });
 
 test('changing role clears practice focus selections', async () => {
-  render(<App />);
+  render(<App initialIsAuthenticated />);
 
   await userEvent.click(screen.getByRole('radio', { name: /software engineer/i }));
   await userEvent.click(screen.getByRole('button', { name: /system design/i }));
@@ -35,7 +39,7 @@ test('changing role clears practice focus selections', async () => {
 });
 
 test('Selecting Any excludes other company tiers', async () => {
-  render(<App />);
+  render(<App initialIsAuthenticated />);
 
   await userEvent.click(screen.getByRole('button', { name: /^faang$/i }));
   expect(screen.getByRole('button', { name: /^faang$/i })).toHaveAttribute('aria-pressed', 'true');
@@ -62,7 +66,7 @@ async function completeStep2() {
 }
 
 test('step 2: Next disabled until level and background; bio capped at 150', async () => {
-  render(<App />);
+  render(<App initialIsAuthenticated />);
   await completeStep1();
 
   expect(screen.getByRole('heading', { name: /tell us about yourself/i })).toBeInTheDocument();
@@ -84,7 +88,7 @@ test('step 2: Next disabled until level and background; bio capped at 150', asyn
 });
 
 test('step 2: back returns to step 1 with data preserved', async () => {
-  render(<App />);
+  render(<App initialIsAuthenticated />);
   await completeStep1();
 
   await userEvent.click(screen.getByRole('button', { name: /back to previous step/i }));
@@ -93,7 +97,7 @@ test('step 2: back returns to step 1 with data preserved', async () => {
 });
 
 test('step 3: Find my matches disabled until ≥3 slots, who goes first, and feedback style', async () => {
-  render(<App />);
+  render(<App initialIsAuthenticated />);
   await completeStep2();
 
   expect(screen.getByRole('heading', { name: /when are you free/i })).toBeInTheDocument();
@@ -129,7 +133,7 @@ async function completeOnboarding() {
 }
 
 test('after onboarding completes, main app shows Partners list', async () => {
-  render(<App />);
+  render(<App initialIsAuthenticated />);
   await completeOnboarding();
 
   expect(screen.getByRole('heading', { level: 1, name: /^Partners$/ })).toBeInTheDocument();
