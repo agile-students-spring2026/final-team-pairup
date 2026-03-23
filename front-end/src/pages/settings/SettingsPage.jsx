@@ -3,10 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import './SettingsPage.css';
 
 function SettingsPage() {
+  const navigate = useNavigate();
+
+  const [openSection, setOpenSection] = useState(null);
+
   const [newInvitation, setNewInvitation] = useState(true);
   const [inviteAccepted, setInviteAccepted] = useState(true);
   const [sessionReminder, setSessionReminder] = useState(true);
-  const navigate = useNavigate();
+
+  const [displayName, setDisplayName] = useState('Jihun Kim');
+  const [newEmail, setNewEmail] = useState('');
+  const [emailPassword, setEmailPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+
+  function toggleSection(name) {
+    setOpenSection(openSection === name ? null : name);
+  }
 
   return (
     <div className="settings-page">
@@ -26,31 +40,102 @@ function SettingsPage() {
         <div className="settings-section-title">ACCOUNT</div>
 
         <div className="settings-list">
-          <SettingRow
+          <ExpandableRow
             title="Change display name"
             subtitle="Update the name shown to partners"
-            chevron
-            onClick={() => navigate('/settings/change-display-name')}
-          />
-          <SettingRow
+            isOpen={openSection === 'displayName'}
+            onClick={() => toggleSection('displayName')}
+          >
+            <input
+              className="settings-input"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Display name"
+            />
+            <button className="settings-action-btn" type="button">
+              Update display name
+            </button>
+          </ExpandableRow>
+
+          <ExpandableRow
             title="Change email"
             subtitle="Requires your current password"
-            chevron
-            onClick={() => navigate('/settings/change-email')}
-          />
-          <SettingRow
+            isOpen={openSection === 'email'}
+            onClick={() => toggleSection('email')}
+          >
+            <input
+              className="settings-input"
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="New email"
+            />
+            <input
+              className="settings-input"
+              type="password"
+              value={emailPassword}
+              onChange={(e) => setEmailPassword(e.target.value)}
+              placeholder="Current password"
+            />
+            <button className="settings-action-btn" type="button">
+              Update email
+            </button>
+          </ExpandableRow>
+
+          <ExpandableRow
             title="Change password"
             subtitle="Requires your current password"
-            chevron
-            onClick={() => navigate('/settings/change-password')}
-          />
-          <SettingRow
+            isOpen={openSection === 'password'}
+            onClick={() => toggleSection('password')}
+          >
+            <input
+              className="settings-input"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Current password"
+            />
+            <input
+              className="settings-input"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="New password (min 8 chars)"
+            />
+            <button className="settings-action-btn" type="button">
+              Update password
+            </button>
+          </ExpandableRow>
+
+          <ExpandableRow
             title="Delete account"
             subtitle="Permanently removes all your data"
-            chevron
+            isOpen={openSection === 'delete'}
+            onClick={() => toggleSection('delete')}
             danger
-            onClick={() => navigate('/settings/delete-account')}
-          />
+          >
+            <div className="danger-box">
+              <strong>This is permanent and irreversible.</strong>
+              <p>All your profile data, matches, and partner history will be deleted.</p>
+            </div>
+
+            <label className="delete-label">Type DELETE to confirm</label>
+            <input
+              className="settings-input"
+              type="text"
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE"
+            />
+            <button
+              className="settings-delete-btn"
+              type="button"
+              disabled={deleteConfirm !== 'DELETE'}
+            >
+              Permanently delete account
+            </button>
+          </ExpandableRow>
         </div>
 
         <div className="settings-section-title">NOTIFICATIONS</div>
@@ -84,21 +169,14 @@ function SettingsPage() {
         <div className="settings-section-title">ABOUT</div>
 
         <div className="settings-list">
+          <InfoRow title="Version" subtitle="1.0.0-demo" />
           <InfoRow
-            title="Version"
-            subtitle="1.0.0-demo"
-          />
-          <SettingRow
             title="Community guidelines"
             subtitle="How we expect everyone to behave on PairUp"
-            chevron
-            onClick={() => navigate('/settings/community-guidelines')}
           />
-          <SettingRow
+          <InfoRow
             title="Privacy policy"
             subtitle="How we handle your data"
-            chevron
-            onClick={() => navigate('/settings/privacy-policy')}
           />
         </div>
       </div>
@@ -106,33 +184,31 @@ function SettingsPage() {
   );
 }
 
-function SettingRow({ title, subtitle, chevron = false, danger = false, onClick }) {
-  const className = `settings-row ${onClick ? 'clickable-row' : ''}`;
-
+function ExpandableRow({ title, subtitle, isOpen, onClick, danger = false, children }) {
   return (
-    <div
-      className={className}
-      onClick={onClick}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      onKeyDown={
-        onClick
-          ? (e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onClick();
-              }
-            }
-          : undefined
-      }
-    >
-      <div className="settings-row-text">
-        <div className={`settings-row-title ${danger ? 'danger-text' : ''}`}>
-          {title}
+    <div className="expandable-block">
+      <div
+        className="settings-row clickable-row"
+        onClick={onClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick();
+          }
+        }}
+      >
+        <div className="settings-row-text">
+          <div className={`settings-row-title ${danger ? 'danger-text' : ''}`}>
+            {title}
+          </div>
+          <div className="settings-row-subtitle">{subtitle}</div>
         </div>
-        <div className="settings-row-subtitle">{subtitle}</div>
+        <div className="settings-row-right">{isOpen ? '⌄' : '›'}</div>
       </div>
-      {chevron && <div className="settings-row-right">›</div>}
+
+      {isOpen && <div className="settings-expand-content">{children}</div>}
     </div>
   );
 }
