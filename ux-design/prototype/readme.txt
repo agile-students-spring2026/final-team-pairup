@@ -1,1 +1,3 @@
-The exported files of the completed prototype should reside in this directory.
+PairUp Prototype (Figma)
+Link: See the Prototype Link section in UX-DESIGN.md
+Access: Anyone with the link can view

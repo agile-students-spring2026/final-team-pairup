@@ -65,7 +65,7 @@ We plan to begin with a pilot group of real students we can directly talk to and
 
 ## Team
 
-- **Saun Chen** — [GitHub](https://github.com/)
+- **Saun Chen** — [Saun321](https://github.com/Saun321)
 - **Scott Kim** — [jk8308-jpg](https://github.com/jk8308-jpg)
 - **Eddie Liu** — [eddieliu-dev](https://github.com/eddieliu-dev)
 - **Louisia Liu** — [LouisaQvQ](https://github.com/LouisaQvQ)
