@@ -1,0 +1,42 @@
+/**
+ * Post-onboarding phone UI shell — matches onboarding pages:
+ * dark #1c1c1e canvas, centered white card (max 420px), 16px radius, soft shadow.
+ */
+
+.app-shell {
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #1c1c1e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-shell__card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+}
+
+/* Column that scrolls inside the card (Partners list, chat body, etc.) */
+.app-shell__card--fill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Typography aligned with onboarding-goal */
+.app-shell__title {
+  color: #0a2540;
+  letter-spacing: -0.02em;
+}
+
+.app-shell__muted {
+  color: #6b7280;
+}
