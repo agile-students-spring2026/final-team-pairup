@@ -4,15 +4,17 @@
 
 .settings-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background: #eef2f5;
   display: flex;
-  justify-content: center;
+  justify-content: stretch;
 }
 
 .settings-inner {
   width: 100%;
-  max-width: 430px;
+  max-width: none;
   min-height: 100vh;
+  min-height: 100dvh;
   background: #eef2f5;
   color: #10253d;
   padding-bottom: 32px;

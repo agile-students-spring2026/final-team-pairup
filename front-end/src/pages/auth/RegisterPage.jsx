@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
 import { Users } from "lucide-react";
 
-function RegisterPage() {
+function RegisterPage({ onRegisterSuccess }) {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -14,7 +14,8 @@ function RegisterPage() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    navigate('/login');
+    onRegisterSuccess?.();
+    navigate('/onboarding/goal');
   }
 
   return (
