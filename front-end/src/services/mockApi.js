@@ -1,16 +1,29 @@
 /**
- * mockApi.js — simulated async service layer for the Matches feature.
+ * mockApi.js — simulated async service layer.
  *
  * Pages and components must NEVER import directly from src/data/.
  * All data access goes through this file so that swapping in a real API
  * later only requires changes here.
  */
 
+import { mockDiscoverUsers } from "../data/mockDiscoverUsers";
 import {
   receivedInvitesMock,
   sentInvitesMock,
   matchRecommendationsMock,
 } from '../data/matchesMock.js';
+
+// ── Discover ──────────────────────────────────────────────────────────────────
+
+export function fetchDiscoverUsers() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(mockDiscoverUsers);
+    }, 250);
+  });
+}
+
+// ── Matches ───────────────────────────────────────────────────────────────────
 
 function wait(ms = 220) {
   return new Promise((res) => setTimeout(res, ms));
