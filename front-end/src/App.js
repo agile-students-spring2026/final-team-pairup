@@ -22,6 +22,9 @@ import PartnerSpaceScreen from "./components/PartnerSpaceScreen";
 import DiscoverPage from "./pages/DiscoverPage";
 import UserProfilePage from "./pages/UserProfilePage";
 
+import ProfilePage from "./pages/ProfileEdit/ProfilePage";
+import EditProfileForm from "./pages/ProfileEdit/EditProfileForm";
+
 import { PARTNERS_MOCK_NOW, partnersMock } from "./data/partnersMock";
 
 function ProtectedRoute({ isAuthenticated, children }) {
@@ -185,6 +188,23 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+          path="/profile/me"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile/edit"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <EditProfileForm />
+            </ProtectedRoute>
+          }
+        />
 
       {/* partners */}
       <Route
