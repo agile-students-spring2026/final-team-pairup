@@ -1,0 +1,283 @@
+/* ── ReceivedTab ──────────────────────────────────────────────────────── */
+
+.received-tab {
+  list-style: none;
+  margin: 0;
+  padding: 20px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.received-tab--loading,
+.received-tab--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52vh;
+  padding: 24px 20px;
+  box-sizing: border-box;
+}
+
+/* Loading spinner */
+.received-tab__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: received-spin 0.7s linear infinite;
+}
+
+@keyframes received-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.received-tab__empty-inner {
+  max-width: 300px;
+  text-align: center;
+}
+
+.received-tab__empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 14px;
+  display: block;
+  opacity: 0.35;
+}
+
+.received-tab__empty-title {
+  margin: 0 0 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0a2540;
+}
+
+.received-tab__empty-copy {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.received-tab__item {
+  margin: 0;
+}
+
+/* ── Invite card ─────────────────────────────────────────────────────── */
+
+.received-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 16px 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.06);
+  box-sizing: border-box;
+}
+
+/* Dismissed / decline confirmation state */
+.received-card--dismissed {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: none;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+}
+
+.received-card__dismissed-msg {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Header row: avatar + identity + score */
+.received-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.received-card__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #e2e8f0;
+}
+
+.received-card__identity {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.received-card__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0a2540;
+  line-height: 1.2;
+}
+
+.received-card__meta {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.received-card__score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  background: #f0fdf4;
+  border-radius: 10px;
+  padding: 6px 10px;
+  min-width: 52px;
+}
+
+.received-card__score--dim {
+  background: #f8fafc;
+}
+
+.received-card__score-num {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: #16a34a;
+  line-height: 1;
+}
+
+.received-card__score--dim .received-card__score-num {
+  color: #94a3b8;
+}
+
+.received-card__score-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Bio */
+.received-card__bio {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: #475569;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Practice focus tags */
+.received-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.received-card__tag {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #0f766e;
+  background: #ccfbf1;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+/* Availability overlap */
+.received-card__overlap {
+  margin: 0 0 12px;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.received-card__overlap-label {
+  font-weight: 600;
+  color: #475569;
+}
+
+/* Footer row: expiry + sent-ago */
+.received-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.received-card__expiry {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+
+.received-card__expiry--urgent {
+  color: #b45309;
+  background: #fef3c7;
+}
+
+.received-card__sent-ago {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* Action buttons */
+.received-card__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.received-card__btn {
+  flex: 1;
+  padding: 12px 0;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.received-card__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.received-card__btn--decline {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.received-card__btn--decline:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.received-card__btn--accept {
+  background: #2563eb;
+  color: #fff;
+}
+
+.received-card__btn--accept:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.received-card__btn--accept:focus-visible,
+.received-card__btn--decline:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}

@@ -25,6 +25,8 @@ import UserProfilePage from "./pages/UserProfilePage";
 import ProfilePage from "./pages/ProfileEdit/ProfilePage";
 import EditProfileForm from "./pages/ProfileEdit/EditProfileForm";
 
+import MatchesPage from "./pages/matches/MatchesPage";
+
 import { PARTNERS_MOCK_NOW, partnersMock } from "./data/partnersMock";
 
 function ProtectedRoute({ isAuthenticated, children }) {
@@ -189,22 +191,32 @@ function AppRoutes() {
         }
       />
       <Route
-          path="/profile/me"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
+        path="/profile/me"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/profile/edit"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <EditProfileForm />
-            </ProtectedRoute>
-          }
-        />
+      <Route
+        path="/profile/edit"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <EditProfileForm />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* matches — Saun (Resolves #54, #55) */}
+      <Route
+        path="/matches"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <MatchesPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* partners */}
       <Route
