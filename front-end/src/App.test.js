@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-<<<<<<< HEAD
 import userEvent from '@testing-library/user-event';
 import App from './App';
 
@@ -139,12 +138,4 @@ test('after onboarding completes, main app shows Partners list', async () => {
 
   expect(screen.getByRole('heading', { level: 1, name: /^Partners$/ })).toBeInTheDocument();
   expect(screen.getByText(/2 active prep partnerships/i)).toBeInTheDocument();
-=======
-import App from './App';
-
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
->>>>>>> louisa
 });
