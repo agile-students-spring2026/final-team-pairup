@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useMemo, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import OnboardingStepGoal from './components/OnboardingStepGoal';
@@ -9,8 +10,6 @@ import { PARTNERS_MOCK_NOW, partnersMock } from './data/partnersMock';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import SettingsPage from './pages/settings/SettingsPage';
-import DiscoverPage from './pages/DiscoverPage';
-import UserProfilePage from './pages/UserProfilePage';
 
 function PartnerSpaceRoute({ partners, nowMs, onDisconnect }) {
   const { partnerId } = useParams();
@@ -43,7 +42,7 @@ function ProtectedRoute({ isAuthenticated, children }) {
 
 function PublicOnlyRoute({ isAuthenticated, children }) {
   if (isAuthenticated) {
-    return <Navigate to="/discover" replace />;
+    return <Navigate to="/partners" replace />;
   }
   return children;
 }
@@ -57,18 +56,11 @@ function AppRoutes({ initialIsAuthenticated = false }) {
   const nowMs = PARTNERS_MOCK_NOW;
   const navigate = useNavigate();
 
-  const selectedPartnerIds = useMemo(
-    () => new Set(partners.map((p) => p.id)),
-    [partners]
-  );
+  const selectedPartnerIds = useMemo(() => new Set(partners.map((p) => p.id)), [partners]);
 
   return (
     <Routes>
-      <Route
-        path="/"
-        element={<Navigate to={isAuthenticated ? '/discover' : '/login'} replace />}
-      />
-
+      <Route path="/" element={<Navigate to={isAuthenticated ? '/partners' : '/login'} replace />} />
       <Route
         path="/login"
         element={(
@@ -76,13 +68,11 @@ function AppRoutes({ initialIsAuthenticated = false }) {
             <LoginPage
               onLoginSuccess={() => {
                 setIsAuthenticated(true);
-                navigate('/discover');
               }}
             />
           </PublicOnlyRoute>
         )}
       />
-
       <Route
         path="/register"
         element={(
@@ -90,13 +80,11 @@ function AppRoutes({ initialIsAuthenticated = false }) {
             <RegisterPage
               onRegisterSuccess={() => {
                 setIsAuthenticated(true);
-                navigate('/onboarding/goal');
               }}
             />
           </PublicOnlyRoute>
         )}
       />
-
       <Route
         path="/onboarding"
         element={(
@@ -105,7 +93,6 @@ function AppRoutes({ initialIsAuthenticated = false }) {
           </ProtectedRoute>
         )}
       />
-
       <Route
         path="/onboarding/goal"
         element={(
@@ -120,7 +107,6 @@ function AppRoutes({ initialIsAuthenticated = false }) {
           </ProtectedRoute>
         )}
       />
-
       <Route
         path="/onboarding/level"
         element={(
@@ -140,7 +126,6 @@ function AppRoutes({ initialIsAuthenticated = false }) {
           </ProtectedRoute>
         )}
       />
-
       <Route
         path="/onboarding/availability"
         element={(
@@ -149,37 +134,16 @@ function AppRoutes({ initialIsAuthenticated = false }) {
               initialValues={stepThreeData}
               onBack={(payload) => {
                 setStepThreeData(payload);
-                navigate('/onboarding/level');
+              navigate('/onboarding/level');
               }}
               onComplete={(payload) => {
                 setStepThreeData(payload);
-                navigate('/discover');
+              navigate('/partners');
               }}
             />
           </ProtectedRoute>
         )}
       />
-
-      <Route
-        path="/discover"
-        element={(
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <DiscoverPage
-              onOpenProfile={(userId) => navigate(`/discover/${userId}`)}
-            />
-          </ProtectedRoute>
-        )}
-      />
-
-      <Route
-        path="/profile/:id"
-        element={(
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <UserProfilePage />
-          </ProtectedRoute>
-        )}
-      />
-
       <Route
         path="/partners"
         element={(
@@ -196,7 +160,6 @@ function AppRoutes({ initialIsAuthenticated = false }) {
           </ProtectedRoute>
         )}
       />
-
       <Route
         path="/partners/:partnerId"
         element={(
@@ -211,7 +174,6 @@ function AppRoutes({ initialIsAuthenticated = false }) {
           </ProtectedRoute>
         )}
       />
-
       <Route
         path="/settings"
         element={(
@@ -220,11 +182,7 @@ function AppRoutes({ initialIsAuthenticated = false }) {
           </ProtectedRoute>
         )}
       />
-
-      <Route
-        path="*"
-        element={<Navigate to={isAuthenticated ? '/discover' : '/login'} replace />}
-      />
+      <Route path="*" element={<Navigate to={isAuthenticated ? '/partners' : '/login'} replace />} />
     </Routes>
   );
 }
