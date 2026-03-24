@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./App.css";
-import EditProfileForm from "./components/EditProfileForm";
-import ProfilePage from "./components/ProfilePage";
+import EditProfileForm from "./pages/ProfileEdit/EditProfileForm";
+import ProfilePage from "./pages/ProfileEdit/ProfilePage";
 import { useProfile } from "./context/ProfileContext";
 
 function App() {

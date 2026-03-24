@@ -1,7 +1,7 @@
 import React from "react";
 import "./ProfilePage.css";
-import { useProfile } from "../context/ProfileContext";
-import { BAND_KEYS, BAND_LABELS, DAYS, TIME_BANDS } from "../utils/timezone";
+import { useProfile } from "../../context/ProfileContext";
+import { BAND_KEYS, BAND_LABELS, DAYS, TIME_BANDS } from "../../utils/timezone";
 
 function ProfilePage({ onBackToEdit, successMessage }) {
   const { profile } = useProfile();

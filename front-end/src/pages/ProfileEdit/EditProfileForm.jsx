@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from "react";
 import "./EditProfileForm.css";
-import { useProfile } from "../context/ProfileContext";
+import { useProfile } from "../../context/ProfileContext";
 import {
   BAND_KEYS,
   BAND_LABELS,
   DAYS,
   TIME_BANDS,
   TIMEZONE_OPTIONS,
-} from "../utils/timezone";
+} from "../../utils/timezone";
 
 const roleOptions = ["Software Engineer", "Product Manager"];
 const tierOptions = ["FAANG", "Mid-size tech", "Startup", "Any"];
