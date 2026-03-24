@@ -8,20 +8,24 @@ import {
   useParams,
 } from "react-router-dom";
 
-import "./App.css";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import SettingsPage from "./pages/settings/SettingsPage";
-import DiscoverPage from "./pages/DiscoverPage";
-import UserProfilePage from "./pages/UserProfilePage";
-import PartnersList from "./pages/PartnersList";
-import PartnerSpaceRoute from "./pages/PartnerSpaceRoute";
+
 import OnboardingStepGoal from "./components/OnboardingStepGoal";
 import OnboardingStepLevel from "./components/OnboardingStepLevel";
 import OnboardingStepAvailability from "./components/OnboardingStepAvailability";
 
+import PartnersList from "./components/PartnersList";
+import PartnerSpaceScreen from "./components/PartnerSpaceScreen";
+
+import DiscoverPage from "./pages/DiscoverPage";
+import UserProfilePage from "./pages/UserProfilePage";
+
 import ProfilePage from "./pages/ProfileEdit/ProfilePage";
 import EditProfileForm from "./pages/ProfileEdit/EditProfileForm";
+
+import { PARTNERS_MOCK_NOW, partnersMock } from "./data/partnersMock";
 
 function ProtectedRoute({ isAuthenticated, children }) {
   if (!isAuthenticated) {
@@ -30,129 +34,161 @@ function ProtectedRoute({ isAuthenticated, children }) {
   return children;
 }
 
-function AppRoutes() {
+function PublicOnlyRoute({ isAuthenticated, children }) {
+  if (isAuthenticated) {
+    return <Navigate to="/discover" replace />;
+  }
+  return children;
+}
+
+function PartnerSpaceRoute({ partners, nowMs, onDisconnect }) {
+  const { partnerId } = useParams();
   const navigate = useNavigate();
-  const params = useParams();
 
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const partner = partners.find((p) => p.id === partnerId);
 
-  // onboarding state
-  const [stepOneData, setStepOneData] = useState(null);
-  const [stepTwoData, setStepTwoData] = useState(null);
-  const [stepThreeData, setStepThreeData] = useState(null);
-
-  // sample partner data
-  const [partners, setPartners] = useState([
-    {
-      id: "partner-1",
-      name: "Alex Chen",
-      role: "Software Engineer",
-      companyTier: "FAANG",
-      level: "Intermediate",
-      bio: "Practicing medium / hard LC and system design.",
-      connected: true,
-      nextSessionAt: Date.now() + 1000 * 60 * 60 * 6,
-    },
-    {
-      id: "partner-2",
-      name: "Maya Singh",
-      role: "Product Manager",
-      companyTier: "Startup",
-      level: "Advanced",
-      bio: "Mock PM interviews and product sense practice.",
-      connected: true,
-      nextSessionAt: Date.now() + 1000 * 60 * 60 * 30,
-    },
-  ]);
-
-  const nowMs = Date.now();
-
-  const selectedPartnerIds = useMemo(() => {
-    return new Set(partners.filter((p) => p.connected).map((p) => p.id));
-  }, [partners]);
+  if (!partner) {
+    return <Navigate to="/partners" replace />;
+  }
 
   return (
-    <div className="app-shell">
-      <Routes>
-        <Route path="/" element={<Navigate to="/discover" replace />} />
+    <PartnerSpaceScreen
+      partner={partner}
+      nowMs={nowMs}
+      onBack={() => navigate("/partners")}
+      onDisconnect={() => {
+        onDisconnect(partner.id);
+        navigate("/partners");
+      }}
+    />
+  );
+}
 
-        {/* auth */}
-        <Route
-          path="/login"
-          element={<LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />}
-        />
-        <Route path="/register" element={<RegisterPage />} />
+function AppRoutes() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-        {/* onboarding */}
-        <Route
-          path="/onboarding/goal"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <OnboardingStepGoal
-                initialValues={stepOneData}
-                onComplete={(payload) => {
-                  setStepOneData(payload);
-                  navigate("/onboarding/level");
-                }}
-              />
-            </ProtectedRoute>
-          }
-        />
+  const [stepOneData, setStepOneData] = useState({});
+  const [stepTwoData, setStepTwoData] = useState({});
+  const [stepThreeData, setStepThreeData] = useState({});
 
-        <Route
-          path="/onboarding/level"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <OnboardingStepLevel
-                initialValues={stepTwoData}
-                onBack={() => navigate("/onboarding/goal")}
-                onComplete={(payload) => {
-                  setStepTwoData(payload);
-                  navigate("/onboarding/availability");
-                }}
-              />
-            </ProtectedRoute>
-          }
-        />
+  const [partners, setPartners] = useState(partnersMock);
+  const nowMs = PARTNERS_MOCK_NOW;
 
-        <Route
-          path="/onboarding/availability"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <OnboardingStepAvailability
-                initialValues={stepThreeData}
-                onBack={() => navigate("/onboarding/level")}
-                onComplete={(payload) => {
-                  setStepThreeData(payload);
-                  navigate("/discover");
-                }}
-              />
-            </ProtectedRoute>
-          }
-        />
+  const navigate = useNavigate();
 
-        {/* discover */}
-        <Route
-          path="/discover"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <DiscoverPage />
-            </ProtectedRoute>
-          }
-        />
+  const selectedPartnerIds = useMemo(
+    () => new Set(partners.map((p) => p.id)),
+    [partners]
+  );
 
-        {/* existing profile route in dev */}
-        <Route
-          path="/profile/:id"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <UserProfilePage />
-            </ProtectedRoute>
-          }
-        />
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={<Navigate to={isAuthenticated ? "/discover" : "/login"} />}
+      />
 
-        {/* your new profile routes */}
-        <Route
+      {/* login */}
+      <Route
+        path="/login"
+        element={
+          <PublicOnlyRoute isAuthenticated={isAuthenticated}>
+            <LoginPage
+              onLoginSuccess={() => {
+                setIsAuthenticated(true);
+                navigate("/discover");
+              }}
+            />
+          </PublicOnlyRoute>
+        }
+      />
+
+      {/* register */}
+      <Route
+        path="/register"
+        element={
+          <PublicOnlyRoute isAuthenticated={isAuthenticated}>
+            <RegisterPage
+              onRegisterSuccess={() => {
+                setIsAuthenticated(true);
+                navigate("/onboarding/goal");
+              }}
+            />
+          </PublicOnlyRoute>
+        }
+      />
+
+      {/* onboarding step1 */}
+      <Route
+        path="/onboarding/goal"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <OnboardingStepGoal
+              initialValues={stepOneData}
+              onNext={(payload) => {
+                setStepOneData(payload);
+                navigate("/onboarding/level");
+              }}
+            />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* onboarding step2 */}
+      <Route
+        path="/onboarding/level"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <OnboardingStepLevel
+              stepOneData={stepOneData}
+              initialValues={stepTwoData}
+              onBack={() => navigate("/onboarding/goal")}
+              onNext={(payload) => {
+                setStepTwoData(payload);
+                navigate("/onboarding/availability");
+              }}
+            />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* onboarding step3 */}
+      <Route
+        path="/onboarding/availability"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <OnboardingStepAvailability
+              initialValues={stepThreeData}
+              onBack={() => navigate("/onboarding/level")}
+              onComplete={(payload) => {
+                setStepThreeData(payload);
+                navigate("/discover");
+              }}
+            />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* discover */}
+      <Route
+        path="/discover"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <DiscoverPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* profile */}
+      <Route
+        path="/profile/:id"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <UserProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
           path="/profile/me"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated}>
@@ -170,49 +206,50 @@ function AppRoutes() {
           }
         />
 
-        {/* partners */}
-        <Route
-          path="/partners"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <PartnersList
-                partners={partners}
-                nowMs={nowMs}
-                onOpenPartner={(partnerId) => {
-                  if (selectedPartnerIds.has(partnerId)) {
-                    navigate(`/partners/${partnerId}`);
-                  }
-                }}
-              />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/partners/:partnerId"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <PartnerSpaceRoute
-                partners={partners}
-                nowMs={nowMs}
-                onDisconnect={(partnerId) =>
-                  setPartners((prev) => prev.filter((p) => p.id !== partnerId))
+      {/* partners */}
+      <Route
+        path="/partners"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <PartnersList
+              partners={partners}
+              nowMs={nowMs}
+              onOpenPartner={(partnerId) => {
+                if (selectedPartnerIds.has(partnerId)) {
+                  navigate(`/partners/${partnerId}`);
                 }
-              />
-            </ProtectedRoute>
-          }
-        />
+              }}
+            />
+          </ProtectedRoute>
+        }
+      />
 
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <SettingsPage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </div>
+      <Route
+        path="/partners/:partnerId"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <PartnerSpaceRoute
+              partners={partners}
+              nowMs={nowMs}
+              onDisconnect={(partnerId) =>
+                setPartners((prev) =>
+                  prev.filter((p) => p.id !== partnerId)
+                )
+              }
+            />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
 

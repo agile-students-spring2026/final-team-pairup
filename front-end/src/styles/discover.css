@@ -1,0 +1,327 @@
+.discover-page {
+  min-height: 100vh;
+  background: #eef3f6;
+  padding: 32px 20px 48px;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #163042;
+}
+
+.discover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.discover-title {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0d2234;
+}
+
+.discover-subtitle {
+  margin: 6px 0 0;
+  font-size: 1rem;
+  color: #688295;
+}
+
+.filter-pill-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid #d7e3ea;
+  background: #f6fbfd;
+  color: #314b5e;
+  border-radius: 999px;
+  padding: 14px 22px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-icon {
+  font-size: 0.95rem;
+}
+
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.filter-bar__left {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-bar select {
+  border: 1px solid #d6e1e8;
+  background: white;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  color: #294455;
+}
+
+.filter-button {
+  border: none;
+  background: transparent;
+  color: #1d6a86;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.discover-debug-row {
+  margin-bottom: 16px;
+}
+
+.debug-toggle {
+  border: none;
+  background: #dbe7ee;
+  color: #38586d;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.discover-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.discover-card {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 8px 24px rgba(18, 42, 58, 0.08);
+  border: 1px solid #e6edf2;
+}
+
+.discover-card--disabled {
+  opacity: 0.56;
+  pointer-events: auto;
+}
+
+.discover-card__top {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.discover-card__avatar {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: #f5dbe8;
+  color: #a33669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.discover-card__identity {
+  flex: 1;
+}
+
+.discover-card__name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.discover-card__name {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.1;
+  color: #0d2234;
+}
+
+.discover-card__match-row,
+.discover-card__meta-row,
+.discover-card__tags {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.pill--neutral,
+.pill--soft,
+.pill--tag {
+  background: #e9f0f4;
+  color: #436072;
+}
+
+.pill--match {
+  background: #dff1ea;
+  color: #119368;
+}
+
+.pill--new {
+  background: #bfeee4;
+  color: #148977;
+}
+
+.shared-goals-box {
+  margin-top: 22px;
+  background: #eaf4f8;
+  border-radius: 22px;
+  padding: 22px 24px;
+}
+
+.shared-goals-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #196b89;
+  margin-bottom: 12px;
+}
+
+.shared-goals-list {
+  margin: 0;
+  padding-left: 22px;
+  color: #486577;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 1.05rem;
+}
+
+.discover-card__actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.primary-btn,
+.secondary-btn,
+.link-button {
+  cursor: pointer;
+  font-weight: 800;
+  transition: 0.18s ease;
+}
+
+.primary-btn {
+  flex: 1;
+  border: none;
+  background: #0f6785;
+  color: white;
+  border-radius: 999px;
+  padding: 18px 22px;
+  font-size: 1.2rem;
+}
+
+.primary-btn--sent {
+  background: #90a6b4;
+}
+
+.secondary-btn {
+  border: 2px solid #b9d0dc;
+  background: white;
+  color: #102536;
+  border-radius: 999px;
+  padding: 18px 24px;
+  font-size: 1.2rem;
+}
+
+.primary-btn:disabled,
+.secondary-btn:disabled {
+  cursor: not-allowed;
+}
+
+.empty-state-card {
+  background: white;
+  border-radius: 28px;
+  padding: 40px 28px;
+  box-shadow: 0 8px 24px rgba(18, 42, 58, 0.08);
+  border: 1px solid #e6edf2;
+  text-align: center;
+}
+
+.empty-illustration {
+  font-size: 3rem;
+  margin-bottom: 14px;
+}
+
+.empty-state-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0d2234;
+  margin-bottom: 10px;
+}
+
+.empty-state-text {
+  color: #607c8d;
+  font-size: 1rem;
+  max-width: 520px;
+  margin: 0 auto 18px;
+}
+
+.empty-state-btn {
+  max-width: 260px;
+}
+
+.notify-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  color: #294455;
+  font-weight: 600;
+}
+
+.link-button {
+  border: none;
+  background: transparent;
+  color: #0f6785;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .discover-page {
+    padding: 24px 14px 40px;
+  }
+
+  .discover-title {
+    font-size: 1.9rem;
+  }
+
+  .discover-card {
+    padding: 22px 18px;
+    border-radius: 24px;
+  }
+
+  .discover-card__name {
+    font-size: 1.6rem;
+  }
+
+  .discover-card__actions {
+    flex-direction: column;
+  }
+
+  .filter-pill-button {
+    padding: 12px 18px;
+  }
+}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./ProfilePage.css";
 import { useProfile } from "../../context/ProfileContext";
 import { BAND_KEYS, BAND_LABELS, DAYS, TIME_BANDS } from "../../utils/timezone";
+import BottomNav from "../../components/button/BottomNav";
 
 function ProfilePage({ onBackToEdit, successMessage }) {
   const navigate = useNavigate();
@@ -175,6 +176,8 @@ function ProfilePage({ onBackToEdit, successMessage }) {
           Edit Profile
         </button>
       </div>
+
+      <BottomNav />
     </div>
   );
 }
