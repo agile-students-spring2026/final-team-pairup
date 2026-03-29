@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -24,6 +25,35 @@ function App() {
         <Route path="/profile/:id" element={<UserProfilePage />} />
       </Routes>
     </BrowserRouter>
+=======
+import React, { useState } from "react";
+import "./App.css";
+import EditProfileForm from "./pages/ProfileEdit/EditProfileForm";
+import ProfilePage from "./pages/ProfileEdit/ProfilePage";
+import { useProfile } from "./context/ProfileContext";
+
+function App() {
+  const [currentView, setCurrentView] = useState("edit");
+  const { successMessage, clearSuccess } = useProfile();
+
+  const goToProfile = () => setCurrentView("profile");
+  const goToEdit = () => {
+    clearSuccess();
+    setCurrentView("edit");
+  };
+
+  return (
+    <div className="app-shell">
+      {currentView === "edit" ? (
+        <EditProfileForm onSuccess={goToProfile} />
+      ) : (
+        <ProfilePage
+          onBackToEdit={goToEdit}
+          successMessage={successMessage}
+        />
+      )}
+    </div>
+>>>>>>> master
   );
 }
 
