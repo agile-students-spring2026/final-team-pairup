@@ -4,17 +4,19 @@
 
 .auth-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background: #eef2f5;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  justify-content: stretch;
+  align-items: stretch;
   padding: 0;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 430px;
+  max-width: none;
   min-height: 100vh;
+  min-height: 100dvh;
   background: #eef2f5;
   border-radius: 0;
   box-shadow: none;

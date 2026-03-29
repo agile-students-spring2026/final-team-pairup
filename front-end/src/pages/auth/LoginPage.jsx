@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
 import { Users } from "lucide-react";
 
-function LoginPage() {
+function LoginPage({ onLoginSuccess }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,8 +19,8 @@ function LoginPage() {
     if (forgot) {
       setResetSent(true);
     } else {
-      // On successful sign in, navigate to onboarding
-      navigate('/onboarding');
+      onLoginSuccess?.();
+      navigate('/partners');
     }
   }
 
