@@ -5,7 +5,10 @@ import FilterBar from "../components/discover/FilterBar";
 import EmptyFilteredState from "../components/discover/EmptyFilteredState";
 import EmptyAlgorithmState from "../components/discover/EmptyAlgorithmState";
 import { fetchDiscoverUsers } from "../services/mockApi";
+import BottomNav from "../components/button/BottomNav";
+
 import "../styles/discover.css";
+
 
 function DiscoverPage() {
   const navigate = useNavigate();
@@ -110,6 +113,7 @@ function DiscoverPage() {
           ))}
         </div>
       )}
+      <BottomNav active="discover" />
     </div>
   );
 }
