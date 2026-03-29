@@ -9,6 +9,7 @@ import { PARTNERS_MOCK_NOW, partnersMock } from './data/partnersMock';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import SettingsPage from './pages/settings/SettingsPage';
+import './App.css';
 
 function PartnerSpaceRoute({ partners, nowMs, onDisconnect }) {
   const { partnerId } = useParams();
@@ -133,11 +134,11 @@ function AppRoutes({ initialIsAuthenticated = false }) {
               initialValues={stepThreeData}
               onBack={(payload) => {
                 setStepThreeData(payload);
-              navigate('/onboarding/level');
+                navigate('/onboarding/level');
               }}
               onComplete={(payload) => {
                 setStepThreeData(payload);
-              navigate('/partners');
+                navigate('/partners');
               }}
             />
           </ProtectedRoute>
