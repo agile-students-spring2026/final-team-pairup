@@ -163,7 +163,7 @@ PairUp aims to reduce the friction of finding that partner and make job prep mor
 
 ## Current Status
 
-The **front-end** is under active development: screens and flows are implemented in React with mocked API data. A real back end can be wired in later by replacing calls in `front-end/src/services/mockApi.js`.
+The **front-end** is under active Sprint 1 development: screens and flows are implemented in React with mocked API data. A real back end can be wired in later by replacing calls in `front-end/src/services/mockApi.js`.
 
 ---
 
