@@ -173,6 +173,15 @@ function ProfilePage({ onBackToEdit, successMessage }) {
         >
           Edit Profile
         </button>
+
+        <button
+          className="edit-again-button"
+          onClick={() => {
+            navigate("/settings");
+          }}
+        >
+          Settings
+        </button>
       </div>
 
       <BottomNav />
