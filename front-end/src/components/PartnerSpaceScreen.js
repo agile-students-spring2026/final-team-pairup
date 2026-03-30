@@ -5,6 +5,7 @@ import { DEFAULT_SCHEDULE_AVAILABILITY_SLOTS } from '../utils/scheduleCalendar';
 import ScheduleSessionSheet from './ScheduleSessionSheet';
 import './PartnerSpaceScreen.css';
 
+
 function storageFirstVisitKey(partnerId) {
   return `pairup-partner-space-first-${partnerId}`;
 }
