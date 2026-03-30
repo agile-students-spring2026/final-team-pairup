@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { formatRelativeAgo } from '../utils/relativeTime';
-import { getPartnerSpaceDemo } from '../data/partnerSpaceDemo';
+import { getPartnerSpaceDemo } from '../services/mockApi';
 import { DEFAULT_SCHEDULE_AVAILABILITY_SLOTS } from '../utils/scheduleCalendar';
 import ScheduleSessionSheet from './ScheduleSessionSheet';
 import './PartnerSpaceScreen.css';

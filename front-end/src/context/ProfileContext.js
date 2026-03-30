@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
-import mockProfile from "../data/mockProfile.json";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import { getDefaultProfileSeed } from "../services/mockApi";
 
 const ProfileContext = createContext();
 
@@ -13,15 +19,17 @@ const defaultAvailability = {
   Sun: { AM: false, PM: false, EVE: false },
 };
 
+const profileSeed = getDefaultProfileSeed();
+
 const DEFAULT_PROFILE = {
-  displayName: mockProfile[0]?.displayName || "",
+  displayName: profileSeed?.displayName || "",
   targetRole: "Software Engineer",
   companyTier: "FAANG",
   timeline: "1–3 months",
   overallLevel: "Intermediate",
   background: "CS grad",
-  bio: mockProfile[0]?.bio || "",
-  linkedinUrl: mockProfile[0]?.linkedinUrl || "",
+  bio: profileSeed?.bio || "",
+  linkedinUrl: profileSeed?.linkedinUrl || "",
   timezone: "ET",
   availability: {
     ...defaultAvailability,
@@ -34,9 +42,9 @@ const DEFAULT_PROFILE = {
   showUp: "100%",
   wantsToImprove: "Concepts",
   notifications: {
-    newInvitation: mockProfile[0]?.notifications?.newInvitation ?? true,
-    inviteAccepted: mockProfile[0]?.notifications?.inviteAccepted ?? true,
-    sessionReminder: mockProfile[0]?.notifications?.sessionReminder ?? true,
+    newInvitation: profileSeed?.notifications?.newInvitation ?? true,
+    inviteAccepted: profileSeed?.notifications?.inviteAccepted ?? true,
+    sessionReminder: profileSeed?.notifications?.sessionReminder ?? true,
   },
 };
 
@@ -50,14 +58,14 @@ export function ProfileProvider({ children }) {
 
   const [successMessage, setSuccessMessage] = useState("");
 
-  const updateField = (field, value) => {
+  const updateField = useCallback((field, value) => {
     setProfile((prev) => ({
       ...prev,
       [field]: value,
     }));
-  };
+  }, []);
 
-  const toggleAvailability = (day, band) => {
+  const toggleAvailability = useCallback((day, band) => {
     setProfile((prev) => ({
       ...prev,
       availability: {
@@ -68,14 +76,14 @@ export function ProfileProvider({ children }) {
         },
       },
     }));
-  };
+  }, []);
 
-  const saveProfile = () => {
+  const saveProfile = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
     setSuccessMessage("Profile updated successfully.");
-  };
+  }, [profile]);
 
-  const clearSuccess = () => setSuccessMessage("");
+  const clearSuccess = useCallback(() => setSuccessMessage(""), []);
 
   const value = useMemo(
     () => ({
@@ -88,7 +96,14 @@ export function ProfileProvider({ children }) {
       setSuccessMessage,
       clearSuccess,
     }),
-    [profile, successMessage]
+    [
+      profile,
+      successMessage,
+      updateField,
+      toggleAvailability,
+      saveProfile,
+      clearSuccess,
+    ]
   );
 
   return (

@@ -132,10 +132,12 @@ async function completeOnboarding() {
   await userEvent.click(screen.getByRole('button', { name: /find my matches/i }));
 }
 
-test('after onboarding completes, main app shows Partners list', async () => {
+test('after onboarding completes, main app shows Discover', async () => {
   render(<App initialIsAuthenticated />);
   await completeOnboarding();
 
-  expect(screen.getByRole('heading', { level: 1, name: /^Partners$/ })).toBeInTheDocument();
-  expect(screen.getByText(/2 active prep partnerships/i)).toBeInTheDocument();
+  expect(
+    await screen.findByRole('heading', { level: 1, name: /^Discover$/ }),
+  ).toBeInTheDocument();
+  expect(await screen.findByText(/6 matches found for you/i)).toBeInTheDocument();
 });

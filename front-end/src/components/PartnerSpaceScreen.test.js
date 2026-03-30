@@ -1,7 +1,9 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PartnerSpaceScreen from './PartnerSpaceScreen';
-import { PARTNERS_MOCK_NOW, partnersMock } from '../data/partnersMock';
+import { PARTNERS_MOCK_NOW, getInitialPartners } from '../services/mockApi';
+
+const partnersMock = getInitialPartners();
 
 beforeEach(() => {
   sessionStorage.clear();
