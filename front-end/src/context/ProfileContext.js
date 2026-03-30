@@ -33,6 +33,11 @@ const DEFAULT_PROFILE = {
   sessions: 7,
   showUp: "100%",
   wantsToImprove: "Concepts",
+  notifications: {
+    newInvitation: mockProfile[0]?.notifications?.newInvitation ?? true,
+    inviteAccepted: mockProfile[0]?.notifications?.inviteAccepted ?? true,
+    sessionReminder: mockProfile[0]?.notifications?.sessionReminder ?? true,
+  },
 };
 
 const STORAGE_KEY = "pairup_profile_data";
