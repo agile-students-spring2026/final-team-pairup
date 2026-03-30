@@ -1,24 +1,31 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import PartnersList from './PartnersList';
-import { PARTNERS_MOCK_NOW, partnersMock } from '../data/partnersMock';
+import { PARTNERS_MOCK_NOW, getInitialPartners } from '../services/mockApi';
+
+const partnersMock = getInitialPartners();
+
+function renderWithRouter(ui) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 test('empty state CTA goes to Matches', async () => {
   const onMatches = jest.fn();
-  render(<PartnersList partners={[]} onOpenPartner={() => {}} onGoToMatches={onMatches} />);
+  renderWithRouter(<PartnersList partners={[]} onOpenPartner={() => {}} onGoToMatches={onMatches} />);
 
   await userEvent.click(screen.getByRole('button', { name: /go to matches/i }));
   expect(onMatches).toHaveBeenCalledTimes(1);
 });
 
 test('empty state omits Matches CTA when onGoToMatches is not passed', () => {
-  render(<PartnersList partners={[]} onOpenPartner={() => {}} />);
+  renderWithRouter(<PartnersList partners={[]} onOpenPartner={() => {}} />);
   expect(screen.queryByRole('button', { name: /go to matches/i })).not.toBeInTheDocument();
 });
 
 test('cards ordered by most recent activity; opening a card calls handler', async () => {
   const onOpen = jest.fn();
-  render(
+  renderWithRouter(
     <PartnersList partners={partnersMock} onOpenPartner={onOpen} nowMs={PARTNERS_MOCK_NOW} />,
   );
 
@@ -31,7 +38,7 @@ test('cards ordered by most recent activity; opening a card calls handler', asyn
 });
 
 test('upcoming session pill shows date and type when present', () => {
-  render(
+  renderWithRouter(
     <PartnersList partners={partnersMock} onOpenPartner={() => {}} nowMs={PARTNERS_MOCK_NOW} />,
   );
 

@@ -1,6 +1,15 @@
-# Getting Started with Create React App
+# PairUp — front end
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React (Create React App) UI for PairUp. Run all commands from this `front-end/` directory.
+
+## Quick start
+
+```bash
+npm install
+npm start
+```
+
+Opens [http://localhost:3000](http://localhost:3000). Data is mocked through `src/services/mockApi.js` until a real API exists.
 
 ## Available Scripts
 

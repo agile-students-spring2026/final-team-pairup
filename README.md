@@ -93,16 +93,48 @@ Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines, de
 
 ## Building and Testing
 
-> These instructions will be updated once the project reaches implementation stage.
+This repository currently ships a **React** front end under `front-end/` (Create React App). There is no separate back-end package in this repo yet; the UI uses mocked data via `front-end/src/services/mockApi.js`.
 
-### Build Instructions
-TBD
+### Prerequisites
 
-### Run Instructions
-TBD
+- **Node.js** (LTS recommended, e.g. 18.x or 20.x)
+- **npm** (comes with Node)
 
-### Testing Instructions
-TBD
+### Install and run (development)
+
+From the repository root:
+
+```bash
+cd front-end
+npm install
+npm start
+```
+
+The app opens at [http://localhost:3000](http://localhost:3000). Use `Ctrl+C` in the terminal to stop the dev server.
+
+### Production build
+
+```bash
+cd front-end
+npm install
+npm run build
+```
+
+Static output is written to `front-end/build/`. Serve that folder with any static host, or use a tool such as `npx serve -s build` for a quick local check.
+
+### Tests
+
+```bash
+cd front-end
+npm test
+```
+
+By default Create React App runs tests in **watch** mode. For a single non-interactive run (for example in CI):
+
+```bash
+cd front-end
+CI=true npm test
+```
 
 ---
 
@@ -131,8 +163,7 @@ PairUp aims to reduce the friction of finding that partner and make job prep mor
 
 ## Current Status
 
-This project is currently in the **planning / early development stage (Sprint 0)**.  
-The team is refining requirements, defining the MVP, and preparing for implementation in upcoming sprints.
+The **front-end** is under active Sprint 1 development: screens and flows are implemented in React with mocked API data. A real back end can be wired in later by replacing calls in `front-end/src/services/mockApi.js`.
 
 ---
 

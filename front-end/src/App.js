@@ -27,7 +27,7 @@ import EditProfileForm from "./pages/ProfileEdit/EditProfileForm";
 
 import MatchesPage from "./pages/matches/MatchesPage";
 
-import { PARTNERS_MOCK_NOW, partnersMock } from "./data/partnersMock";
+import { PARTNERS_MOCK_NOW, getInitialPartners } from "./services/mockApi";
 
 function ProtectedRoute({ isAuthenticated, children }) {
   if (!isAuthenticated) {
@@ -66,14 +66,14 @@ function PartnerSpaceRoute({ partners, nowMs, onDisconnect }) {
   );
 }
 
-function AppRoutes() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+function AppRoutes({ initialIsAuthenticated = false }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated);
 
   const [stepOneData, setStepOneData] = useState({});
   const [stepTwoData, setStepTwoData] = useState({});
   const [stepThreeData, setStepThreeData] = useState({});
 
-  const [partners, setPartners] = useState(partnersMock);
+  const [partners, setPartners] = useState(getInitialPartners);
   const nowMs = PARTNERS_MOCK_NOW;
 
   const navigate = useNavigate();
@@ -265,10 +265,10 @@ function AppRoutes() {
   );
 }
 
-function App() {
+function App({ initialIsAuthenticated = false }) {
   return (
     <BrowserRouter>
-      <AppRoutes />
+      <AppRoutes initialIsAuthenticated={initialIsAuthenticated} />
     </BrowserRouter>
   );
 }

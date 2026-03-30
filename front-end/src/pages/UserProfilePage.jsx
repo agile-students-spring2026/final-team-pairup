@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { mockUsers } from "../data/mockUsers";
+import { useEffect, useState } from "react";
+import { fetchUserById } from "../services/mockApi";
 import ProfileHero from "../components/profile/ProfileHero";
 import TrustSection from "../components/profile/TrustSection";
 import GoalSection from "../components/profile/GoalSection";
@@ -12,21 +12,39 @@ import "../styles/profile.css";
 import { useParams } from "react-router-dom";
 
 function UserProfilePage() {
-  const [users, setUsers] = useState(mockUsers);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [selectedTimezone, setSelectedTimezone] = useState("ET");
   const { id } = useParams();
-  const user = mockUsers.find((u) => u.id === Number(id));
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchUserById(Number(id)).then((u) => {
+      if (!cancelled) {
+        setUser(u);
+        setLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   function handleInvite() {
-    setUsers((prev) =>
-      prev.map((item) =>
-        item.id === user.id ? { ...item, invited: true } : item
-      )
-    );
+    setUser((prev) => (prev ? { ...prev, invited: true } : null));
   }
 
   function handleBack() {
     window.history.back();
+  }
+
+  if (loading) {
+    return (
+      <div className="profile-page">
+        <div className="profile-page__content">Loading…</div>
+      </div>
+    );
   }
 
   if (!user) {
