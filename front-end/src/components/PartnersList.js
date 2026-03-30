@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { formatRelativeAgo } from '../utils/relativeTime';
+import BottomNav from './button/BottomNav';
 import './PartnersList.css';
 
 function PartnersList({ partners, onOpenPartner, onGoToMatches, nowMs = Date.now() }) {
@@ -26,6 +27,7 @@ function PartnersList({ partners, onOpenPartner, onGoToMatches, nowMs = Date.now
             </button>
           )}
         </div>
+        <BottomNav active="partner" />
       </div>
     );
   }
@@ -88,6 +90,7 @@ function PartnersList({ partners, onOpenPartner, onGoToMatches, nowMs = Date.now
           </li>
         ))}
       </ul>
+      <BottomNav active="partner" />
     </div>
   );
 }
