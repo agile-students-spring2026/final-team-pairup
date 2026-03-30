@@ -25,7 +25,7 @@
   width: 36px;
   height: 36px;
   border: 3px solid #e2e8f0;
-  border-top-color: #2563eb;
+  border-top-color: #0f6785;
   border-radius: 50%;
   animation: received-spin 0.7s linear infinite;
 }
@@ -69,9 +69,10 @@
 
 .received-card {
   background: #fff;
-  border-radius: 14px;
-  padding: 18px 16px 16px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.06);
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 8px 24px rgba(18, 42, 58, 0.08);
+  border: 1px solid #e6edf2;
   box-sizing: border-box;
 }
 
@@ -268,16 +269,21 @@
 }
 
 .received-card__btn--accept {
-  background: #2563eb;
+  background: #0f6785;
   color: #fff;
+  border-radius: 999px;
 }
 
 .received-card__btn--accept:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: #0b5068;
+}
+
+.received-card__btn--decline {
+  border-radius: 999px;
 }
 
 .received-card__btn--accept:focus-visible,
 .received-card__btn--decline:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #0f6785;
   outline-offset: 2px;
 }

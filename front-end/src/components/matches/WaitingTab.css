@@ -64,7 +64,7 @@
   padding: 12px 24px;
   border: none;
   border-radius: 12px;
-  background: #2563eb;
+  background: #0f6785;
   color: #fff;
   font-size: 1rem;
   font-weight: 700;
@@ -74,11 +74,11 @@
 }
 
 .waiting-tab__discover-btn:hover {
-  background: #1d4ed8;
+  background: #0b5068;
 }
 
 .waiting-tab__discover-btn:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #0f6785;
   outline-offset: 2px;
 }
 
@@ -100,9 +100,10 @@
 
 .sent-card {
   background: #fff;
-  border-radius: 14px;
-  padding: 18px 16px 16px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.06);
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 8px 24px rgba(18, 42, 58, 0.08);
+  border: 1px solid #e6edf2;
   box-sizing: border-box;
 }
 
@@ -270,7 +271,7 @@
 }
 
 .sent-card__cancel-btn:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #0f6785;
   outline-offset: 2px;
 }
 
@@ -362,7 +363,7 @@
   padding: 6px 14px;
   border: none;
   border-radius: 8px;
-  background: #2563eb;
+  background: #0f6785;
   color: #fff;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -379,10 +380,10 @@
 }
 
 .rec-card__invite-btn:hover:not(:disabled):not(.rec-card__invite-btn--sent) {
-  background: #1d4ed8;
+  background: #0b5068;
 }
 
 .rec-card__invite-btn:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #0f6785;
   outline-offset: 2px;
 }
