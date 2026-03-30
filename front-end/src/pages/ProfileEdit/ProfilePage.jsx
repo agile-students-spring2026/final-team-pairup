@@ -86,7 +86,6 @@ function ProfilePage({ onBackToEdit, successMessage }) {
             <span className="level-value">{profile.overallLevel}</span>
             <span className="level-dots">● ● ○</span>
           </div>
-
           <p className="muted-copy">
             {profile.overallLevel === "Beginner" &&
               "Primarily Easy problems / just getting started"}
@@ -95,7 +94,6 @@ function ProfilePage({ onBackToEdit, successMessage }) {
             {profile.overallLevel === "Advanced" &&
               "Hard + OA-level / want to keep sharp"}
           </p>
-
           <div className="improve-row">
             <span className="info-label">Wants to improve:</span>
             <span className="accent-pill">{profile.wantsToImprove}</span>
