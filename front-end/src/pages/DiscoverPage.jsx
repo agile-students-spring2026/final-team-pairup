@@ -9,18 +9,16 @@ import BottomNav from "../components/button/BottomNav";
 
 import "../styles/discover.css";
 
-
 function DiscoverPage() {
   const navigate = useNavigate();
+
   const [users, setUsers] = useState([]);
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState("");
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [isAlgorithmEmpty, setIsAlgorithmEmpty] = useState(false);
-
-  function handleViewProfile(userId) {
-    navigate(`/profile/${userId}`);
-  }
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchDiscoverUsers().then((data) => {
@@ -31,17 +29,13 @@ function DiscoverPage() {
     });
   }, []);
 
-  const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      const roleMatch = selectedRole ? user.role === selectedRole : true;
-      const levelMatch = selectedLevel ? user.level === selectedLevel : true;
-      return roleMatch && levelMatch;
-    });
-  }, [users, selectedRole, selectedLevel]);
+  function handleViewProfile(userId) {
+    navigate(`/profile/${userId}`);
+  }
 
   function handleSendInvite(userId) {
-    setUsers((prev) =>
-      prev.map((user) =>
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
         user.id === userId ? { ...user, invited: true } : user
       )
     );
@@ -50,13 +44,43 @@ function DiscoverPage() {
   function handleClearFilters() {
     setSelectedRole("");
     setSelectedLevel("");
+    setSelectedCompany("");
   }
 
   function handleUpdatePreferences() {
     console.log("Go to preferences page");
   }
 
-  const hasFilters = selectedRole || selectedLevel;
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) => {
+      let roleMatch = true;
+
+      if (selectedRole) {
+        if (selectedRole === "SDE") {
+          roleMatch = ["SDE", "Frontend", "Backend", "Fullstack"].includes(
+            user.role
+          );
+        } else if (selectedRole === "ML") {
+          roleMatch = ["ML", "Data"].includes(user.role);
+        } else {
+          roleMatch = user.role === selectedRole;
+        }
+      }
+
+      const levelMatch = selectedLevel
+        ? user.level === selectedLevel
+        : true;
+
+      const companyMatch = selectedCompany
+        ? user.companyTarget === selectedCompany
+        : true;
+
+      return roleMatch && levelMatch && companyMatch;
+    });
+  }, [users, selectedRole, selectedLevel, selectedCompany]);
+
+  const hasFilters =
+    selectedRole !== "" || selectedLevel !== "" || selectedCompany !== "";
 
   return (
     <div className="discover-page">
@@ -65,24 +89,46 @@ function DiscoverPage() {
           <h1 className="discover-title">Discover</h1>
           {!isAlgorithmEmpty && (
             <p className="discover-subtitle">
-              {filteredUsers.length} match{filteredUsers.length !== 1 ? "es" : ""} found for you
+              {filteredUsers.length} match
+              {filteredUsers.length !== 1 ? "es" : ""} found for you
             </p>
           )}
         </div>
 
-        <button className="filter-pill-button">
+        <button
+          className="filter-pill-button"
+          onClick={() => setShowFilters((prev) => !prev)}
+        >
           <span className="filter-icon">☷</span>
-          <span>Filter</span>
+          <span>{showFilters ? "Hide Filters" : "Filter"}</span>
         </button>
       </div>
 
-      <FilterBar
-        selectedRole={selectedRole}
-        selectedLevel={selectedLevel}
-        onRoleChange={setSelectedRole}
-        onLevelChange={setSelectedLevel}
-        onClearFilters={handleClearFilters}
-      />
+      {(selectedRole || selectedLevel || selectedCompany) && (
+        <div className="active-filters">
+          {selectedRole && (
+            <span className="active-filter-chip">{selectedRole}</span>
+          )}
+          {selectedLevel && (
+            <span className="active-filter-chip">{selectedLevel}</span>
+          )}
+          {selectedCompany && (
+            <span className="active-filter-chip">{selectedCompany}</span>
+          )}
+        </div>
+      )}
+
+      {showFilters && (
+        <FilterBar
+          selectedRole={selectedRole}
+          selectedLevel={selectedLevel}
+          selectedCompany={selectedCompany}
+          onRoleChange={setSelectedRole}
+          onLevelChange={setSelectedLevel}
+          onCompanyChange={setSelectedCompany}
+          onClearFilters={handleClearFilters}
+        />
+      )}
 
       <div className="discover-debug-row">
         <button
@@ -113,6 +159,7 @@ function DiscoverPage() {
           ))}
         </div>
       )}
+
       <BottomNav active="discover" />
     </div>
   );
