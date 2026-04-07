@@ -4,7 +4,6 @@ import DiscoverCard from "../components/discover/DiscoverCard";
 import FilterBar from "../components/discover/FilterBar";
 import EmptyFilteredState from "../components/discover/EmptyFilteredState";
 import EmptyAlgorithmState from "../components/discover/EmptyAlgorithmState";
-import { fetchDiscoverUsers } from "../services/mockApi";
 import BottomNav from "../components/button/BottomNav";
 
 import "../styles/discover.css";
@@ -21,12 +20,19 @@ function DiscoverPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    fetchDiscoverUsers().then((data) => {
-      const sorted = [...data].sort(
-        (a, b) => b.matchPercentage - a.matchPercentage
-      );
-      setUsers(sorted);
-    });
+    fetch("/api/matches")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        // Backend returns matches already sorted by rankScore
+        setUsers(data.matches);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch matches:", err);
+        setUsers([]);
+      });
   }, []);
 
   function handleViewProfile(userId) {
@@ -36,7 +42,7 @@ function DiscoverPage() {
   function handleSendInvite(userId) {
     setUsers((prevUsers) =>
       prevUsers.map((user) =>
-        user.id === userId ? { ...user, invited: true } : user
+        user.userId === userId ? { ...user, inviteStatus: "sent" } : user
       )
     );
   }
@@ -53,26 +59,10 @@ function DiscoverPage() {
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
-      let roleMatch = true;
-
-      if (selectedRole) {
-        if (selectedRole === "SDE") {
-          roleMatch = ["SDE", "Frontend", "Backend", "Fullstack"].includes(
-            user.role
-          );
-        } else if (selectedRole === "ML") {
-          roleMatch = ["ML", "Data"].includes(user.role);
-        } else {
-          roleMatch = user.role === selectedRole;
-        }
-      }
-
-      const levelMatch = selectedLevel
-        ? user.level === selectedLevel
-        : true;
-
+      const roleMatch = selectedRole ? user.role === selectedRole : true;
+      const levelMatch = selectedLevel ? user.level === selectedLevel : true;
       const companyMatch = selectedCompany
-        ? user.companyTarget === selectedCompany
+        ? user.targetTier === selectedCompany
         : true;
 
       return roleMatch && levelMatch && companyMatch;
@@ -151,7 +141,7 @@ function DiscoverPage() {
         <div className="discover-feed">
           {filteredUsers.map((user) => (
             <DiscoverCard
-              key={user.id}
+              key={user.userId}
               user={user}
               onSendInvite={handleSendInvite}
               onViewProfile={handleViewProfile}

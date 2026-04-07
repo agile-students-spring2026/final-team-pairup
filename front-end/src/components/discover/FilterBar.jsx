@@ -16,13 +16,7 @@ function FilterBar({
         >
           <option value="">All roles</option>
           <option value="SDE">SDE</option>
-          <option value="Frontend">Frontend</option>
-          <option value="Backend">Backend</option>
-          <option value="Fullstack">Fullstack</option>
-          <option value="Data">Data</option>
-          <option value="ML">ML / AI</option>
           <option value="PM">PM</option>
-          <option value="Designer">Designer</option>
         </select>
 
         <select
@@ -41,10 +35,9 @@ function FilterBar({
         >
           <option value="">All companies</option>
           <option value="FAANG">FAANG</option>
-          <option value="Big Tech">Big Tech</option>
           <option value="Mid-size tech">Mid-size tech</option>
-          <option value="Startups">Startups</option>
-          <option value="Fintech">Fintech</option>
+          <option value="Startup">Startup</option>
+          <option value="Any">Any</option>
         </select>
       </div>
 
