@@ -46,6 +46,10 @@ function PartnerSpaceScreen({
   const [proposalLoadingError, setProposalLoadingError] = useState('');
   const [proposalError, setProposalError] = useState('');
   const [isSendingProposal, setIsSendingProposal] = useState(false);
+  const [selectedSlotId, setSelectedSlotId] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [confirmedSlot, setConfirmedSlot] = useState(null);
+
   useEffect(() => {
     async function fetchProposals() {
       try {
@@ -214,6 +218,42 @@ function PartnerSpaceScreen({
     }
   }
 
+  async function handleSelectSlot(slotId) {
+    try {
+      setIsUpdating(true);
+      setSelectedSlotId(slotId);
+
+      const res = await fetch(`http://localhost:3001/api/proposals/${incomingProposal.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'accepted',
+          selectedSlotId: slotId,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to accept proposal');
+      }
+
+      console.log('Proposal accepted:', data);
+      setIncomingProposal(data.proposal);
+      
+      const chosenSlot = data.proposal.timeOptions.find((slot) => slot.id === slotId);
+      setConfirmedSlot(chosenSlot);
+    } catch (err) {
+      console.error(err);
+      setProposalLoadingError(err.message || 'Failed to accept proposal');
+      setSelectedSlotId(null);
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
   const firstName = partner.name.split(' ')[0] ?? partner.name;
 
   return (
@@ -270,19 +310,30 @@ function PartnerSpaceScreen({
             {incomingProposal.sessionType} · {incomingProposal.level}
           </p>
           <div className="partner-space__proposal-slots">
-            {incomingProposal.timeOptions.map((slot) => (
-              <button
-                key={slot.id}
-                type="button"
-                className="partner-space__proposal-slot"
-                onClick={() => {
-                  console.log('Selected slot:', slot);
-                }}
-              >
-                {slot.label}
-              </button>
-            ))}
+            {incomingProposal.timeOptions.map((slot) => {
+              const isSelected = selectedSlotId === slot.id;
+
+              return (
+                <button
+                  key={slot.id}
+                  className="partner-space__proposal-slot"
+                  onClick={() => handleSelectSlot(slot.id)}
+                  disabled={isUpdating || selectedSlotId}
+                  style={{
+                    background: isSelected ? '#d1fae5' : '',
+                    border: isSelected ? '2px solid green' : '',
+                  }}
+                >
+                  {isSelected ? `✔ ${slot.label}` : slot.label}
+                </button>
+              );
+            })}
           </div>
+          {selectedSlotId && (
+            <p style={{ color: 'green', padding: '10px 0' }}>
+              Session confirmed!
+            </p>
+          )}
         </section>
       )}
 

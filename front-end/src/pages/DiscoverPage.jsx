@@ -39,12 +39,37 @@ function DiscoverPage() {
     navigate(`/profile/${userId}`);
   }
 
-  function handleSendInvite(userId) {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.userId === userId ? { ...user, inviteStatus: "sent" } : user
-      )
-    );
+  async function handleSendInvite(userId) {
+    try {
+      const res = await fetch("http://localhost:3001/api/requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fromUserId: "u1",
+          toUserId: userId,
+          message: "Want to practice this week?",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send invite");
+      }
+
+      console.log("Invite created:", data);
+
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId ? { ...user, invited: true } : user
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Something went wrong");
+    }
   }
 
   function handleClearFilters() {
