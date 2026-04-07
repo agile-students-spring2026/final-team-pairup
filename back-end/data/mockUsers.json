@@ -5,7 +5,11 @@
     "passwordHash": "$2b$10$fakehashcurrentuser",
     "displayName": "Saun Doe",
     "role": "SDE",
-    "practiceFocus": ["Coding", "System Design", "Behavioral"],
+    "practiceFocus": [
+      "Coding",
+      "System Design",
+      "Behavioral"
+    ],
     "targetTier": "FAANG",
     "timeline": "1-3 months",
     "level": "Intermediate",
@@ -15,13 +19,41 @@
     "bio": "Preparing for SDE interviews",
     "linkedinUrl": null,
     "availability": {
-      "mon": [false, false, true],
-      "tue": [false, false, true],
-      "wed": [false, false, true],
-      "thu": [false, false, true],
-      "fri": [false, false, true],
-      "sat": [true, true, false],
-      "sun": [true, true, false]
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        true
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        false,
+        true
+      ],
+      "fri": [
+        false,
+        false,
+        true
+      ],
+      "sat": [
+        true,
+        true,
+        false
+      ],
+      "sun": [
+        true,
+        true,
+        false
+      ]
     },
     "whoGoesFirst": "No preference",
     "feedbackStyle": "Balanced",
@@ -46,7 +78,11 @@
     "passwordHash": "$2b$10$fakehash1",
     "displayName": "Alex Chen",
     "role": "SDE",
-    "practiceFocus": ["Coding", "System Design", "Behavioral"],
+    "practiceFocus": [
+      "Coding",
+      "System Design",
+      "Behavioral"
+    ],
     "targetTier": "FAANG",
     "timeline": "1-3 months",
     "level": "Intermediate",
@@ -56,13 +92,41 @@
     "bio": "Strong match for testing perfect score",
     "linkedinUrl": "https://linkedin.com/in/alexchen",
     "availability": {
-      "mon": [false, false, true],
-      "tue": [false, false, true],
-      "wed": [false, false, true],
-      "thu": [false, false, true],
-      "fri": [false, false, true],
-      "sat": [true, true, false],
-      "sun": [true, true, false]
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        true
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        false,
+        true
+      ],
+      "fri": [
+        false,
+        false,
+        true
+      ],
+      "sat": [
+        true,
+        true,
+        false
+      ],
+      "sun": [
+        true,
+        true,
+        false
+      ]
     },
     "whoGoesFirst": "No preference",
     "feedbackStyle": "Balanced",
@@ -87,7 +151,10 @@
     "passwordHash": "$2b$10$fakehash2",
     "displayName": "Maya Rodriguez",
     "role": "SDE",
-    "practiceFocus": ["Coding", "System Design"],
+    "practiceFocus": [
+      "Coding",
+      "System Design"
+    ],
     "targetTier": "FAANG",
     "timeline": "< 1 month",
     "level": "Advanced",
@@ -97,13 +164,41 @@
     "bio": "One level above current user",
     "linkedinUrl": null,
     "availability": {
-      "mon": [false, false, true],
-      "tue": [false, false, true],
-      "wed": [false, false, false],
-      "thu": [false, false, true],
-      "fri": [false, false, false],
-      "sat": [true, false, false],
-      "sun": [false, false, false]
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        true
+      ],
+      "wed": [
+        false,
+        false,
+        false
+      ],
+      "thu": [
+        false,
+        false,
+        true
+      ],
+      "fri": [
+        false,
+        false,
+        false
+      ],
+      "sat": [
+        true,
+        false,
+        false
+      ],
+      "sun": [
+        false,
+        false,
+        false
+      ]
     },
     "whoGoesFirst": "Go first as interviewer",
     "feedbackStyle": "Direct and critical",
@@ -128,7 +223,9 @@
     "passwordHash": "$2b$10$fakehash3",
     "displayName": "Jordan Kim",
     "role": "SDE",
-    "practiceFocus": ["Coding"],
+    "practiceFocus": [
+      "Coding"
+    ],
     "targetTier": "Startup",
     "timeline": "3-6 months",
     "level": "Beginner",
@@ -138,13 +235,41 @@
     "bio": null,
     "linkedinUrl": null,
     "availability": {
-      "mon": [false, false, true],
-      "tue": [false, false, false],
-      "wed": [false, false, true],
-      "thu": [false, false, false],
-      "fri": [false, false, true],
-      "sat": [false, false, false],
-      "sun": [false, false, false]
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        false
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        false,
+        false
+      ],
+      "fri": [
+        false,
+        false,
+        true
+      ],
+      "sat": [
+        false,
+        false,
+        false
+      ],
+      "sun": [
+        false,
+        false,
+        false
+      ]
     },
     "whoGoesFirst": "Go first as interviewee",
     "feedbackStyle": "Encouraging",
@@ -169,7 +294,11 @@
     "passwordHash": "$2b$10$fakehash4",
     "displayName": "Priya Nair",
     "role": "PM",
-    "practiceFocus": ["Product Sense", "Analytical", "Behavioral"],
+    "practiceFocus": [
+      "Product Sense",
+      "Analytical",
+      "Behavioral"
+    ],
     "targetTier": "FAANG",
     "timeline": "1-3 months",
     "level": "Intermediate",
@@ -179,13 +308,41 @@
     "bio": "Cross-role candidate with Behavioral overlap",
     "linkedinUrl": null,
     "availability": {
-      "mon": [false, false, true],
-      "tue": [false, false, true],
-      "wed": [false, false, true],
-      "thu": [false, false, false],
-      "fri": [false, false, true],
-      "sat": [true, true, false],
-      "sun": [false, false, false]
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        true
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        false,
+        false
+      ],
+      "fri": [
+        false,
+        false,
+        true
+      ],
+      "sat": [
+        true,
+        true,
+        false
+      ],
+      "sun": [
+        false,
+        false,
+        false
+      ]
     },
     "whoGoesFirst": "Go first as interviewee",
     "feedbackStyle": "Balanced",
@@ -210,7 +367,11 @@
     "passwordHash": "$2b$10$fakehash5",
     "displayName": "Taylor Lee",
     "role": "SDE",
-    "practiceFocus": ["Coding", "System Design", "Behavioral"],
+    "practiceFocus": [
+      "Coding",
+      "System Design",
+      "Behavioral"
+    ],
     "targetTier": "FAANG",
     "timeline": "1-3 months",
     "level": "Intermediate",
@@ -220,13 +381,41 @@
     "bio": "Perfect profile match but zero availability overlap",
     "linkedinUrl": null,
     "availability": {
-      "mon": [true, true, false],
-      "tue": [true, true, false],
-      "wed": [true, true, false],
-      "thu": [true, true, false],
-      "fri": [true, true, false],
-      "sat": [false, false, true],
-      "sun": [false, false, true]
+      "mon": [
+        true,
+        true,
+        false
+      ],
+      "tue": [
+        true,
+        true,
+        false
+      ],
+      "wed": [
+        true,
+        true,
+        false
+      ],
+      "thu": [
+        true,
+        true,
+        false
+      ],
+      "fri": [
+        true,
+        true,
+        false
+      ],
+      "sat": [
+        false,
+        false,
+        true
+      ],
+      "sun": [
+        false,
+        false,
+        true
+      ]
     },
     "whoGoesFirst": "No preference",
     "feedbackStyle": "Balanced",
@@ -251,7 +440,10 @@
     "passwordHash": "$2b$10$fakehash6",
     "displayName": "Chris Park",
     "role": "SDE",
-    "practiceFocus": ["Coding", "System Design"],
+    "practiceFocus": [
+      "Coding",
+      "System Design"
+    ],
     "targetTier": "FAANG",
     "timeline": "1-3 months",
     "level": "Intermediate",
@@ -261,13 +453,41 @@
     "bio": "Too many active partnerships",
     "linkedinUrl": null,
     "availability": {
-      "mon": [false, false, true],
-      "tue": [false, false, true],
-      "wed": [false, false, true],
-      "thu": [false, false, true],
-      "fri": [false, false, true],
-      "sat": [true, true, false],
-      "sun": [true, true, false]
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        true
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        false,
+        true
+      ],
+      "fri": [
+        false,
+        false,
+        true
+      ],
+      "sat": [
+        true,
+        true,
+        false
+      ],
+      "sun": [
+        true,
+        true,
+        false
+      ]
     },
     "whoGoesFirst": "No preference",
     "feedbackStyle": "Balanced",
@@ -292,7 +512,10 @@
     "passwordHash": "$2b$10$fakehash7",
     "displayName": "Sam Rivera",
     "role": "SDE",
-    "practiceFocus": ["Coding", "Behavioral"],
+    "practiceFocus": [
+      "Coding",
+      "Behavioral"
+    ],
     "targetTier": "Mid-size tech",
     "timeline": "1-3 months",
     "level": "Intermediate",
@@ -302,13 +525,41 @@
     "bio": "Just joined PairUp",
     "linkedinUrl": null,
     "availability": {
-      "mon": [false, false, true],
-      "tue": [false, false, true],
-      "wed": [false, false, false],
-      "thu": [false, false, true],
-      "fri": [false, false, false],
-      "sat": [true, false, false],
-      "sun": [true, false, false]
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        true
+      ],
+      "wed": [
+        false,
+        false,
+        false
+      ],
+      "thu": [
+        false,
+        false,
+        true
+      ],
+      "fri": [
+        false,
+        false,
+        false
+      ],
+      "sat": [
+        true,
+        false,
+        false
+      ],
+      "sun": [
+        true,
+        false,
+        false
+      ]
     },
     "whoGoesFirst": "Go first as interviewee",
     "feedbackStyle": "Encouraging",
@@ -333,7 +584,10 @@
     "passwordHash": "$2b$10$fakehash8",
     "displayName": "Dana Wright",
     "role": "SDE",
-    "practiceFocus": ["Coding", "System Design"],
+    "practiceFocus": [
+      "Coding",
+      "System Design"
+    ],
     "targetTier": "FAANG",
     "timeline": "1-3 months",
     "level": "Intermediate",
@@ -343,13 +597,41 @@
     "bio": "Low reliability metrics",
     "linkedinUrl": null,
     "availability": {
-      "mon": [false, false, true],
-      "tue": [false, false, true],
-      "wed": [false, false, true],
-      "thu": [false, false, false],
-      "fri": [false, false, true],
-      "sat": [false, false, false],
-      "sun": [false, false, false]
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        true
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        false,
+        false
+      ],
+      "fri": [
+        false,
+        false,
+        true
+      ],
+      "sat": [
+        false,
+        false,
+        false
+      ],
+      "sun": [
+        false,
+        false,
+        false
+      ]
     },
     "whoGoesFirst": "No preference",
     "feedbackStyle": "Balanced",
@@ -367,5 +649,656 @@
     },
     "createdAt": "2025-12-01T10:00:00Z",
     "updatedAt": "2026-03-15T12:00:00Z"
+  },
+  {
+    "_id": "user-pm-beg-mid",
+    "email": "jessica.li@nyu.edu",
+    "passwordHash": "$2b$10$fakehash9",
+    "displayName": "Jessica Li",
+    "role": "PM",
+    "practiceFocus": [
+      "Product Sense",
+      "Behavioral"
+    ],
+    "targetTier": "Mid-size tech",
+    "timeline": "Just practicing",
+    "level": "Beginner",
+    "weakestArea": "Product Sense",
+    "background": "CS undergrad",
+    "school": "NYU CAS",
+    "bio": "Looking for low-pressure PM mock sessions.",
+    "linkedinUrl": "https://linkedin.com/in/jessicali-nyu",
+    "availability": {
+      "mon": [
+        false,
+        true,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        true
+      ],
+      "wed": [
+        false,
+        true,
+        false
+      ],
+      "thu": [
+        false,
+        false,
+        true
+      ],
+      "fri": [
+        false,
+        false,
+        false
+      ],
+      "sat": [
+        true,
+        false,
+        false
+      ],
+      "sun": [
+        false,
+        false,
+        false
+      ]
+    },
+    "whoGoesFirst": "No preference",
+    "feedbackStyle": "Encouraging",
+    "timezone": "America/New_York",
+    "sessionsCompleted": 1,
+    "showUpRate": 1.0,
+    "activePartnerships": 0,
+    "totalPartnerships": 0,
+    "pendingReceivedInvites": 0,
+    "inviteResponseRate": 1.0,
+    "notifications": {
+      "inviteReceived": true,
+      "matchConfirmed": true,
+      "sessionReminder": true
+    },
+    "createdAt": "2026-03-29T09:00:00Z",
+    "updatedAt": "2026-03-29T09:00:00Z"
+  },
+  {
+    "_id": "user-pm-adv-any",
+    "email": "omar.hassan@nyu.edu",
+    "passwordHash": "$2b$10$fakehash10",
+    "displayName": "Omar Hassan",
+    "role": "PM",
+    "practiceFocus": [
+      "Product Sense",
+      "Analytical",
+      "Behavioral"
+    ],
+    "targetTier": "Any",
+    "timeline": "< 1 month",
+    "level": "Advanced",
+    "weakestArea": "Behavioral",
+    "background": "CS grad",
+    "school": "NYU Tandon",
+    "bio": "Former APM intern polishing final-round PM interviews.",
+    "linkedinUrl": "https://linkedin.com/in/omarhassanpm",
+    "availability": {
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        true,
+        false,
+        true
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        true,
+        false,
+        false
+      ],
+      "fri": [
+        false,
+        false,
+        true
+      ],
+      "sat": [
+        true,
+        true,
+        false
+      ],
+      "sun": [
+        false,
+        true,
+        false
+      ]
+    },
+    "whoGoesFirst": "Go first as interviewer",
+    "feedbackStyle": "Direct and critical",
+    "timezone": "America/New_York",
+    "sessionsCompleted": 9,
+    "showUpRate": 0.93,
+    "activePartnerships": 2,
+    "totalPartnerships": 6,
+    "pendingReceivedInvites": 1,
+    "inviteResponseRate": 0.88,
+    "notifications": {
+      "inviteReceived": true,
+      "matchConfirmed": true,
+      "sessionReminder": true
+    },
+    "createdAt": "2026-01-09T12:00:00Z",
+    "updatedAt": "2026-03-31T14:00:00Z"
+  },
+  {
+    "_id": "user-pm-beg-startup",
+    "email": "nina.patel@nyu.edu",
+    "passwordHash": "$2b$10$fakehash11",
+    "displayName": "Nina Patel",
+    "role": "PM",
+    "practiceFocus": [
+      "Behavioral",
+      "Analytical"
+    ],
+    "targetTier": "Startup",
+    "timeline": "Just practicing",
+    "level": "Beginner",
+    "weakestArea": "Analytical",
+    "background": "CS undergrad",
+    "school": "NYU Tandon",
+    "bio": "Interested in startup PM roles and peer accountability.",
+    "linkedinUrl": null,
+    "availability": {
+      "mon": [
+        true,
+        false,
+        false
+      ],
+      "tue": [
+        false,
+        true,
+        false
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        true,
+        false
+      ],
+      "fri": [
+        false,
+        false,
+        false
+      ],
+      "sat": [
+        false,
+        true,
+        false
+      ],
+      "sun": [
+        false,
+        false,
+        true
+      ]
+    },
+    "whoGoesFirst": "Go first as interviewee",
+    "feedbackStyle": "Balanced",
+    "timezone": "America/New_York",
+    "sessionsCompleted": 0,
+    "showUpRate": 1.0,
+    "activePartnerships": 0,
+    "totalPartnerships": 0,
+    "pendingReceivedInvites": 0,
+    "inviteResponseRate": 1.0,
+    "notifications": {
+      "inviteReceived": true,
+      "matchConfirmed": true,
+      "sessionReminder": true
+    },
+    "createdAt": "2026-04-02T08:30:00Z",
+    "updatedAt": "2026-04-02T08:30:00Z"
+  },
+  {
+    "_id": "user-pm-adv-mid",
+    "email": "grace.wu@nyu.edu",
+    "passwordHash": "$2b$10$fakehash12",
+    "displayName": "Grace Wu",
+    "role": "PM",
+    "practiceFocus": [
+      "Product Sense",
+      "Analytical"
+    ],
+    "targetTier": "Mid-size tech",
+    "timeline": "3-6 months",
+    "level": "Advanced",
+    "weakestArea": "Product Sense",
+    "background": "CS undergrad",
+    "school": "NYU Courant",
+    "bio": "Prefers structured PM case interviews with detailed debriefs.",
+    "linkedinUrl": "https://linkedin.com/in/gracewu-pm",
+    "availability": {
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        true,
+        false
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        true,
+        true
+      ],
+      "fri": [
+        false,
+        false,
+        false
+      ],
+      "sat": [
+        true,
+        false,
+        false
+      ],
+      "sun": [
+        true,
+        false,
+        false
+      ]
+    },
+    "whoGoesFirst": "No preference",
+    "feedbackStyle": "Balanced",
+    "timezone": "America/New_York",
+    "sessionsCompleted": 7,
+    "showUpRate": 0.86,
+    "activePartnerships": 1,
+    "totalPartnerships": 4,
+    "pendingReceivedInvites": 2,
+    "inviteResponseRate": 0.81,
+    "notifications": {
+      "inviteReceived": true,
+      "matchConfirmed": true,
+      "sessionReminder": true
+    },
+    "createdAt": "2026-02-18T11:00:00Z",
+    "updatedAt": "2026-03-27T18:15:00Z"
+  },
+  {
+    "_id": "user-sde-beg-mid",
+    "email": "kevin.zhao@nyu.edu",
+    "passwordHash": "$2b$10$fakehash13",
+    "displayName": "Kevin Zhao",
+    "role": "SDE",
+    "practiceFocus": [
+      "Coding",
+      "Behavioral"
+    ],
+    "targetTier": "Mid-size tech",
+    "timeline": "< 1 month",
+    "level": "Beginner",
+    "weakestArea": "Coding",
+    "background": "CS undergrad",
+    "school": "NYU Tandon",
+    "bio": "Early in interview prep and wants consistent weekly practice.",
+    "linkedinUrl": null,
+    "availability": {
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        true,
+        false
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        false,
+        true
+      ],
+      "fri": [
+        false,
+        false,
+        false
+      ],
+      "sat": [
+        true,
+        false,
+        false
+      ],
+      "sun": [
+        false,
+        false,
+        false
+      ]
+    },
+    "whoGoesFirst": "Go first as interviewee",
+    "feedbackStyle": "Encouraging",
+    "timezone": "America/New_York",
+    "sessionsCompleted": 2,
+    "showUpRate": 1.0,
+    "activePartnerships": 0,
+    "totalPartnerships": 0,
+    "pendingReceivedInvites": 1,
+    "inviteResponseRate": 1.0,
+    "notifications": {
+      "inviteReceived": true,
+      "matchConfirmed": true,
+      "sessionReminder": true
+    },
+    "createdAt": "2026-03-30T13:45:00Z",
+    "updatedAt": "2026-03-30T13:45:00Z"
+  },
+  {
+    "_id": "user-sde-adv-any",
+    "email": "isabella.martinez@nyu.edu",
+    "passwordHash": "$2b$10$fakehash14",
+    "displayName": "Isabella Martinez",
+    "role": "SDE",
+    "practiceFocus": [
+      "Coding",
+      "System Design",
+      "Behavioral"
+    ],
+    "targetTier": "Any",
+    "timeline": "Just practicing",
+    "level": "Advanced",
+    "weakestArea": "Behavioral",
+    "background": "CS undergrad",
+    "school": "NYU CAS",
+    "bio": "Happy to help newer partners while staying interview sharp.",
+    "linkedinUrl": "https://linkedin.com/in/isabellamdev",
+    "availability": {
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        false
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        false,
+        true
+      ],
+      "fri": [
+        false,
+        false,
+        true
+      ],
+      "sat": [
+        true,
+        true,
+        false
+      ],
+      "sun": [
+        true,
+        false,
+        false
+      ]
+    },
+    "whoGoesFirst": "Go first as interviewer",
+    "feedbackStyle": "Balanced",
+    "timezone": "America/New_York",
+    "sessionsCompleted": 14,
+    "showUpRate": 0.97,
+    "activePartnerships": 2,
+    "totalPartnerships": 9,
+    "pendingReceivedInvites": 1,
+    "inviteResponseRate": 0.94,
+    "notifications": {
+      "inviteReceived": true,
+      "matchConfirmed": true,
+      "sessionReminder": true
+    },
+    "createdAt": "2025-10-21T15:00:00Z",
+    "updatedAt": "2026-03-29T20:00:00Z"
+  },
+  {
+    "_id": "user-sde-adv-startup-busy",
+    "email": "ethan.brown@nyu.edu",
+    "passwordHash": "$2b$10$fakehash15",
+    "displayName": "Ethan Brown",
+    "role": "SDE",
+    "practiceFocus": [
+      "Coding",
+      "System Design"
+    ],
+    "targetTier": "Startup",
+    "timeline": "< 1 month",
+    "level": "Advanced",
+    "weakestArea": "System Design",
+    "background": "CS undergrad",
+    "school": "NYU Tandon",
+    "bio": "Strong candidate but currently juggling several active prep partners.",
+    "linkedinUrl": null,
+    "availability": {
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        true
+      ],
+      "wed": [
+        true,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        false,
+        true
+      ],
+      "fri": [
+        false,
+        false,
+        true
+      ],
+      "sat": [
+        true,
+        true,
+        false
+      ],
+      "sun": [
+        false,
+        true,
+        false
+      ]
+    },
+    "whoGoesFirst": "No preference",
+    "feedbackStyle": "Direct and critical",
+    "timezone": "America/New_York",
+    "sessionsCompleted": 11,
+    "showUpRate": 0.89,
+    "activePartnerships": 4,
+    "totalPartnerships": 8,
+    "pendingReceivedInvites": 6,
+    "inviteResponseRate": 0.72,
+    "notifications": {
+      "inviteReceived": true,
+      "matchConfirmed": true,
+      "sessionReminder": true
+    },
+    "createdAt": "2026-01-04T10:20:00Z",
+    "updatedAt": "2026-04-03T09:00:00Z"
+  },
+  {
+    "_id": "user-sde-beg-any-noncs",
+    "email": "sofia.garcia@nyu.edu",
+    "passwordHash": "$2b$10$fakehash16",
+    "displayName": "Sofia Garcia",
+    "role": "SDE",
+    "practiceFocus": [
+      "Coding",
+      "Behavioral"
+    ],
+    "targetTier": "Any",
+    "timeline": "3-6 months",
+    "level": "Beginner",
+    "weakestArea": "Behavioral",
+    "background": "Non-CS",
+    "school": "NYU CAS",
+    "bio": "Career-switcher looking for an encouraging partner.",
+    "linkedinUrl": null,
+    "availability": {
+      "mon": [
+        true,
+        false,
+        false
+      ],
+      "tue": [
+        false,
+        false,
+        true
+      ],
+      "wed": [
+        true,
+        false,
+        false
+      ],
+      "thu": [
+        false,
+        false,
+        true
+      ],
+      "fri": [
+        false,
+        true,
+        false
+      ],
+      "sat": [
+        false,
+        false,
+        false
+      ],
+      "sun": [
+        true,
+        false,
+        false
+      ]
+    },
+    "whoGoesFirst": "No preference",
+    "feedbackStyle": "Encouraging",
+    "timezone": "America/New_York",
+    "sessionsCompleted": 1,
+    "showUpRate": 1.0,
+    "activePartnerships": 0,
+    "totalPartnerships": 1,
+    "pendingReceivedInvites": 0,
+    "inviteResponseRate": 1.0,
+    "notifications": {
+      "inviteReceived": true,
+      "matchConfirmed": true,
+      "sessionReminder": true
+    },
+    "createdAt": "2026-03-24T16:10:00Z",
+    "updatedAt": "2026-03-24T16:10:00Z"
+  },
+  {
+    "_id": "user-sde-int-mid-heavy",
+    "email": "noah.johnson@nyu.edu",
+    "passwordHash": "$2b$10$fakehash17",
+    "displayName": "Noah Johnson",
+    "role": "SDE",
+    "practiceFocus": [
+      "Coding",
+      "System Design",
+      "Behavioral"
+    ],
+    "targetTier": "Mid-size tech",
+    "timeline": "3-6 months",
+    "level": "Intermediate",
+    "weakestArea": "Behavioral",
+    "background": "CS undergrad",
+    "school": "NYU Courant",
+    "bio": "Solid all-rounder with a fairly full schedule.",
+    "linkedinUrl": "https://linkedin.com/in/noahjohnson-dev",
+    "availability": {
+      "mon": [
+        false,
+        false,
+        true
+      ],
+      "tue": [
+        false,
+        false,
+        true
+      ],
+      "wed": [
+        false,
+        false,
+        true
+      ],
+      "thu": [
+        false,
+        true,
+        false
+      ],
+      "fri": [
+        false,
+        false,
+        true
+      ],
+      "sat": [
+        true,
+        false,
+        false
+      ],
+      "sun": [
+        false,
+        true,
+        false
+      ]
+    },
+    "whoGoesFirst": "No preference",
+    "feedbackStyle": "Balanced",
+    "timezone": "America/New_York",
+    "sessionsCompleted": 6,
+    "showUpRate": 0.84,
+    "activePartnerships": 3,
+    "totalPartnerships": 5,
+    "pendingReceivedInvites": 5,
+    "inviteResponseRate": 0.78,
+    "notifications": {
+      "inviteReceived": true,
+      "matchConfirmed": true,
+      "sessionReminder": true
+    },
+    "createdAt": "2026-02-05T14:45:00Z",
+    "updatedAt": "2026-04-04T12:25:00Z"
   }
 ]
