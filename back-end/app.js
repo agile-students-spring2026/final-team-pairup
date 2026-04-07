@@ -5,6 +5,9 @@ const cors = require('cors');
 const authStub = require('./middleware/authStub');
 const matchesRouter = require('./routes/matches');
 const usersRouter = require('./routes/users');
+const requestsRouter = require('./routes/requests');
+const meetingsRouter = require('./routes/meetings');
+const proposalsRouter = require('./routes/proposals');
 
 const app = express();
 
@@ -19,6 +22,11 @@ app.use('/api', matchesRouter);
 
 app.use('/api', usersRouter);
 
+app.use('/api', requestsRouter);
+
+app.use('/api', meetingsRouter);
+
+app.use('/api', proposalsRouter);
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
