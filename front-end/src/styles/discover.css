@@ -95,89 +95,109 @@
 .discover-feed {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 14px;
 }
 
 .discover-card {
   background: #ffffff;
-  border-radius: 28px;
-  padding: 28px;
-  box-shadow: 0 8px 24px rgba(18, 42, 58, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(18, 42, 58, 0.06);
   border: 1px solid #e6edf2;
+  transition: opacity 0.2s ease;
 }
 
 .discover-card--disabled {
-  opacity: 0.56;
+  opacity: 0.5;
   pointer-events: auto;
 }
 
 .discover-card__top {
   display: flex;
-  gap: 18px;
+  gap: 12px;
   align-items: flex-start;
 }
 
 .discover-card__avatar {
-  width: 82px;
-  height: 82px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: #f5dbe8;
   color: #a33669;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.1rem;
   font-weight: 800;
   flex-shrink: 0;
 }
 
 .discover-card__identity {
   flex: 1;
+  min-width: 0;
 }
 
 .discover-card__name-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .discover-card__name {
   margin: 0;
-  font-size: 2rem;
-  line-height: 1.1;
-  color: #0d2234;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0a2540;
 }
 
-.discover-card__match-row,
+.discover-card__match-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
 .discover-card__meta-row,
 .discover-card__tags {
   display: flex;
-  gap: 12px;
+  gap: 6px;
   flex-wrap: wrap;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .pill {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  padding: 10px 18px;
-  font-weight: 700;
-  font-size: 0.95rem;
+  padding: 4px 10px;
+  font-weight: 600;
+  font-size: 0.75rem;
 }
 
-.pill--neutral,
-.pill--soft,
-.pill--tag {
+.pill--neutral {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.pill--soft {
   background: #e9f0f4;
   color: #436072;
 }
 
+.pill--tag {
+  background: #ccfbf1;
+  color: #0f766e;
+  font-size: 0.6875rem;
+}
+
 .pill--match {
-  background: #dff1ea;
-  color: #119368;
+  background: #f0fdf4;
+  color: #16a34a;
+  font-weight: 800;
+  font-size: 0.8125rem;
 }
 
 .pill--new {
@@ -186,41 +206,42 @@
 }
 
 .shared-goals-box {
-  margin-top: 22px;
-  background: #eaf4f8;
-  border-radius: 22px;
-  padding: 22px 24px;
+  margin-top: 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 12px 14px;
 }
 
 .shared-goals-title {
-  font-size: 1.2rem;
-  font-weight: 800;
+  font-size: 0.8125rem;
+  font-weight: 700;
   color: #196b89;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .shared-goals-list {
   margin: 0;
-  padding-left: 22px;
-  color: #486577;
+  padding-left: 18px;
+  color: #475569;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  font-size: 1.05rem;
+  gap: 4px;
+  font-size: 0.8125rem;
+  line-height: 1.4;
 }
 
 .discover-card__actions {
   display: flex;
-  gap: 14px;
-  margin-top: 24px;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .primary-btn,
 .secondary-btn,
 .link-button {
   cursor: pointer;
-  font-weight: 800;
-  transition: 0.18s ease;
+  font-weight: 700;
+  transition: background 0.15s ease, opacity 0.15s ease;
 }
 
 .primary-btn {
@@ -229,21 +250,32 @@
   background: #0f6785;
   color: white;
   border-radius: 999px;
-  padding: 18px 22px;
-  font-size: 1.2rem;
+  padding: 12px 0;
+  font-size: 0.9375rem;
+  font-family: inherit;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background: #0b5068;
 }
 
 .primary-btn--sent {
-  background: #90a6b4;
+  background: #94a3b8;
 }
 
 .secondary-btn {
-  border: 2px solid #b9d0dc;
+  flex: 1;
+  border: 1.5px solid #cbd5e1;
   background: white;
-  color: #102536;
+  color: #0a2540;
   border-radius: 999px;
-  padding: 18px 24px;
-  font-size: 1.2rem;
+  padding: 12px 0;
+  font-size: 0.9375rem;
+  font-family: inherit;
+}
+
+.secondary-btn:hover:not(:disabled) {
+  background: #f1f5f9;
 }
 
 .primary-btn:disabled,
@@ -309,19 +341,11 @@
   }
 
   .discover-card {
-    padding: 22px 18px;
-    border-radius: 24px;
-  }
-
-  .discover-card__name {
-    font-size: 1.6rem;
-  }
-
-  .discover-card__actions {
-    flex-direction: column;
+    padding: 16px 14px;
+    border-radius: 16px;
   }
 
   .filter-pill-button {
-    padding: 12px 18px;
+    padding: 10px 16px;
   }
 }
