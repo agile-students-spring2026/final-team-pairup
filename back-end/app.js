@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const authStub = require('./middleware/authStub');
 const matchesRouter = require('./routes/matches');
+const usersRouter = require('./routes/users');
 
 const app = express();
 
@@ -15,6 +16,8 @@ app.use('/api', authStub);
 
 // Routes
 app.use('/api', matchesRouter);
+
+app.use('/api', usersRouter);
 
 // Error handler
 app.use((err, req, res, next) => {
