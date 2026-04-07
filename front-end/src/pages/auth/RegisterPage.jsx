@@ -1,21 +1,61 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import './Auth.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Users } from "lucide-react";
+import "./Auth.css";
+
+const API_BASE = "http://localhost:3000";
 
 function RegisterPage({ onRegisterSuccess }) {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const canSubmit = name && email && password.length >= 8;
+  const canSubmit = name.trim() && email.trim() && password.length >= 8 && !loading;
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    onRegisterSuccess?.();
-    navigate('/onboarding/goal');
+    setErrorMessage("");
+
+    if (!canSubmit) return;
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName: name.trim(),
+          email: email.trim(),
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(data.message || "Failed to create account.");
+        return;
+      }
+
+      localStorage.setItem("userEmail", data.user.email);
+      localStorage.setItem("fullName", data.user.fullName);
+
+      onRegisterSuccess?.(data.user);
+      navigate("/onboarding/goal");
+    } catch (error) {
+      console.error("Register error:", error);
+      setErrorMessage("Server error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -23,13 +63,13 @@ function RegisterPage({ onRegisterSuccess }) {
       <div className="auth-card">
         <div className="auth-logo">
           <div className="auth-logo-row">
-          <div className="logo-mark">
-            <Users size={22} color="white" />
+            <div className="logo-mark">
+              <Users size={22} color="white" />
+            </div>
+            <h1>PairUp</h1>
           </div>
-           <h1>PairUp</h1>
-          </div>
-            <p>Create your account</p>
-          </div>
+          <p>Create your account</p>
+        </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <h2>Get started</h2>
@@ -55,28 +95,30 @@ function RegisterPage({ onRegisterSuccess }) {
           <label>Password</label>
           <div className="password-row">
             <input
-              type={showPw ? 'text' : 'password'}
+              type={showPw ? "text" : "password"}
               placeholder="At least 8 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
               required
             />
-                  <button
-                    type="button"
-                    className="show-hide-btn"
-                    onClick={() => setShowPw(!showPw)}
-                  >
-                    {showPw ? <EyeOffIcon /> : <EyeIcon />}
-                  </button>
+            <button
+              type="button"
+              className="show-hide-btn"
+              onClick={() => setShowPw(!showPw)}
+            >
+              {showPw ? <EyeOffIcon /> : <EyeIcon />}
+            </button>
           </div>
 
           {password.length > 0 && password.length < 8 && (
             <p className="error-text">Password must be at least 8 characters.</p>
           )}
 
+          {errorMessage && <p className="error-text">{errorMessage}</p>}
+
           <button type="submit" className="auth-button" disabled={!canSubmit}>
-            Create account
+            {loading ? "Creating..." : "Create account"}
           </button>
         </form>
 
@@ -87,6 +129,7 @@ function RegisterPage({ onRegisterSuccess }) {
     </div>
   );
 }
+
 function EyeIcon() {
   return (
     <svg
@@ -123,4 +166,5 @@ function EyeOffIcon() {
     </svg>
   );
 }
+
 export default RegisterPage;

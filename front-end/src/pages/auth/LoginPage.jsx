@@ -1,41 +1,110 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import './Auth.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Users } from "lucide-react";
+import "./Auth.css";
+
+const API_BASE = "http://localhost:3000";
 
 function LoginPage({ onLoginSuccess }) {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [forgot, setForgot] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const canSubmit = forgot ? email : email && password;
+  const canSubmit = forgot
+    ? email.trim() && !loading
+    : email.trim() && password && !loading;
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    setErrorMessage("");
+
+    if (!canSubmit) return;
 
     if (forgot) {
-      setResetSent(true);
-    } else {
-      onLoginSuccess?.();
-      navigate('/partners');
+      try {
+        setLoading(true);
+
+        const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setErrorMessage(data.message || "Failed to send reset link.");
+          return;
+        }
+
+        setResetSent(true);
+      } catch (error) {
+        console.error("Forgot password error:", error);
+        setErrorMessage("Server error. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(data.message || "Login failed.");
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userEmail", data.user.email);
+      localStorage.setItem("fullName", data.user.fullName);
+
+      onLoginSuccess?.(data.user);
+      navigate("/partners");
+    } catch (error) {
+      console.error("Login error:", error);
+      setErrorMessage("Server error. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
     <div className="auth-page">
       <div className="auth-card">
-<div className="auth-logo">
-  <div className="auth-logo-row">
-<div className="logo-mark">
-  <Users size={22} color="white" />
-</div>
-    <h1>PairUp</h1>
-  </div>
-  <p>Find your NYU CS interview partner</p>
-</div>
+        <div className="auth-logo">
+          <div className="auth-logo-row">
+            <div className="logo-mark">
+              <Users size={22} color="white" />
+            </div>
+            <h1>PairUp</h1>
+          </div>
+          <p>Find your NYU CS interview partner</p>
+        </div>
 
         {resetSent ? (
           <div className="auth-success">
@@ -46,6 +115,7 @@ function LoginPage({ onLoginSuccess }) {
               onClick={() => {
                 setForgot(false);
                 setResetSent(false);
+                setErrorMessage("");
               }}
             >
               Back to login
@@ -53,7 +123,7 @@ function LoginPage({ onLoginSuccess }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="auth-form">
-            <h2>{forgot ? 'Reset your password' : 'Welcome back'}</h2>
+            <h2>{forgot ? "Reset your password" : "Welcome back"}</h2>
 
             <label>Email</label>
             <input
@@ -71,7 +141,10 @@ function LoginPage({ onLoginSuccess }) {
                   <button
                     type="button"
                     className="auth-link-button"
-                    onClick={() => setForgot(true)}
+                    onClick={() => {
+                      setForgot(true);
+                      setErrorMessage("");
+                    }}
                   >
                     Forgot password?
                   </button>
@@ -79,7 +152,7 @@ function LoginPage({ onLoginSuccess }) {
 
                 <div className="password-row">
                   <input
-                    type={showPw ? 'text' : 'password'}
+                    type={showPw ? "text" : "password"}
                     placeholder="Enter password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -96,15 +169,26 @@ function LoginPage({ onLoginSuccess }) {
               </>
             )}
 
+            {errorMessage && <p className="error-text">{errorMessage}</p>}
+
             <button type="submit" className="auth-button" disabled={!canSubmit}>
-              {forgot ? 'Send reset link' : 'Sign in'}
+              {loading
+                ? forgot
+                  ? "Sending..."
+                  : "Signing in..."
+                : forgot
+                ? "Send reset link"
+                : "Sign in"}
             </button>
 
             {forgot && (
               <button
                 type="button"
                 className="auth-button secondary"
-                onClick={() => setForgot(false)}
+                onClick={() => {
+                  setForgot(false);
+                  setErrorMessage("");
+                }}
               >
                 Back
               </button>
@@ -121,6 +205,7 @@ function LoginPage({ onLoginSuccess }) {
     </div>
   );
 }
+
 function EyeIcon() {
   return (
     <svg
@@ -157,4 +242,5 @@ function EyeOffIcon() {
     </svg>
   );
 }
+
 export default LoginPage;

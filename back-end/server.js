@@ -1,7 +1,8 @@
-const app = require("./app");
+// server.js — Entry point. Separate from app.js for testability.
+const app = require('./app');
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port: ${PORT}`);
+  console.log(`PairUp backend running on port ${PORT}`);
 });

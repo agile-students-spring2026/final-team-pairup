@@ -1,21 +1,29 @@
 {
   "name": "back-end",
   "version": "1.0.0",
-  "description": "Backend server for PairUp",
-  "license": "ISC",
-  "author": "Scott Kim",
-  "type": "commonjs",
+  "description": "PairUp matching algorithm backend",
   "main": "server.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "c8 --check-coverage --lines 10 mocha test/**/*.test.js",
+    "test:verbose": "mocha test/**/*.test.js --reporter spec"
   },
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.0",
     "express": "^5.2.1",
+    "express-validator": "^7.3.2",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "c8": "^10.1.3",
+    "chai": "^4.5.0",
+    "mocha": "^10.8.2",
+    "supertest": "^7.0.0"
   }
 }

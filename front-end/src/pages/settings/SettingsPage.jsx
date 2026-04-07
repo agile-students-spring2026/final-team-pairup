@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../context/ProfileContext";
 import "./SettingsPage.css";
+
+const API_BASE = "http://localhost:3000";
 
 function ChevronRow({ title, subtitle, danger = false, onClick }) {
   return (
@@ -54,65 +56,282 @@ function SettingsPage() {
   const { profile, updateField, saveProfile } = useProfile();
 
   const [openSection, setOpenSection] = useState(null);
-  const [newEmail, setNewEmail] = useState(profile.email || "");
+  const [newEmail, setNewEmail] = useState(profile.email || localStorage.getItem("userEmail") || "");
   const [emailPassword, setEmailPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deletePassword, setDeletePassword] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const currentEmail = localStorage.getItem("userEmail") || profile.email || "";
+  const currentDisplayName = profile.displayName || localStorage.getItem("fullName") || "";
+
+  useEffect(() => {
+    setNewEmail(currentEmail);
+  }, [currentEmail]);
+
+  useEffect(() => {
+    async function fetchNotifications() {
+      if (!currentEmail) return;
+
+      try {
+        const response = await fetch(
+          `${API_BASE}/api/settings/notifications?email=${encodeURIComponent(currentEmail)}`
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+          return;
+        }
+
+        updateField("notifications", {
+          newInvitation: data.newInvitationReceived ?? true,
+          inviteAccepted: data.inviteAccepted ?? true,
+          sessionReminder: data.sessionReminder ?? true,
+          sessionBookingConfirmation: data.sessionBookingConfirmation ?? true,
+        });
+      } catch (error) {
+        console.error("Failed to load notifications:", error);
+      }
+    }
+
+    fetchNotifications();
+  }, [currentEmail, updateField]);
 
   function toggleSection(name) {
     setMessage("");
     setOpenSection((prev) => (prev === name ? null : name));
   }
 
-  function handleDisplayNameSave() {
-    saveProfile();
-    setMessage("Display name updated.");
-    setOpenSection(null);
+  async function handleDisplayNameSave() {
+    if (!currentEmail) {
+      setMessage("No logged-in user found.");
+      return;
+    }
+
+    if (!(profile.displayName || "").trim()) {
+      setMessage("Enter a display name.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage("");
+
+      const response = await fetch(`${API_BASE}/api/settings/display-name`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: currentEmail,
+          newDisplayName: profile.displayName.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message || "Failed to update display name.");
+        return;
+      }
+
+      updateField("displayName", data.user.fullName);
+      localStorage.setItem("fullName", data.user.fullName);
+      saveProfile();
+      setMessage("Display name updated.");
+      setOpenSection(null);
+    } catch (error) {
+      console.error("Display name update error:", error);
+      setMessage("Server error.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleEmailSave() {
+  async function handleEmailSave() {
     if (!newEmail.trim() || !emailPassword.trim()) {
       setMessage("Enter your new email and current password.");
       return;
     }
 
-    updateField("email", newEmail.trim());
-    saveProfile();
-    setEmailPassword("");
-    setMessage("Email updated.");
-    setOpenSection(null);
+    try {
+      setLoading(true);
+      setMessage("");
+
+      const response = await fetch(`${API_BASE}/api/settings/email`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          currentEmail,
+          currentPassword: emailPassword,
+          newEmail: newEmail.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message || "Failed to update email.");
+        return;
+      }
+
+      updateField("email", data.user.email);
+      localStorage.setItem("userEmail", data.user.email);
+      saveProfile();
+      setEmailPassword("");
+      setMessage("Email updated.");
+      setOpenSection(null);
+    } catch (error) {
+      console.error("Email update error:", error);
+      setMessage("Server error.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handlePasswordSave() {
+  async function handlePasswordSave() {
     if (!currentPassword.trim() || !newPassword.trim()) {
       setMessage("Enter both current and new password.");
       return;
     }
 
-    setCurrentPassword("");
-    setNewPassword("");
-    setMessage("Password updated.");
-    setOpenSection(null);
+    try {
+      setLoading(true);
+      setMessage("");
+
+      const response = await fetch(`${API_BASE}/api/settings/password`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: currentEmail,
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message || "Failed to update password.");
+        return;
+      }
+
+      setCurrentPassword("");
+      setNewPassword("");
+      setMessage("Password updated.");
+      setOpenSection(null);
+    } catch (error) {
+      console.error("Password update error:", error);
+      setMessage("Server error.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleDeleteAccount() {
+  async function handleDeleteAccount() {
     if (deleteConfirm !== "DELETE") {
       setMessage('Type "DELETE" to confirm.');
       return;
     }
 
-    setMessage("Account deletion requested.");
-    setOpenSection(null);
+    if (!deletePassword.trim()) {
+      setMessage("Enter your current password.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage("");
+
+      const response = await fetch(`${API_BASE}/api/settings/account`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: currentEmail,
+          currentPassword: deletePassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message || "Failed to delete account.");
+        return;
+      }
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("fullName");
+
+      setMessage("Account deleted.");
+      navigate("/login");
+    } catch (error) {
+      console.error("Delete account error:", error);
+      setMessage("Server error.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function toggleNotification(key) {
-    updateField("notifications", {
-      ...profile.notifications,
-      [key]: !profile.notifications?.[key],
-    });
-    saveProfile();
+  async function toggleNotification(key) {
+    if (!currentEmail) {
+      setMessage("No logged-in user found.");
+      return;
+    }
+
+    const mappedCurrent = {
+      newInvitationReceived: !!profile.notifications?.newInvitation,
+      inviteAccepted: !!profile.notifications?.inviteAccepted,
+      sessionReminder: !!profile.notifications?.sessionReminder,
+      sessionBookingConfirmation: true,
+    };
+
+    const updatedBackendNotifications = {
+      ...mappedCurrent,
+      [key]: !mappedCurrent[key],
+    };
+
+    try {
+      const response = await fetch(`${API_BASE}/api/settings/notifications`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: currentEmail,
+          notifications: updatedBackendNotifications,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message || "Failed to update notifications.");
+        return;
+      }
+
+      updateField("notifications", {
+        newInvitation: data.notifications.newInvitationReceived,
+        inviteAccepted: data.notifications.inviteAccepted,
+        sessionReminder: data.notifications.sessionReminder,
+        sessionBookingConfirmation: data.notifications.sessionBookingConfirmation,
+      });
+
+      saveProfile();
+      setMessage("Notification settings updated.");
+    } catch (error) {
+      console.error("Notification update error:", error);
+      setMessage("Server error.");
+    }
   }
 
   return (
@@ -143,7 +362,7 @@ function SettingsPage() {
             <input
               className="settings-input"
               type="text"
-              value={profile.displayName || ""}
+              value={currentDisplayName}
               onChange={(e) => updateField("displayName", e.target.value)}
               placeholder="Display name"
             />
@@ -151,8 +370,9 @@ function SettingsPage() {
               className="settings-action-btn"
               type="button"
               onClick={handleDisplayNameSave}
+              disabled={loading}
             >
-              Save
+              {loading ? "Saving..." : "Save"}
             </button>
           </ExpandPanel>
 
@@ -180,8 +400,9 @@ function SettingsPage() {
               className="settings-action-btn"
               type="button"
               onClick={handleEmailSave}
+              disabled={loading}
             >
-              Save
+              {loading ? "Saving..." : "Save"}
             </button>
           </ExpandPanel>
 
@@ -209,8 +430,9 @@ function SettingsPage() {
               className="settings-action-btn"
               type="button"
               onClick={handlePasswordSave}
+              disabled={loading}
             >
-              Save
+              {loading ? "Saving..." : "Save"}
             </button>
           </ExpandPanel>
 
@@ -228,12 +450,20 @@ function SettingsPage() {
               onChange={(e) => setDeleteConfirm(e.target.value)}
               placeholder='Type "DELETE"'
             />
+            <input
+              className="settings-input"
+              type="password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              placeholder="Current password"
+            />
             <button
               className="settings-danger-btn"
               type="button"
               onClick={handleDeleteAccount}
+              disabled={loading}
             >
-              Delete account
+              {loading ? "Deleting..." : "Delete account"}
             </button>
           </ExpandPanel>
         </section>
@@ -245,7 +475,7 @@ function SettingsPage() {
             title="New invitation received"
             subtitle="When someone sends you a match invite"
             checked={!!profile.notifications?.newInvitation}
-            onToggle={() => toggleNotification("newInvitation")}
+            onToggle={() => toggleNotification("newInvitationReceived")}
           />
 
           <ToggleRow
@@ -280,32 +510,31 @@ function SettingsPage() {
           </div>
 
           <ChevronRow
-  title="Community guidelines"
-  subtitle="How we expect everyone to behave on PairUp"
-  onClick={() => toggleSection("guidelines")}
-/>
-<ExpandPanel open={openSection === "guidelines"}>
-  <p className="settings-paragraph">
-    Be respectful, communicate honestly, show up on time, and support your
-    partner’s learning. PairUp is meant to be a safe and professional space
-    where everyone can practice, improve, and collaborate positively.
-  </p>
-</ExpandPanel>
+            title="Community guidelines"
+            subtitle="How we expect everyone to behave on PairUp"
+            onClick={() => toggleSection("guidelines")}
+          />
+          <ExpandPanel open={openSection === "guidelines"}>
+            <p className="settings-paragraph">
+              Be respectful, communicate honestly, show up on time, and support your
+              partner’s learning. PairUp is meant to be a safe and professional space
+              where everyone can practice, improve, and collaborate positively.
+            </p>
+          </ExpandPanel>
 
           <ChevronRow
-  title="Privacy policy"
-  subtitle="How we handle your data"
-  onClick={() => toggleSection("privacy")}
-/>
-
-<ExpandPanel open={openSection === "privacy"}>
-  <p className="settings-paragraph">
-    Your profile information is used only to support matching and core
-    features of the PairUp platform. We do not share your personal data with
-    external parties, and information is stored securely to protect your
-    privacy while using the app.
-  </p>
-</ExpandPanel>
+            title="Privacy policy"
+            subtitle="How we handle your data"
+            onClick={() => toggleSection("privacy")}
+          />
+          <ExpandPanel open={openSection === "privacy"}>
+            <p className="settings-paragraph">
+              Your profile information is used only to support matching and core
+              features of the PairUp platform. We do not share your personal data with
+              external parties, and information is stored securely to protect your
+              privacy while using the app.
+            </p>
+          </ExpandPanel>
         </section>
       </div>
     </div>
