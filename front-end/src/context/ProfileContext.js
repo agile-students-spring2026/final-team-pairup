@@ -165,16 +165,28 @@ function mapProfileToPatchPayload(profile) {
 
 export function ProfileProvider({ children }) {
   const [profile, setProfile] = useState(() => {
+    // If the saved profile belongs to a different user, ignore it
     const saved = localStorage.getItem(STORAGE_KEY);
+    const savedUserId = localStorage.getItem("lastProfileUserId");
+    const currentUserId = localStorage.getItem("userId");
+    if (saved && savedUserId && currentUserId && savedUserId !== currentUserId) {
+      localStorage.removeItem(STORAGE_KEY);
+      return DEFAULT_PROFILE;
+    }
     return saved ? JSON.parse(saved) : DEFAULT_PROFILE;
   });
 
   const [successMessage, setSuccessMessage] = useState("");
+  const [fetchTrigger, setFetchTrigger] = useState(0);
+
+  const refetchProfile = useCallback(() => {
+    setFetchTrigger(n => n + 1);
+  }, []);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const meUrl = userId ? `/api/users/me?userId=${userId}` : "/api/users/me";
-    fetch(meUrl)
+    fetch(meUrl, { cache: "no-store" })
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);
@@ -185,11 +197,18 @@ export function ProfileProvider({ children }) {
         const nextProfile = mapApiUserToProfile(data.user);
         setProfile(nextProfile);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProfile));
+        const uid = localStorage.getItem("userId");
+        if (uid) localStorage.setItem("lastProfileUserId", uid);
       })
       .catch(() => {
-        // keep localStorage fallback
+        // API failed (e.g. server restarted and lost in-memory user).
+        // Patch displayName from localStorage so at least the name is correct.
+        const savedName = localStorage.getItem("fullName");
+        if (savedName) {
+          setProfile((prev) => ({ ...prev, displayName: savedName }));
+        }
       });
-  }, []);
+  }, [fetchTrigger]);
 
   const updateField = useCallback((field, value) => {
     setProfile((prev) => ({
@@ -276,6 +295,7 @@ export function ProfileProvider({ children }) {
       successMessage,
       setSuccessMessage,
       clearSuccess,
+      refetchProfile,
     }),
     [
       profile,
@@ -284,6 +304,7 @@ export function ProfileProvider({ children }) {
       toggleAvailability,
       saveProfile,
       clearSuccess,
+      refetchProfile,
     ]
   );
 

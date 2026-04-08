@@ -20,7 +20,9 @@ function DiscoverPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    fetch("/api/matches")
+    const userId = localStorage.getItem("userId");
+    const matchesUrl = userId ? `/api/matches?userId=${userId}` : "/api/matches";
+    fetch(matchesUrl)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();

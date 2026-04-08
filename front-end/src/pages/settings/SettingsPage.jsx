@@ -288,16 +288,24 @@ function SettingsPage() {
       return;
     }
 
-    const mappedCurrent = {
-      newInvitationReceived: !!profile.notifications?.newInvitation,
-      inviteAccepted: !!profile.notifications?.inviteAccepted,
+    // Map profile keys (UI) to backend keys
+    const current = {
+      inviteReceived: !!profile.notifications?.newInvitation,
+      matchConfirmed: !!profile.notifications?.inviteAccepted,
       sessionReminder: !!profile.notifications?.sessionReminder,
-      sessionBookingConfirmation: true,
     };
 
+    // key passed in is UI key (newInvitationReceived etc) — map to backend key
+    const uiToBackend = {
+      newInvitationReceived: "inviteReceived",
+      inviteAccepted: "matchConfirmed",
+      sessionReminder: "sessionReminder",
+    };
+
+    const backendKey = uiToBackend[key] || key;
     const updatedBackendNotifications = {
-      ...mappedCurrent,
-      [key]: !mappedCurrent[key],
+      ...current,
+      [backendKey]: !current[backendKey],
     };
 
     try {
@@ -320,10 +328,9 @@ function SettingsPage() {
       }
 
       updateField("notifications", {
-        newInvitation: data.notifications.newInvitationReceived,
-        inviteAccepted: data.notifications.inviteAccepted,
-        sessionReminder: data.notifications.sessionReminder,
-        sessionBookingConfirmation: data.notifications.sessionBookingConfirmation,
+        newInvitation: data.notifications.newInvitationReceived ?? profile.notifications?.newInvitation,
+        inviteAccepted: data.notifications.inviteAccepted ?? profile.notifications?.inviteAccepted,
+        sessionReminder: data.notifications.sessionReminder ?? profile.notifications?.sessionReminder,
       });
 
       saveProfile();
