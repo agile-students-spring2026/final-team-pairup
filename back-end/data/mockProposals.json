@@ -1,0 +1,41 @@
+[
+  {
+    "id": "proposal-1",
+    "requestId": "req-1",
+    "fromUserId": "u1",
+    "toUserId": "u2",
+    "sessionType": "Mock interview",
+    "level": "Intermediate",
+    "meetingLink": "https://meet.google.com/example",
+    "timeOptions": [
+      {
+        "id": "slot-1",
+        "label": "Sat · 10:00 AM PT",
+        "date": "2026-03-23",
+        "startTime": "10:00",
+        "endTime": "10:45",
+        "timezone": "PT"
+      },
+      {
+        "id": "slot-2",
+        "label": "Sun · 2:00 PM PT",
+        "date": "2026-03-24",
+        "startTime": "14:00",
+        "endTime": "14:45",
+        "timezone": "PT"
+      },
+      {
+        "id": "slot-3",
+        "label": "Mon · 6:00 PM PT",
+        "date": "2026-03-25",
+        "startTime": "18:00",
+        "endTime": "18:45",
+        "timezone": "PT"
+      }
+    ],
+    "status": "pending",
+    "selectedSlotId": null,
+    "createdAt": "2026-03-20T10:00:00.000Z",
+    "updatedAt": "2026-03-20T10:00:00.000Z"
+  }
+]

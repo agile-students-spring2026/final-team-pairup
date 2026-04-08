@@ -6,8 +6,9 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "test": "c8 --check-coverage --lines 10 mocha test/**/*.test.js",
-    "test:verbose": "mocha test/**/*.test.js --reporter spec"
+    "dev": "nodemon server.js",
+    "test": "mocha",
+    "coverage": "c8 mocha"
   },
   "author": "",
   "license": "ISC",
@@ -24,6 +25,7 @@
     "c8": "^10.1.3",
     "chai": "^4.5.0",
     "mocha": "^10.8.2",
-    "supertest": "^7.0.0"
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   }
 }

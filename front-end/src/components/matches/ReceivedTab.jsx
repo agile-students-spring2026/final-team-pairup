@@ -22,16 +22,24 @@ function InviteCard({ invite, onAccept, onDecline }) {
 
   async function handleAccept() {
     setBusy(true);
-    await acceptInvite(invite.id);
-    onAccept(invite);
+    try {
+      await acceptInvite(invite.id);
+      onAccept(invite);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleDecline() {
     setBusy(true);
-    await declineInvite(invite.id);
-    setDeclined(true);
-    // Show "[Name] isn't available right now" briefly, then remove
-    setTimeout(() => onDecline(invite.id), 1800);
+    try {
+      await declineInvite(invite.id);
+      setDeclined(true);
+      // Show "[Name] isn't available right now" briefly, then remove
+      setTimeout(() => onDecline(invite.id), 1800);
+    } catch {
+      setBusy(false);
+    }
   }
 
   if (declined) {
@@ -61,8 +69,17 @@ function InviteCard({ invite, onAccept, onDecline }) {
           </span>
         </div>
         <div className={`received-card__score ${expiringSoon ? 'received-card__score--dim' : ''}`}>
-          <span className="received-card__score-num">{invite.matchScore}%</span>
-          <span className="received-card__score-label">match</span>
+          {invite.kind === 'friend' ? (
+            <>
+              <span className="received-card__score-num received-card__score-num--friend">Friend</span>
+              <span className="received-card__score-label">request</span>
+            </>
+          ) : (
+            <>
+              <span className="received-card__score-num">{invite.matchScore}%</span>
+              <span className="received-card__score-label">match</span>
+            </>
+          )}
         </div>
       </div>
 

@@ -42,7 +42,40 @@ function PartnerSpaceScreen({
   const [draft, setDraft] = useState('');
   const [messages, setMessages] = useState([]);
   const [hydrated, setHydrated] = useState(false);
+  const [incomingProposal, setIncomingProposal] = useState(null);
+  const [proposalLoadingError, setProposalLoadingError] = useState('');
+  const [proposalError, setProposalError] = useState('');
+  const [isSendingProposal, setIsSendingProposal] = useState(false);
+  const [selectedSlotId, setSelectedSlotId] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [confirmedSlot, setConfirmedSlot] = useState(null);
 
+  useEffect(() => {
+    async function fetchProposals() {
+      try {
+        setProposalLoadingError('');
+
+        const res = await fetch('http://localhost:3001/api/proposals');
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to load proposals');
+        }
+
+        const matchedProposal = data.proposals.find(
+          (proposal) =>
+            proposal.toUserId === partner.id || proposal.fromUserId === partner.id
+        );
+
+        setIncomingProposal(matchedProposal || null);
+      } catch (err) {
+        console.error(err);
+        setProposalLoadingError(err.message || 'Failed to load proposals');
+      }
+    }
+
+    fetchProposals();
+  }, [partner.id]);
   const feedbackKey = demo.postSessionFeedback
     ? feedbackDoneStorageKey(partner.id, demo.postSessionFeedback.sessionLabel)
     : null;
@@ -136,6 +169,91 @@ function PartnerSpaceScreen({
     setDraft('');
   };
 
+  async function handleSendProposal(payload) {
+    try {
+      setIsSendingProposal(true);
+      setProposalError('');
+
+      const requestBody = {
+        requestId: 'req-1',
+        fromUserId: 'u1',
+        toUserId: partner.id,
+        sessionType: payload.interviewType,
+        level: payload.level,
+        meetingLink: payload.meetingLink,
+        timeOptions: payload.slots,
+      };
+
+      const res = await fetch('http://localhost:3001/api/proposals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create proposal');
+      }
+
+      console.log('Proposal created:', data);
+
+      setLocalProposalSent(true);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `sys-proposal-${Date.now()}`,
+          kind: 'system',
+          body: buildProposalSystemMessage(payload, firstName),
+          at: Date.now(),
+        },
+      ]);
+    } catch (err) {
+      console.error(err);
+      setProposalError(err.message || 'Something went wrong');
+    } finally {
+      setIsSendingProposal(false);
+    }
+  }
+
+  async function handleSelectSlot(slotId) {
+    try {
+      setIsUpdating(true);
+      setSelectedSlotId(slotId);
+
+      const res = await fetch(`http://localhost:3001/api/proposals/${incomingProposal.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'accepted',
+          selectedSlotId: slotId,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to accept proposal');
+      }
+
+      console.log('Proposal accepted:', data);
+      setIncomingProposal(data.proposal);
+      
+      const chosenSlot = data.proposal.timeOptions.find((slot) => slot.id === slotId);
+      setConfirmedSlot(chosenSlot);
+    } catch (err) {
+      console.error(err);
+      setProposalLoadingError(err.message || 'Failed to accept proposal');
+      setSelectedSlotId(null);
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
   const firstName = partner.name.split(' ')[0] ?? partner.name;
 
   return (
@@ -176,29 +294,46 @@ function PartnerSpaceScreen({
         </div>
       )}
 
-      {demo.incomingProposal && (
+      {proposalLoadingError && (
+        <p style={{ color: 'red', padding: '8px 20px' }}>
+          {proposalLoadingError}
+        </p>
+      )}
+
+      {incomingProposal && (
         <section className="partner-space__proposal-in" aria-label="Incoming session proposal">
           <p className="partner-space__proposal-in-kicker">Session proposal</p>
           <p className="partner-space__proposal-in-title">
-            {demo.incomingProposal.proposerName} proposed a session
+            {partner.name} proposed a session
           </p>
           <p className="partner-space__proposal-in-meta">
-            {demo.incomingProposal.sessionType} · {demo.incomingProposal.level}
+            {incomingProposal.sessionType} · {incomingProposal.level}
           </p>
           <div className="partner-space__proposal-slots">
-            {demo.incomingProposal.slots.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                className="partner-space__proposal-slot"
-                onClick={() => {
-                  /* Wire to API */
-                }}
-              >
-                {s.label}
-              </button>
-            ))}
+            {incomingProposal.timeOptions.map((slot) => {
+              const isSelected = selectedSlotId === slot.id;
+
+              return (
+                <button
+                  key={slot.id}
+                  className="partner-space__proposal-slot"
+                  onClick={() => handleSelectSlot(slot.id)}
+                  disabled={isUpdating || selectedSlotId}
+                  style={{
+                    background: isSelected ? '#d1fae5' : '',
+                    border: isSelected ? '2px solid green' : '',
+                  }}
+                >
+                  {isSelected ? `✔ ${slot.label}` : slot.label}
+                </button>
+              );
+            })}
           </div>
+          {selectedSlotId && (
+            <p style={{ color: 'green', padding: '10px 0' }}>
+              Session confirmed!
+            </p>
+          )}
         </section>
       )}
 
@@ -355,7 +490,11 @@ function PartnerSpaceScreen({
           )}
         </div>
       )}
-
+      {proposalError && (
+        <p style={{ color: 'red', padding: '8px 20px' }}>
+          {proposalError}
+        </p>
+      )}
       <div className="partner-space__composer">
         <button type="button" className="partner-space__schedule" onClick={() => setScheduleOpen(true)}>
           <span className="partner-space__schedule-icon" aria-hidden="true">
@@ -394,18 +533,7 @@ function PartnerSpaceScreen({
         onClose={() => setScheduleOpen(false)}
         availabilitySlots={availabilitySlots}
         referenceDate={referenceDate}
-        onSendProposal={(payload) => {
-          setLocalProposalSent(true);
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `sys-proposal-${Date.now()}`,
-              kind: 'system',
-              body: buildProposalSystemMessage(payload, firstName),
-              at: Date.now(),
-            },
-          ]);
-        }}
+        onSendProposal={handleSendProposal}
       />
 
       {disconnectOpen && (

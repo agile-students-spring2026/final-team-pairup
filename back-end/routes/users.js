@@ -396,4 +396,5 @@ router.patch('/users/me', patchValidators, (req, res) => {
   return res.status(200).json({ user: toOwnUser(updatedUser) });
 });
 
+router.toPublicUser = toPublicUser;
 module.exports = router;
