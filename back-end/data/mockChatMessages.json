@@ -1,0 +1,16 @@
+[
+  {
+    "id": "msg-1",
+    "sessionId": "chat-session-1",
+    "senderId": "current-user",
+    "text": "Hey — want to run a mock this week?",
+    "createdAt": "2026-04-07T11:00:00.000Z"
+  },
+  {
+    "id": "msg-2",
+    "sessionId": "chat-session-1",
+    "senderId": "user-sde-int-match",
+    "text": "Yes, I'm free Thursday evening.",
+    "createdAt": "2026-04-07T14:30:00.000Z"
+  }
+]

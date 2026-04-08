@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -27,7 +27,13 @@ import EditProfileForm from "./pages/ProfileEdit/EditProfileForm";
 
 import MatchesPage from "./pages/matches/MatchesPage";
 
-import { PARTNERS_MOCK_NOW, getInitialPartners } from "./services/mockApi";
+import {
+  PARTNERS_MOCK_NOW,
+  PARTNERS_REFRESH_EVENT,
+  fetchPartnersFromFriendsApi,
+  getInitialPartners,
+  mergePartnerRows,
+} from "./services/mockApi";
 
 function ProtectedRoute({ isAuthenticated, children }) {
   if (!isAuthenticated) {
@@ -82,6 +88,20 @@ function AppRoutes({ initialIsAuthenticated = false }) {
     () => new Set(partners.map((p) => p.id)),
     [partners]
   );
+
+  useEffect(() => {
+    if (!isAuthenticated) return undefined;
+
+    function mergeFriendsFromApi() {
+      fetchPartnersFromFriendsApi().then((rows) => {
+        setPartners((prev) => mergePartnerRows(prev, rows));
+      });
+    }
+
+    mergeFriendsFromApi();
+    window.addEventListener(PARTNERS_REFRESH_EVENT, mergeFriendsFromApi);
+    return () => window.removeEventListener(PARTNERS_REFRESH_EVENT, mergeFriendsFromApi);
+  }, [isAuthenticated]);
 
   return (
     <Routes>

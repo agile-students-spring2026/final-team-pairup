@@ -1,0 +1,9 @@
+[
+  {
+    "id": "chat-session-1",
+    "participantIds": ["current-user", "user-sde-int-match"],
+    "status": "active",
+    "createdAt": "2026-04-07T10:00:00.000Z",
+    "updatedAt": "2026-04-07T14:30:00.000Z"
+  }
+]

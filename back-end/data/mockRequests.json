@@ -7,5 +7,14 @@
     "status": "pending",
     "createdAt": "2026-04-08T12:00:00.000Z",
     "updatedAt": "2026-04-08T12:00:00.000Z"
+  },
+  {
+    "id": "req-partner-current-match",
+    "fromUserId": "current-user",
+    "toUserId": "user-sde-int-match",
+    "message": "Let's pair for practice",
+    "status": "accepted",
+    "createdAt": "2026-04-06T09:00:00.000Z",
+    "updatedAt": "2026-04-06T09:05:00.000Z"
   }
 ]
