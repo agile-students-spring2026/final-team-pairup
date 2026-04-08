@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Users } from "lucide-react";
 import "./Auth.css";
 
 const API_BASE = "http://localhost:3000";
 
 function RegisterPage({ onRegisterSuccess }) {
-  const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -45,11 +44,11 @@ function RegisterPage({ onRegisterSuccess }) {
         return;
       }
 
+      localStorage.setItem("userId", data.user.id);
       localStorage.setItem("userEmail", data.user.email);
       localStorage.setItem("fullName", data.user.fullName);
 
       onRegisterSuccess?.(data.user);
-      navigate("/onboarding/goal");
     } catch (error) {
       console.error("Register error:", error);
       setErrorMessage("Server error. Please try again.");

@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Users } from "lucide-react";
 import "./Auth.css";
 
 const API_BASE = "http://localhost:3000";
 
 function LoginPage({ onLoginSuccess }) {
-  const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -80,11 +79,11 @@ function LoginPage({ onLoginSuccess }) {
       }
 
       localStorage.setItem("token", data.token);
+      localStorage.setItem("userId", data.user.id);
       localStorage.setItem("userEmail", data.user.email);
       localStorage.setItem("fullName", data.user.fullName);
 
       onLoginSuccess?.(data.user);
-      navigate("/partners");
     } catch (error) {
       console.error("Login error:", error);
       setErrorMessage("Server error. Please try again.");
