@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { fetchUserById } from "../services/mockApi";
 import ProfileHero from "../components/profile/ProfileHero";
 import TrustSection from "../components/profile/TrustSection";
 import GoalSection from "../components/profile/GoalSection";
@@ -11,6 +10,67 @@ import StickyInviteBar from "../components/profile/StickyInviteBar";
 import "../styles/profile.css";
 import { useParams } from "react-router-dom";
 
+function mapApiUserToProfile(apiUser) {
+  return {
+    ...apiUser,
+
+    initials: (apiUser.displayName || "")
+      .split(" ")
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase(),
+
+    name: apiUser.displayName,
+    linkedin: apiUser.linkedinUrl,
+    matchPercentage: null,
+
+    goal: {
+      role: apiUser.role,
+      practiceFocus: apiUser.practiceFocus,
+      targetTier: apiUser.targetTier,
+      timeline: apiUser.timeline,
+    },
+
+    level: {
+      current: apiUser.level,
+      weakestArea: apiUser.weakestArea,
+      pipTotal: 3,
+      pipCount:
+        apiUser.level === "Beginner"
+          ? 1
+          : apiUser.level === "Intermediate"
+          ? 2
+          : 3,
+      description: `${apiUser.level} level`,
+    },
+
+    about: apiUser.bio || "",
+
+    availability: {
+      slots: Object.fromEntries(
+        Object.entries(apiUser.availability || {}).map(([day, [am, pm, eve]]) => [
+          day,
+          { AM: am, PM: pm, Eve: eve },
+        ])
+      ),
+      timezoneOptions: ["ET", "CT", "PT"],
+      viewerTimezoneLabel: "ET",
+    },
+
+    sessionPreferences: {
+      format: apiUser.whoGoesFirst,
+      sessionLength: "45 min",
+      cadence: "Flexible",
+      notes: apiUser.feedbackStyle,
+    },
+
+    completedSessions: apiUser.sessionsCompleted,
+    showUpRate: apiUser.showUpRate,
+    invited: false,
+  };
+}
+
 function UserProfilePage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,13 +79,29 @@ function UserProfilePage() {
 
   useEffect(() => {
     let cancelled = false;
+  
     setLoading(true);
-    fetchUserById(Number(id)).then((u) => {
-      if (!cancelled) {
-        setUser(u);
-        setLoading(false);
-      }
-    });
+  
+    fetch(`/api/users/${id}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (!cancelled) {
+          setUser(mapApiUserToProfile(data.user));
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setUser(null);
+          setLoading(false);
+        }
+      });
+  
     return () => {
       cancelled = true;
     };

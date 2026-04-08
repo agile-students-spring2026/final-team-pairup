@@ -1,0 +1,18 @@
+[
+  {
+    "id": "fr-incoming-demo",
+    "fromUserId": "user-sde-int-match",
+    "toUserId": "current-user",
+    "status": "pending",
+    "createdAt": "2026-04-05T10:00:00.000Z",
+    "updatedAt": "2026-04-05T10:00:00.000Z"
+  },
+  {
+    "id": "fr-accepted-demo",
+    "fromUserId": "current-user",
+    "toUserId": "user-pm-int-cross",
+    "status": "accepted",
+    "createdAt": "2026-04-01T12:00:00.000Z",
+    "updatedAt": "2026-04-01T12:30:00.000Z"
+  }
+]

@@ -1,19 +1,10 @@
-#!/usr/bin/env node
+// server.js — Entry point. Separate from app.js for testability.
+const app = require('./app');
 
-const server = require("./app") // load up the web server
+const PORT = process.env.PORT || 3001;
 
-const port = 3000 // the port to listen to for incoming requests
+const listener = app.listen(PORT, () => {
+  console.log(`PairUp backend running on port ${PORT}`);
+});
 
-// call express's listen function to start listening to the port
-const listener = server.listen(port, function () {
-  console.log(`Server running on port: ${port}`)
-})
-
-// a function to stop listening to the port
-const close = () => {
-  listener.close()
-}
-
-module.exports = {
-  close: close,
-}
+module.exports = { close: () => listener.close() };
