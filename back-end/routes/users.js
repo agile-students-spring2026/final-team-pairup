@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { randomUUID } = require('crypto');
-const mockUsers = require('../data/mockUsers.json');
+const mockUsers = require('../data/users');
 
 const router = express.Router();
 
@@ -323,10 +323,49 @@ router.get('/users/:id', (req, res) => {
 router.post('/users', createValidators, (req, res) => {
   const normalizedEmail = req.body.email?.trim().toLowerCase();
 
-  if (normalizedEmail && mockUsers.some((user) => user.email.toLowerCase() === normalizedEmail)) {
-    return res.status(400).json({ error: 'Validation failed', details: ['email must be unique.'] });
+  // Upsert: if a stub user was already created by POST /api/auth/register
+  // (same email, no profile fields yet), fill in the onboarding payload
+  // on that record instead of creating a duplicate.
+  if (normalizedEmail) {
+    const existingIndex = mockUsers.findIndex(
+      (u) => u.email.toLowerCase() === normalizedEmail
+    );
+
+    if (existingIndex !== -1) {
+      const existing = mockUsers[existingIndex];
+
+      // Only upsert if this is still a stub (role not yet set by onboarding).
+      // If role is already set, the profile is complete — reject as duplicate.
+      if (existing.role !== null) {
+        return res.status(400).json({ error: 'Validation failed', details: ['email must be unique.'] });
+      }
+
+      const filled = {
+        ...existing,
+        displayName: req.body.displayName?.trim() ?? existing.displayName,
+        role: req.body.role,
+        practiceFocus: req.body.practiceFocus,
+        targetTier: req.body.targetTier,
+        timeline: req.body.timeline,
+        level: req.body.level,
+        weakestArea: req.body.weakestArea ?? null,
+        background: req.body.background,
+        school: req.body.school || existing.school || 'NYU Tandon',
+        bio: req.body.bio ?? null,
+        linkedinUrl: req.body.linkedinUrl || null,
+        availability: req.body.availability,
+        whoGoesFirst: req.body.whoGoesFirst,
+        feedbackStyle: req.body.feedbackStyle,
+        timezone: req.body.timezone || existing.timezone || 'America/New_York',
+        updatedAt: new Date().toISOString(),
+      };
+
+      mockUsers[existingIndex] = filled;
+      return res.status(201).json({ user: toOwnUser(filled) });
+    }
   }
 
+  // No existing stub — create a fresh record (e.g. seeded from admin / tests).
   const user = createStoredUser(req.body);
   mockUsers.push(user);
 

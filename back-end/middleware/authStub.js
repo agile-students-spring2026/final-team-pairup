@@ -1,7 +1,7 @@
 // middleware/authStub.js
 // Temporary — Scott replaces with real JWT middleware
 // Extracts current user from hardcoded ID or query param for testing
-const mockUsers = require('../data/mockUsers.json');
+const mockUsers = require('../data/users');
 
 function authStub(req, res, next) {
   const userId = req.query.userId || mockUsers[0]._id;

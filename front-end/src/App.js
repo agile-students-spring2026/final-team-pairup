@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -27,13 +27,180 @@ import EditProfileForm from "./pages/ProfileEdit/EditProfileForm";
 
 import MatchesPage from "./pages/matches/MatchesPage";
 
-import {
-  PARTNERS_MOCK_NOW,
-  PARTNERS_REFRESH_EVENT,
-  fetchPartnersFromFriendsApi,
-  getInitialPartners,
-  mergePartnerRows,
-} from "./services/mockApi";
+import { PARTNERS_MOCK_NOW, PARTNERS_REFRESH_EVENT, fetchPartnersFromFriendsApi, getInitialPartners, mergePartnerRows } from "./services/mockApi";
+import { useProfile } from "./context/ProfileContext";
+
+// ---------------------------------------------------------------------------
+// Onboarding payload helpers
+// ---------------------------------------------------------------------------
+
+// step-1 role id → backend API value
+const ROLE_MAP = { sde: "SDE", pm: "PM" };
+
+// step-1 role id → ProfileContext UI value
+const ROLE_UI_MAP = { sde: "Software Engineer", pm: "Product Manager" };
+
+// step-1 practiceFocus label → backend API value
+const PRACTICE_MAP = {
+  "Algorithms & data structures": "Coding",
+  "System design": "System Design",
+  "Behavioral": "Behavioral",
+  "Object-oriented design": "System Design",
+  "Product sense": "Product Sense",
+  "Execution & metrics": "Analytical",
+  "Strategy & roadmap": "Analytical",
+};
+
+// step-1 companyTier id → backend API value (same as UI value)
+const TIER_MAP = { faang: "FAANG", mid: "Mid-size tech", startup: "Startup", any: "Any" };
+
+// step-1 timeline id → backend API value
+const TIMELINE_API_MAP = {
+  lt1m: "< 1 month",
+  "1to3": "1-3 months",
+  "3to6": "3-6 months",
+  practice: "Just practicing",
+};
+
+// step-1 timeline id → ProfileContext UI value (uses em-dash)
+const TIMELINE_UI_MAP = {
+  lt1m: "< 1 month",
+  "1to3": "1–3 months",
+  "3to6": "3–6 months",
+  practice: "Just practicing",
+};
+
+// step-2 background id → label (same for API and UI)
+const BACKGROUND_MAP = {
+  cs_undergrad: "CS undergrad",
+  cs_grad: "CS grad",
+  non_cs: "Non-CS",
+  bootcamp: "Bootcamp",
+  self_taught: "Self-taught",
+};
+
+// step-2 level id → capitalized label (same for API and UI)
+const LEVEL_MAP = { beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced" };
+
+// step-3 whoGoesFirst id → label (same for API and UI)
+const WHO_FIRST_MAP = {
+  interviewee_first: "Go first as interviewee",
+  interviewer_first: "Go first as interviewer",
+  no_preference: "No preference",
+};
+
+// step-3 feedbackStyle id → API value
+const FEEDBACK_STYLE_MAP = { structured_notes: "Direct and critical", verbal_live: "Encouraging", mixed: "Balanced" };
+
+const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const UI_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+/**
+ * Convert the flat Set of slot keys ("mon-am", "tue-evening", …) that
+ * OnboardingStepAvailability emits into the { mon: [bool,bool,bool], … }
+ * shape that POST /api/users expects.
+ */
+function slotsToAvailability(availabilitySlots) {
+  const slotSet = new Set(availabilitySlots);
+  const result = {};
+  for (const day of DAYS) {
+    result[day] = [
+      slotSet.has(`${day}-am`),
+      slotSet.has(`${day}-pm`),
+      slotSet.has(`${day}-evening`),
+    ];
+  }
+  return result;
+}
+
+/**
+ * Assemble the full POST /api/users payload from the three onboarding steps.
+ * Returns null and logs a warning if required fields are missing.
+ */
+function buildUserPayload(stepOne, stepTwo, stepThree) {
+  const role = ROLE_MAP[stepOne.role];
+  if (!role) {
+    console.warn("buildUserPayload: unknown role id", stepOne.role);
+    return null;
+  }
+
+  const practiceFocus = (stepOne.practiceFocus || [])
+    .map((label) => PRACTICE_MAP[label])
+    .filter(Boolean)
+    .filter((v, i, arr) => arr.indexOf(v) === i);
+
+  // email MUST match what register stored — this is how upsert finds the stub
+  const email = localStorage.getItem("userEmail") || localStorage.getItem("sessionEmail") || undefined;
+  if (!email) {
+    console.warn("buildUserPayload: no email in localStorage — upsert will fail");
+  }
+  // Prefer what user typed in onboarding step 1.
+  // Fall back to the name from THIS session's register (stored separately),
+  // never to a potentially-stale fullName from a previous session.
+  const sessionName = localStorage.getItem("sessionFullName") || "";
+  const displayName = stepOne.displayName || sessionName || "User";
+  const availability = slotsToAvailability(stepThree.availabilitySlots || []);
+
+  // API payload — uses backend enum values
+  const apiPayload = {
+    email,
+    displayName,
+    role,
+    practiceFocus,
+    targetTier: TIER_MAP[stepOne.companyTier] || "Any",
+    timeline: TIMELINE_API_MAP[stepOne.timeline] || "Just practicing",
+    level: LEVEL_MAP[stepTwo.level] || "Intermediate",
+    weakestArea: stepTwo.weakestArea ? (PRACTICE_MAP[stepTwo.weakestArea] || null) : null,
+    background: BACKGROUND_MAP[stepTwo.background] || "CS grad",
+    bio: stepTwo.bio || null,
+    linkedinUrl: stepTwo.linkedInUrl || null,
+    availability,
+    whoGoesFirst: WHO_FIRST_MAP[stepThree.whoGoesFirst] || "No preference",
+    feedbackStyle: FEEDBACK_STYLE_MAP[stepThree.feedbackStyle] || "Balanced",
+  };
+
+  // ProfileContext cache — uses UI display values
+  // This is what gets saved to localStorage so the profile page shows
+  // the correct data immediately without needing the server.
+  const uiProfile = {
+    displayName,
+    targetRole: ROLE_UI_MAP[stepOne.role] || "Software Engineer",
+    companyTier: TIER_MAP[stepOne.companyTier] || "Any",
+    timeline: TIMELINE_UI_MAP[stepOne.timeline] || "Just practicing",
+    overallLevel: LEVEL_MAP[stepTwo.level] || "Intermediate",
+    background: BACKGROUND_MAP[stepTwo.background] || "CS grad",
+    bio: stepTwo.bio || "",
+    linkedinUrl: stepTwo.linkedInUrl || "",
+    timezone: "ET",
+    whoGoesFirst: WHO_FIRST_MAP[stepThree.whoGoesFirst] || "No preference",
+    wantsToImprove: stepTwo.weakestArea
+      ? (PRACTICE_MAP[stepTwo.weakestArea] || stepTwo.weakestArea)
+      : "",
+    sessions: 0,
+    showUp: "100%",
+    notifications: { newInvitation: true, inviteAccepted: true, sessionReminder: true },
+    // Convert flat slot keys → { Mon: {AM, PM, EVE}, ... } for ProfileContext
+    availability: (() => {
+      const slotSet = new Set(stepThree.availabilitySlots || []);
+      const result = {};
+      UI_DAYS.forEach((uiDay, i) => {
+        const day = DAYS[i];
+        result[uiDay] = {
+          AM:  slotSet.has(`${day}-am`),
+          PM:  slotSet.has(`${day}-pm`),
+          EVE: slotSet.has(`${day}-evening`),
+        };
+      });
+      return result;
+    })(),
+  };
+
+  return { apiPayload, uiProfile };
+}
+
+// ---------------------------------------------------------------------------
+// Route guards
+// ---------------------------------------------------------------------------
 
 function ProtectedRoute({ isAuthenticated, children }) {
   if (!isAuthenticated) {
@@ -72,8 +239,14 @@ function PartnerSpaceRoute({ partners, nowMs, onDisconnect }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// App routes
+// ---------------------------------------------------------------------------
+
 function AppRoutes({ initialIsAuthenticated = false }) {
   const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated);
+  const [isOnboarding, setIsOnboarding] = useState(false);
+  const { refetchProfile } = useProfile();
 
   const [stepOneData, setStepOneData] = useState({});
   const [stepTwoData, setStepTwoData] = useState({});
@@ -89,6 +262,7 @@ function AppRoutes({ initialIsAuthenticated = false }) {
     [partners]
   );
 
+  // Teammate: merge friends/chat data when authenticated
   useEffect(() => {
     if (!isAuthenticated) return undefined;
 
@@ -102,6 +276,50 @@ function AppRoutes({ initialIsAuthenticated = false }) {
     window.addEventListener(PARTNERS_REFRESH_EVENT, mergeFriendsFromApi);
     return () => window.removeEventListener(PARTNERS_REFRESH_EVENT, mergeFriendsFromApi);
   }, [isAuthenticated]);
+
+  /**
+   * Called when the user finishes the last onboarding step.
+   * Builds the full user-profile payload and POSTs it to the backend,
+   * then navigates to /discover regardless of whether it succeeded
+   * (the profile can be completed later from settings/edit-profile).
+   */
+  async function handleOnboardingComplete(threeData) {
+    setStepThreeData(threeData);
+
+    const result = buildUserPayload(stepOneData, stepTwoData, threeData);
+    if (!result) {
+      setIsAuthenticated(true);
+      setIsOnboarding(false);
+      navigate("/discover");
+      return;
+    }
+
+    const { apiPayload, uiProfile } = result;
+
+    // Save to localStorage immediately — profile page works even without server
+    localStorage.setItem("pairup_profile_data", JSON.stringify(uiProfile));
+
+    // POST to backend (best-effort — don't block navigation if it fails)
+    console.log("POST /api/users payload:", JSON.stringify(apiPayload, null, 2));
+    try {
+      const res = await fetch("http://localhost:3000/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(apiPayload),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        console.warn("POST /api/users failed:", err);
+      }
+    } catch (e) {
+      console.warn("POST /api/users network error:", e);
+    }
+
+    setIsAuthenticated(true);
+    setIsOnboarding(false);
+    refetchProfile();
+    navigate("/discover");
+  }
 
   return (
     <Routes>
@@ -132,7 +350,7 @@ function AppRoutes({ initialIsAuthenticated = false }) {
           <PublicOnlyRoute isAuthenticated={isAuthenticated}>
             <RegisterPage
               onRegisterSuccess={() => {
-                setIsAuthenticated(true);
+                setIsOnboarding(true);
                 navigate("/onboarding/goal");
               }}
             />
@@ -144,7 +362,7 @@ function AppRoutes({ initialIsAuthenticated = false }) {
       <Route
         path="/onboarding/goal"
         element={
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
+          isOnboarding ? (
             <OnboardingStepGoal
               initialValues={stepOneData}
               onNext={(payload) => {
@@ -152,7 +370,7 @@ function AppRoutes({ initialIsAuthenticated = false }) {
                 navigate("/onboarding/level");
               }}
             />
-          </ProtectedRoute>
+          ) : <Navigate to="/login" replace />
         }
       />
 
@@ -160,7 +378,7 @@ function AppRoutes({ initialIsAuthenticated = false }) {
       <Route
         path="/onboarding/level"
         element={
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
+          isOnboarding ? (
             <OnboardingStepLevel
               stepOneData={stepOneData}
               initialValues={stepTwoData}
@@ -170,24 +388,21 @@ function AppRoutes({ initialIsAuthenticated = false }) {
                 navigate("/onboarding/availability");
               }}
             />
-          </ProtectedRoute>
+          ) : <Navigate to="/login" replace />
         }
       />
 
-      {/* onboarding step3 */}
+      {/* onboarding step3 — fires POST /api/users on complete */}
       <Route
         path="/onboarding/availability"
         element={
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
+          isOnboarding ? (
             <OnboardingStepAvailability
               initialValues={stepThreeData}
               onBack={() => navigate("/onboarding/level")}
-              onComplete={(payload) => {
-                setStepThreeData(payload);
-                navigate("/discover");
-              }}
+              onComplete={handleOnboardingComplete}
             />
-          </ProtectedRoute>
+          ) : <Navigate to="/login" replace />
         }
       />
 
@@ -294,3 +509,4 @@ function App({ initialIsAuthenticated = false }) {
 }
 
 export default App;
+

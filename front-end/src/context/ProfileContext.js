@@ -172,7 +172,9 @@ export function ProfileProvider({ children }) {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    fetch("/api/users/me")
+    const userId = localStorage.getItem("userId");
+    const meUrl = userId ? `/api/users/me?userId=${userId}` : "/api/users/me";
+    fetch(meUrl)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);
@@ -235,7 +237,9 @@ export function ProfileProvider({ children }) {
       },
     };
 
-    const res = await fetch("/api/users/me", {
+    const userId = localStorage.getItem("userId");
+    const meUrl = userId ? `/api/users/me?userId=${userId}` : "/api/users/me";
+    const res = await fetch(meUrl, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
