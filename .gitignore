@@ -129,13 +129,13 @@ typings/
 **/_site/
 
 # Claude / AI tooling — local only, never push
-.claude/
-**/.claude/
-.claude*
-CLAUDE.md
-**/CLAUDE.md
-PROGRESS.md
-**/PROGRESS.md
-RYAN-INSTRUCTIONS.md
-**/RYAN-INSTRUCTIONS.md
-docs/superpowers/
+# .claude/
+# **/.claude/
+# .claude*
+# CLAUDE.md
+# **/CLAUDE.md
+# PROGRESS.md
+# **/PROGRESS.md
+# RYAN-INSTRUCTIONS.md
+# **/RYAN-INSTRUCTIONS.md
+# docs/superpowers/
