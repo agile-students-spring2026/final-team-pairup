@@ -93,16 +93,37 @@ Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines, de
 
 ## Building and Testing
 
-This repository currently ships a **React** front end under `front-end/` (Create React App). There is no separate back-end package in this repo yet; the UI uses mocked data via `front-end/src/services/mockApi.js`.
+The repo has an **Express** API under `back-end/` and a **React** app under `front-end/` (Create React App). In development, start the API first so the UI’s `proxy` can forward `/api` requests to it.
 
 ### Prerequisites
 
 - **Node.js** (LTS recommended, e.g. 18.x or 20.x)
 - **npm** (comes with Node)
 
-### Install and run (development)
+### Back-end (API)
 
 From the repository root:
+
+```bash
+cd back-end
+npm install
+cp .env.example .env   # optional; set PORT, CORS_ORIGIN, JWT_SECRET as needed
+npm start
+```
+
+The API listens on [http://localhost:3000](http://localhost:3000) by default (`PORT` in `.env` overrides this). Static files under `back-end/public/` are served at the site root (e.g. `/health.txt`).
+
+**Tests and coverage** (Mocha + Chai + c8):
+
+```bash
+cd back-end
+npm test
+npm run coverage
+```
+
+### Front-end (development)
+
+In a second terminal:
 
 ```bash
 cd front-end
@@ -110,9 +131,9 @@ npm install
 npm start
 ```
 
-The app opens at [http://localhost:3000](http://localhost:3000). Use `Ctrl+C` in the terminal to stop the dev server.
+If port 3000 is already used by the API, Create React App will prompt for another port (often **3001**). `front-end/package.json` sets `"proxy": "http://localhost:3000"` so browser calls to `/api/...` go to the Express server.
 
-### Production build
+### Production build (front-end)
 
 ```bash
 cd front-end
@@ -122,7 +143,7 @@ npm run build
 
 Static output is written to `front-end/build/`. Serve that folder with any static host, or use a tool such as `npx serve -s build` for a quick local check.
 
-### Tests
+### Tests (front-end)
 
 ```bash
 cd front-end
@@ -163,7 +184,7 @@ PairUp aims to reduce the friction of finding that partner and make job prep mor
 
 ## Current Status
 
-The **front-end** is under active Sprint 1 development: screens and flows are implemented in React with mocked API data. A real back end can be wired in later by replacing calls in `front-end/src/services/mockApi.js`.
+The team is in Sprint 2. The **back-end** exposes JSON APIs under `/api` (mock/in-memory data). The **front-end** calls those routes for core flows; some screens still use `front-end/src/services/mockApi.js` for local demo data where the UI is not fully wired yet.
 
 ---
 

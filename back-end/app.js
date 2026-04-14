@@ -1,4 +1,5 @@
 require("dotenv").config();
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -21,8 +22,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:3001" }));
 
+app.use(express.static(path.join(__dirname, "public")));
+
 app.get("/", (req, res) => {
-  res.send("PairUp backend running");
+  res.json({ ok: true, message: "PairUp backend running" });
 });
 
 // Stub auth for shared team API routes

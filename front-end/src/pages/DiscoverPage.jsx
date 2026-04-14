@@ -43,17 +43,22 @@ function DiscoverPage() {
 
   async function handleSendInvite(userId) {
     try {
-      const res = await fetch("http://localhost:3001/api/requests", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fromUserId: "u1",
-          toUserId: userId,
-          message: "Want to practice this week?",
-        }),
-      });
+      const fromUserId =
+        localStorage.getItem("userId") || "current-user";
+      const res = await fetch(
+        `/api/requests?userId=${encodeURIComponent(fromUserId)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fromUserId,
+            toUserId: userId,
+            message: "Want to practice this week?",
+          }),
+        }
+      );
 
       const data = await res.json();
 

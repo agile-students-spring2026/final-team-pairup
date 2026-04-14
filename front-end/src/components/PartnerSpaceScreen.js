@@ -5,6 +5,17 @@ import { DEFAULT_SCHEDULE_AVAILABILITY_SLOTS } from '../utils/scheduleCalendar';
 import ScheduleSessionSheet from './ScheduleSessionSheet';
 import './PartnerSpaceScreen.css';
 
+function devUserId() {
+  return (
+    (typeof localStorage !== 'undefined' && localStorage.getItem('userId')) ||
+    'current-user'
+  );
+}
+
+function withDevUserQuery(url) {
+  const uid = devUserId();
+  return `${url}${url.includes('?') ? '&' : '?'}userId=${encodeURIComponent(uid)}`;
+}
 
 function storageFirstVisitKey(partnerId) {
   return `pairup-partner-space-first-${partnerId}`;
@@ -55,7 +66,7 @@ function PartnerSpaceScreen({
       try {
         setProposalLoadingError('');
 
-        const res = await fetch('http://localhost:3001/api/proposals');
+        const res = await fetch(withDevUserQuery('/api/proposals'));
         const data = await res.json();
 
         if (!res.ok) {
@@ -176,7 +187,7 @@ function PartnerSpaceScreen({
 
       const requestBody = {
         requestId: 'req-1',
-        fromUserId: 'u1',
+        fromUserId: devUserId(),
         toUserId: partner.id,
         sessionType: payload.interviewType,
         level: payload.level,
@@ -184,7 +195,7 @@ function PartnerSpaceScreen({
         timeOptions: payload.slots,
       };
 
-      const res = await fetch('http://localhost:3001/api/proposals', {
+      const res = await fetch(withDevUserQuery('/api/proposals'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -223,7 +234,7 @@ function PartnerSpaceScreen({
       setIsUpdating(true);
       setSelectedSlotId(slotId);
 
-      const res = await fetch(`http://localhost:3001/api/proposals/${incomingProposal.id}`, {
+      const res = await fetch(withDevUserQuery(`/api/proposals/${incomingProposal.id}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
