@@ -1,102 +1,122 @@
-const express = require('express');
-const { body, validationResult } = require('express-validator');
-const { randomUUID } = require('crypto');
-const mockMeetings = require('../data/mockMeetings.json');
+const express = require('express')
+const { body, validationResult } = require('express-validator')
+const Proposal = require('../models/Proposal')
 
-const router = express.Router();
+const router = express.Router()
 
-const MEETING_STATUS_OPTIONS = ['scheduled', 'completed', 'cancelled', 'rescheduled'];
+const SESSION_TYPE_OPTIONS = [
+  'Mock interview',
+  'Behavioral',
+  'System design',
+  'LeetCode pair',
+]
+
+const LEVEL_OPTIONS = ['Beginner', 'Intermediate', 'Advanced']
+const PROPOSAL_STATUS_OPTIONS = ['pending', 'accepted', 'declined', 'cancelled']
 
 function validationErrors(req, res, next) {
-  const result = validationResult(req);
+  const result = validationResult(req)
   if (result.isEmpty()) {
-    return next();
+    return next()
   }
-
   return res.status(400).json({
     error: 'Validation failed',
     details: result.array().map((item) => item.msg),
-  });
+  })
 }
 
 const createValidators = [
   body('requestId').notEmpty().withMessage('requestId is required.'),
-  body('hostUserId').notEmpty().withMessage('hostUserId is required.'),
-  body('guestUserId').notEmpty().withMessage('guestUserId is required.'),
-  body('date').notEmpty().withMessage('date is required.'),
-  body('startTime').notEmpty().withMessage('startTime is required.'),
-  body('endTime').notEmpty().withMessage('endTime is required.'),
-  body('timezone')
-    .optional()
-    .isString()
-    .withMessage('timezone must be a string.'),
-  body('notes')
-    .optional()
-    .isString()
-    .withMessage('notes must be a string.'),
+  body('fromUserId').notEmpty().withMessage('fromUserId is required.'),
+  body('toUserId').notEmpty().withMessage('toUserId is required.'),
+  body('sessionType')
+    .isIn(SESSION_TYPE_OPTIONS)
+    .withMessage(`sessionType must be one of: ${SESSION_TYPE_OPTIONS.join(', ')}`),
+  body('level')
+    .isIn(LEVEL_OPTIONS)
+    .withMessage(`level must be one of: ${LEVEL_OPTIONS.join(', ')}`),
+  body('meetingLink').isString().notEmpty().withMessage('meetingLink is required.'),
+  body('timeOptions')
+    .isArray({ min: 1 })
+    .withMessage('timeOptions must be a non-empty array.'),
   validationErrors,
-];
+]
 
 const patchValidators = [
   body('status')
     .optional()
-    .isIn(MEETING_STATUS_OPTIONS)
-    .withMessage(`status must be one of: ${MEETING_STATUS_OPTIONS.join(', ')}`),
+    .isIn(PROPOSAL_STATUS_OPTIONS)
+    .withMessage(`status must be one of: ${PROPOSAL_STATUS_OPTIONS.join(', ')}`),
+  body('selectedSlotId')
+    .optional()
+    .isString()
+    .withMessage('selectedSlotId must be a string.'),
   validationErrors,
-];
+]
 
-router.get('/meetings', (req, res) => {
-  return res.status(200).json({ meetings: mockMeetings });
-});
-
-router.get('/meetings/:id', (req, res) => {
-  const meeting = mockMeetings.find((candidate) => candidate.id === req.params.id);
-
-  if (!meeting) {
-    return res.status(404).json({ error: 'Meeting not found' });
+// GET all proposals
+router.get('/proposals', async (req, res) => {
+  try {
+    const proposals = await Proposal.find()
+    return res.status(200).json({ proposals })
+  } catch (err) {
+    console.error(`Error fetching proposals: ${err}`)
+    return res.status(500).json({ error: 'Failed to fetch proposals.' })
   }
+})
 
-  return res.status(200).json({ meeting });
-});
-
-router.post('/meetings', createValidators, (req, res) => {
-  const newMeeting = {
-    id: randomUUID(),
-    requestId: req.body.requestId,
-    hostUserId: req.body.hostUserId,
-    guestUserId: req.body.guestUserId,
-    date: req.body.date,
-    startTime: req.body.startTime,
-    endTime: req.body.endTime,
-    timezone: req.body.timezone || 'America/New_York',
-    status: 'scheduled',
-    notes: req.body.notes || '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  mockMeetings.push(newMeeting);
-
-  return res.status(201).json({ meeting: newMeeting });
-});
-
-router.patch('/meetings/:id', patchValidators, (req, res) => {
-  const meetingIndex = mockMeetings.findIndex((candidate) => candidate.id === req.params.id);
-
-  if (meetingIndex === -1) {
-    return res.status(404).json({ error: 'Meeting not found' });
+// GET single proposal by id
+router.get('/proposals/:id', async (req, res) => {
+  try {
+    const proposal = await Proposal.findById(req.params.id)
+    if (!proposal) {
+      return res.status(404).json({ error: 'Proposal not found' })
+    }
+    return res.status(200).json({ proposal })
+  } catch (err) {
+    console.error(`Error fetching proposal: ${err}`)
+    return res.status(500).json({ error: 'Failed to fetch proposal.' })
   }
+})
 
-  const existingMeeting = mockMeetings[meetingIndex];
-  const updatedMeeting = {
-    ...existingMeeting,
-    ...req.body,
-    updatedAt: new Date().toISOString(),
-  };
+// POST create new proposal
+router.post('/proposals', createValidators, async (req, res) => {
+  try {
+    const proposal = await new Proposal({
+      requestId: req.body.requestId,
+      fromUserId: req.body.fromUserId,
+      toUserId: req.body.toUserId,
+      sessionType: req.body.sessionType,
+      level: req.body.level,
+      meetingLink: req.body.meetingLink,
+      timeOptions: req.body.timeOptions,
+    }).save()
 
-  mockMeetings[meetingIndex] = updatedMeeting;
+    return res.status(201).json({ proposal })
+  } catch (err) {
+    console.error(`Error creating proposal: ${err}`)
+    return res.status(500).json({ error: 'Failed to create proposal.' })
+  }
+})
 
-  return res.status(200).json({ meeting: updatedMeeting });
-});
+// PATCH update proposal status or selectedSlotId
+router.patch('/proposals/:id', patchValidators, async (req, res) => {
+  try {
+    const proposal = await Proposal.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true, runValidators: true }
+    )
 
-module.exports = router;
+    if (!proposal) {
+      return res.status(404).json({ error: 'Proposal not found' })
+    }
+
+    return res.status(200).json({ proposal })
+  } catch (err) {
+    console.error(`Error updating proposal: ${err}`)
+    return res.status(500).json({ error: 'Failed to update proposal.' })
+  }
+})
+
+module.exports = router
