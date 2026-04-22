@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { randomUUID } = require('crypto');
-const mockUsers = require('../data/users');
+const User = require('../models/User');
 
 const router = express.Router();
 
@@ -310,90 +310,108 @@ router.get('/users/me', (req, res) => {
   return res.status(200).json({ user: toOwnUser(req.user) });
 });
 
-router.get('/users/:id', (req, res) => {
-  const user = mockUsers.find((candidate) => candidate._id === req.params.id);
+router.get('/users/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
 
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.status(200).json({ user: toPublicUser(user) });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Server error' });
   }
-
-  return res.status(200).json({ user: toPublicUser(user) });
 });
 
-router.post('/users', createValidators, (req, res) => {
-  const normalizedEmail = req.body.email?.trim().toLowerCase();
+router.post('/users', createValidators, async (req, res) => {
+  try {
+    const normalizedEmail = req.body.email?.trim().toLowerCase();
 
-  // Upsert: if a stub user was already created by POST /api/auth/register
-  // (same email, no profile fields yet), fill in the onboarding payload
-  // on that record instead of creating a duplicate.
-  if (normalizedEmail) {
-    const existingIndex = mockUsers.findIndex(
-      (u) => u.email.toLowerCase() === normalizedEmail
+    if (normalizedEmail) {
+      const existingUser = await User.findOne({ email: normalizedEmail });
+
+      if (existingUser) {
+        if (existingUser.role !== null && existingUser.role !== undefined && existingUser.role !== '') {
+          return res.status(400).json({
+            error: 'Validation failed',
+            details: ['email must be unique.'],
+          });
+        }
+
+        const filled = await User.findByIdAndUpdate(
+          existingUser._id,
+          {
+            displayName: req.body.displayName?.trim() ?? existingUser.displayName,
+            role: req.body.role,
+            practiceFocus: req.body.practiceFocus,
+            targetTier: req.body.targetTier,
+            timeline: req.body.timeline,
+            level: req.body.level,
+            weakestArea: req.body.weakestArea ?? null,
+            background: req.body.background,
+            school: req.body.school || existingUser.school || 'NYU Tandon',
+            bio: req.body.bio ?? null,
+            linkedinUrl: req.body.linkedinUrl || null,
+            availability: req.body.availability,
+            whoGoesFirst: req.body.whoGoesFirst,
+            feedbackStyle: req.body.feedbackStyle,
+            timezone: req.body.timezone || existingUser.timezone || 'America/New_York',
+            updatedAt: new Date().toISOString(),
+          },
+          { new: true }
+        );
+
+        return res.status(201).json({ user: toOwnUser(filled) });
+      }
+    }
+
+    const user = await User.create(createStoredUser(req.body));
+
+    return res.status(201).json({ user: toOwnUser(user) });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.patch('/users/me', patchValidators, async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        ...req.body,
+        displayName:
+          req.body.displayName !== undefined
+            ? req.body.displayName.trim()
+            : req.user.displayName,
+        linkedinUrl:
+          req.body.linkedinUrl === ''
+            ? null
+            : (req.body.linkedinUrl ?? req.user.linkedinUrl),
+        bio:
+          req.body.bio === ''
+            ? null
+            : (req.body.bio ?? req.user.bio),
+        weakestArea:
+          req.body.weakestArea === ''
+            ? null
+            : (req.body.weakestArea ?? req.user.weakestArea),
+        updatedAt: new Date().toISOString(),
+      },
+      { new: true, runValidators: true }
     );
 
-    if (existingIndex !== -1) {
-      const existing = mockUsers[existingIndex];
-
-      // Only upsert if this is still a stub (role not yet set by onboarding).
-      // If role is already set, the profile is complete — reject as duplicate.
-      if (existing.role !== null) {
-        return res.status(400).json({ error: 'Validation failed', details: ['email must be unique.'] });
-      }
-
-      const filled = {
-        ...existing,
-        displayName: req.body.displayName?.trim() ?? existing.displayName,
-        role: req.body.role,
-        practiceFocus: req.body.practiceFocus,
-        targetTier: req.body.targetTier,
-        timeline: req.body.timeline,
-        level: req.body.level,
-        weakestArea: req.body.weakestArea ?? null,
-        background: req.body.background,
-        school: req.body.school || existing.school || 'NYU Tandon',
-        bio: req.body.bio ?? null,
-        linkedinUrl: req.body.linkedinUrl || null,
-        availability: req.body.availability,
-        whoGoesFirst: req.body.whoGoesFirst,
-        feedbackStyle: req.body.feedbackStyle,
-        timezone: req.body.timezone || existing.timezone || 'America/New_York',
-        updatedAt: new Date().toISOString(),
-      };
-
-      mockUsers[existingIndex] = filled;
-      return res.status(201).json({ user: toOwnUser(filled) });
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
     }
+
+    return res.status(200).json({ user: toOwnUser(updatedUser) });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Server error' });
   }
-
-  // No existing stub — create a fresh record (e.g. seeded from admin / tests).
-  const user = createStoredUser(req.body);
-  mockUsers.push(user);
-
-  return res.status(201).json({ user: toOwnUser(user) });
-});
-
-router.patch('/users/me', patchValidators, (req, res) => {
-  const userIndex = mockUsers.findIndex((candidate) => candidate._id === req.user._id);
-
-  if (userIndex === -1) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-
-  const existingUser = mockUsers[userIndex];
-  const updatedUser = {
-    ...existingUser,
-    ...req.body,
-    displayName: req.body.displayName !== undefined ? req.body.displayName.trim() : existingUser.displayName,
-    linkedinUrl: req.body.linkedinUrl === '' ? null : (req.body.linkedinUrl ?? existingUser.linkedinUrl),
-    bio: req.body.bio === '' ? null : (req.body.bio ?? existingUser.bio),
-    weakestArea: req.body.weakestArea === '' ? null : (req.body.weakestArea ?? existingUser.weakestArea),
-    updatedAt: new Date().toISOString(),
-  };
-
-  mockUsers[userIndex] = updatedUser;
-  req.user = updatedUser;
-
-  return res.status(200).json({ user: toOwnUser(updatedUser) });
 });
 
 router.toPublicUser = toPublicUser;

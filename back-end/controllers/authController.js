@@ -2,9 +2,12 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { randomUUID } = require("crypto");
 
-const users = require("../data/users");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 const JWT_SECRET = process.env.JWT_SECRET || "pairup_secret_key";
+
 
 // ---------------------------------------------------------------------------
 // Register
@@ -20,25 +23,17 @@ const registerUser = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    const existingUser = users.find((u) => u.email === normalizedEmail);
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "Email already registered" });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const now = new Date().toISOString();
 
-    // Create a minimal but schema-compatible user record.
-    // Onboarding (POST /api/users) will fill in the rest after the three steps.
-    // We write directly into the shared array here so that login works
-    // immediately after register, and so POST /api/users can find the record
-    // by email to guard against duplicate submissions.
-    const newUser = {
-      _id: randomUUID(),
+    const newUser = await User.create({
       email: normalizedEmail,
       passwordHash,
       displayName: fullName.trim(),
-      // profile fields left blank — filled by onboarding via POST /api/users
       role: null,
       practiceFocus: [],
       targetTier: null,
@@ -55,20 +50,12 @@ const registerUser = async (req, res) => {
       timezone: "America/New_York",
       sessionsCompleted: 0,
       showUpRate: 1.0,
-      activePartnerships: 0,
-      totalPartnerships: 0,
-      pendingReceivedInvites: 0,
-      inviteResponseRate: 1.0,
       notifications: {
         inviteReceived: true,
         matchConfirmed: true,
         sessionReminder: true,
       },
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    users.push(newUser);
+    });
 
     res.status(201).json({
       message: "User registered successfully",
@@ -98,13 +85,14 @@ const loginUser = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    const user = users.find((u) => u.email === normalizedEmail);
+    const user = await User.findOne({ email: normalizedEmail });
+
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // Unified schema: passwordHash (not password)
     const isMatch = await bcrypt.compare(password, user.passwordHash);
+
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
