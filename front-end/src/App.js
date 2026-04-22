@@ -244,7 +244,11 @@ function PartnerSpaceRoute({ partners, nowMs, onDisconnect }) {
 // ---------------------------------------------------------------------------
 
 function AppRoutes({ initialIsAuthenticated = false }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (initialIsAuthenticated) return true;
+    if (typeof window === "undefined") return false;
+    return Boolean(localStorage.getItem("token"));
+  });
   const [isOnboarding, setIsOnboarding] = useState(false);
   const { refetchProfile } = useProfile();
 

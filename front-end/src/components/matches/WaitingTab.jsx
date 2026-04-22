@@ -21,15 +21,24 @@ function formatTimeLeft(expiresAt, nowMs = Date.now()) {
 function SentInviteCard({ invite, onCancel }) {
   const [busy, setBusy] = useState(false);
   const [cancelled, setCancelled] = useState(false);
+  const [error, setError] = useState('');
+
   const timeLeft = formatTimeLeft(invite.expiresAt);
   const expiringSoon = invite.expiresAt - Date.now() < 12 * 60 * 60 * 1000;
   const expired = invite.expiresAt <= Date.now();
 
   async function handleCancel() {
     setBusy(true);
-    await cancelSentInvite(invite.id);
-    setCancelled(true);
-    setTimeout(() => onCancel(invite.id), 1600);
+    setError('');
+
+    try {
+      await cancelSentInvite(invite.id);
+      setCancelled(true);
+      setTimeout(() => onCancel(invite.id), 1600);
+    } catch (err) {
+      setError(err?.message || 'Failed to withdraw invite.');
+      setBusy(false);
+    }
   }
 
   if (cancelled) {
@@ -56,11 +65,23 @@ function SentInviteCard({ invite, onCancel }) {
             {invite.role} · {invite.tier} · {invite.background}
           </span>
         </div>
+
         <div className={`sent-card__score ${expired ? 'sent-card__score--dim' : ''}`}>
-          <span className="sent-card__score-num">{invite.matchScore}%</span>
-          <span className="sent-card__score-label">match</span>
+          {invite.kind === 'friend' ? (
+            <>
+              <span className="sent-card__score-num">Pending</span>
+              <span className="sent-card__score-label">friend request</span>
+            </>
+          ) : (
+            <>
+              <span className="sent-card__score-num">{invite.matchScore}%</span>
+              <span className="sent-card__score-label">match</span>
+            </>
+          )}
         </div>
       </div>
+
+      {invite.bio ? <p className="sent-card__bio">{invite.bio}</p> : null}
 
       <div className="sent-card__tags">
         {invite.practiceFocus.map((tag) => (
@@ -84,6 +105,8 @@ function SentInviteCard({ invite, onCancel }) {
           Sent {formatRelativeAgo(invite.sentAt)}
         </span>
       </div>
+
+      {error ? <p className="error-text">{error}</p> : null}
 
       <button
         type="button"
@@ -158,7 +181,8 @@ function WaitingTab() {
   }, []);
 
   const handleInviteRec = useCallback(() => {
-    // Optimistic — in a real app this would call sendInvite(id)
+    // Still demo-only for recommendations.
+    // Your real outgoing friend requests now come from getSentInvites().
   }, []);
 
   if (loading) {
