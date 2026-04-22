@@ -1,14 +1,27 @@
-// middleware/authStub.js
-// Temporary — Scott replaces with real JWT middleware
-// Extracts current user from hardcoded ID or query param for testing
-const mockUsers = require('../data/users');
+const User = require("../models/User");
 
-function authStub(req, res, next) {
-  const userId = req.query.userId || mockUsers[0]._id;
-  const user = mockUsers.find(u => u._id === userId);
-  if (!user) return res.status(401).json({ error: 'Unauthorized' });
-  req.user = user;
-  next();
+async function authStub(req, res, next) {
+  try {
+    const userId = req.query.userId;
+
+    let user;
+
+    if (userId) {
+      user = await User.findById(userId);
+    } else {
+      user = await User.findOne(); // fallback
+    }
+
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    req.user = user;
+    next();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
 }
 
 module.exports = authStub;

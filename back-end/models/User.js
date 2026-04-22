@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { randomUUID } = require('crypto');
+const mongoose = require("mongoose");
+const { randomUUID } = require("crypto");
 
 const defaultNotifications = () => ({
   inviteReceived: true,
@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: () => randomUUID(),
     },
+
     email: {
       type: String,
       required: true,
@@ -20,103 +21,138 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+
     passwordHash: {
       type: String,
       required: true,
     },
+
     displayName: {
       type: String,
       required: true,
       trim: true,
     },
+
     role: {
       type: String,
       default: null,
     },
+
     practiceFocus: {
       type: [String],
       default: [],
     },
+
     targetTier: {
       type: String,
       default: null,
     },
+
     timeline: {
       type: String,
       default: null,
     },
+
     level: {
       type: String,
       default: null,
     },
+
     weakestArea: {
       type: String,
       default: null,
     },
+
     background: {
       type: String,
       default: null,
     },
+
     school: {
       type: String,
       default: null,
     },
+
     bio: {
       type: String,
       default: null,
     },
+
     linkedinUrl: {
       type: String,
       default: null,
     },
+
+    avatar: {
+      type: String,
+      default: null,
+    },
+
     availability: {
       type: mongoose.Schema.Types.Mixed,
       default: () => ({}),
     },
+
     whoGoesFirst: {
       type: String,
       default: null,
     },
+
     feedbackStyle: {
       type: String,
       default: null,
     },
+
     timezone: {
       type: String,
-      default: 'America/New_York',
+      default: "America/New_York",
     },
+
     sessionsCompleted: {
       type: Number,
       default: 0,
     },
+
     showUpRate: {
       type: Number,
       default: 1,
     },
+
     activePartnerships: {
       type: Number,
       default: 0,
     },
+
     totalPartnerships: {
       type: Number,
       default: 0,
     },
+
     pendingReceivedInvites: {
       type: Number,
       default: 0,
     },
+
     inviteResponseRate: {
       type: Number,
       default: 1,
     },
+
     notifications: {
       type: mongoose.Schema.Types.Mixed,
       default: defaultNotifications,
     },
+
+    friends: {
+      type: [String],
+      default: [],
+    },
+
     createdAt: {
       type: Date,
       default: Date.now,
     },
+
     updatedAt: {
       type: Date,
       default: Date.now,
@@ -124,12 +160,23 @@ const userSchema = new mongoose.Schema(
   },
   {
     versionKey: false,
-    collection: 'users',
+    collection: "users",
   }
 );
 
-userSchema.pre('save', function updateTimestamp() {
+userSchema.pre("save", function updateTimestamp(next) {
   this.updatedAt = new Date();
+  next();
 });
 
-module.exports = mongoose.models.User || mongoose.model('User', userSchema);
+userSchema.pre("findOneAndUpdate", function updateTimestampOnFindOneAndUpdate(next) {
+  this.set({ updatedAt: new Date() });
+  next();
+});
+
+userSchema.pre("findByIdAndUpdate", function updateTimestampOnFindByIdAndUpdate(next) {
+  this.set({ updatedAt: new Date() });
+  next();
+});
+
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);

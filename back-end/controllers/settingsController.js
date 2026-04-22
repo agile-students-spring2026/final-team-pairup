@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const users = require("../data/users");
+const User = require("../models/User");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -23,49 +23,47 @@ function toSettingsUser(user) {
 // Controllers
 // ---------------------------------------------------------------------------
 
-const changeDisplayName = (req, res) => {
-  const { email, newDisplayName } = req.body;
+const changeDisplayName = async (req, res) => {
+  try {
+    const { email, newDisplayName } = req.body;
 
-  const user = users.find((u) => u.email === email);
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.displayName = newDisplayName.trim();
+    user.updatedAt = new Date();
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Display name updated successfully",
+      user: toSettingsUser(user),
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
-
-  if (!newDisplayName || !newDisplayName.trim()) {
-    return res.status(400).json({ message: "New display name is required" });
-  }
-
-  // Unified schema uses displayName
-  user.displayName = newDisplayName.trim();
-  user.updatedAt = new Date().toISOString();
-
-  res.status(200).json({
-    message: "Display name updated successfully",
-    user: toSettingsUser(user),
-  });
 };
 
 const changeEmail = async (req, res) => {
   const { currentEmail, currentPassword, newEmail } = req.body;
 
-  const user = users.find((u) => u.email === currentEmail);
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
+  const user = await User.findOne({ email: currentEmail });
 
-  const emailTaken = users.find((u) => u.email === newEmail);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  const emailTaken = await User.findOne({ email: newEmail });
   if (emailTaken) {
     return res.status(400).json({ message: "New email is already in use" });
   }
 
-  // Unified schema uses passwordHash
   const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
   if (!isMatch) {
-    return res.status(401).json({ message: "Incorrect current password" });
+    return res.status(401).json({ message: "Incorrect password" });
   }
 
   user.email = newEmail.trim().toLowerCase();
-  user.updatedAt = new Date().toISOString();
+  await user.save();
 
   res.status(200).json({
     message: "Email updated successfully",
@@ -76,18 +74,17 @@ const changeEmail = async (req, res) => {
 const changePassword = async (req, res) => {
   const { email, currentPassword, newPassword } = req.body;
 
-  const user = users.find((u) => u.email === email);
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
+  const user = await User.findOne({ email });
+
+  if (!user) return res.status(404).json({ message: "User not found" });
 
   const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
   if (!isMatch) {
-    return res.status(401).json({ message: "Incorrect current password" });
+    return res.status(401).json({ message: "Incorrect password" });
   }
 
   user.passwordHash = await bcrypt.hash(newPassword, 10);
-  user.updatedAt = new Date().toISOString();
+  await user.save();
 
   res.status(200).json({ message: "Password updated successfully" });
 };
@@ -95,18 +92,16 @@ const changePassword = async (req, res) => {
 const deleteAccount = async (req, res) => {
   const { email, currentPassword } = req.body;
 
-  const userIndex = users.findIndex((u) => u.email === email);
-  if (userIndex === -1) {
-    return res.status(404).json({ message: "User not found" });
-  }
+  const user = await User.findOne({ email });
 
-  const user = users[userIndex];
+  if (!user) return res.status(404).json({ message: "User not found" });
+
   const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
   if (!isMatch) {
-    return res.status(401).json({ message: "Incorrect current password" });
+    return res.status(401).json({ message: "Incorrect password" });
   }
 
-  users.splice(userIndex, 1);
+  await User.findByIdAndDelete(user._id);
 
   res.status(200).json({ message: "Account deleted successfully" });
 };

@@ -1,13 +1,13 @@
-require('dotenv').config();
+require("dotenv").config();
 
-const app = require('./app');
-const { connectToDatabase } = require('./modules/db');
+const app = require("./app");
+const connectDB = require("./config/db");
 
 const PORT = process.env.PORT || 3000;
 let listener = null;
 
 async function start() {
-  await connectToDatabase();
+  await connectDB();
 
   return new Promise((resolve) => {
     listener = app.listen(PORT, () => {
@@ -37,7 +37,7 @@ async function close() {
 
 if (require.main === module) {
   start().catch((error) => {
-    console.error('Failed to start server:', error.message);
+    console.error("Failed to start server:", error.message);
     process.exit(1);
   });
 }
