@@ -4,24 +4,42 @@ const app = require("./app");
 const connectDB = require("./config/db");
 
 const PORT = process.env.PORT || 3000;
+let listener = null;
 
-let listener;
+async function start() {
+  await connectDB();
 
-async function startServer() {
-  try {
-    await connectDB();
-
+  return new Promise((resolve) => {
     listener = app.listen(PORT, () => {
       console.log(`PairUp backend running on port ${PORT}`);
+      resolve(listener);
     });
-  } catch (error) {
-    console.error("Failed to start server:", error.message);
-    process.exit(1);
-  }
+  });
 }
 
-startServer();
+async function close() {
+  if (!listener) {
+    return;
+  }
 
-module.exports = {
-  close: () => listener && listener.close(),
-};
+  await new Promise((resolve, reject) => {
+    listener.close((error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve();
+    });
+  });
+
+  listener = null;
+}
+
+if (require.main === module) {
+  start().catch((error) => {
+    console.error("Failed to start server:", error.message);
+    process.exit(1);
+  });
+}
+
+module.exports = { start, close };

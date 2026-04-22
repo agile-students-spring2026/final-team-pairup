@@ -6,6 +6,8 @@ const cors = require("cors");
 const morgan = require("morgan");
 
 const authStub = require("./middleware/authStub");
+const authMiddleware = require("./middleware/authMiddleware");
+
 const authRoutes = require("./routes/authRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const matchesRouter = require("./routes/matches");
@@ -18,34 +20,31 @@ const friendsRouter = require("./routes/friends");
 
 const app = express();
 
+app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
-app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:3001" }));
-
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
-  res.json({ ok: true, message: "PairUp backend running" });
+  res.send("PairUp backend running");
 });
 
-// Stub auth for shared team API routes
-app.use("/api", authStub);
-
-// Your auth/settings routes
 app.use("/api/auth", authRoutes);
-app.use("/api/settings", settingsRoutes);
 
-// Teammates' routes
+// keep existing unfinished routes on stub auth
+app.use("/api", authStub);
+app.use("/api/settings", settingsRoutes);
 app.use("/api", matchesRouter);
 app.use("/api", usersRouter);
 app.use("/api", requestsRouter);
 app.use("/api", meetingsRouter);
 app.use("/api", proposalsRouter);
 app.use("/api", chatRouter);
-app.use("/api", friendsRouter);
 
-// Error handler
+// sprint 3 route using real JWT + MongoDB
+app.use("/api", authMiddleware, friendsRouter);
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Internal server error" });

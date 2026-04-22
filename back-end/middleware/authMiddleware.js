@@ -8,34 +8,42 @@
  *   app.use('/api', authMiddleware);
  */
 const jwt = require('jsonwebtoken');
-const users = require('../data/users');
+const User = require('../models/User');
+const { connectToDatabase } = require('../modules/db');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'pairup_secret_key';
 
-function authMiddleware(req, res, next) {
-  const authHeader = req.headers['authorization'];
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Missing or malformed Authorization header' });
-  }
-
-  const token = authHeader.slice(7); // strip "Bearer "
-
-  let payload;
+async function authMiddleware(req, res, next) {
   try {
-    payload = jwt.verify(token, JWT_SECRET);
-  } catch (err) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
-  }
+    const authHeader = req.headers.authorization;
 
-  // payload.id is set by authController loginUser
-  const user = users.find((u) => u._id === payload.id || u.id === payload.id);
-  if (!user) {
-    return res.status(401).json({ error: 'User not found' });
-  }
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res
+        .status(401)
+        .json({ error: 'Missing or malformed Authorization header' });
+    }
 
-  req.user = user;
-  next();
+    const token = authHeader.slice(7);
+
+    let payload;
+    try {
+      payload = jwt.verify(token, JWT_SECRET);
+    } catch (_error) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    await connectToDatabase();
+    const user = await User.findById(payload.id || payload._id).lean();
+
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    req.user = user;
+    return next();
+  } catch (error) {
+    return next(error);
+  }
 }
 
 module.exports = authMiddleware;

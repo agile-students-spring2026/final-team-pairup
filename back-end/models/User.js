@@ -1,61 +1,17 @@
 const mongoose = require("mongoose");
+const { randomUUID } = require("crypto");
 
-const availabilitySchema = new mongoose.Schema(
-  {
-    day: {
-      type: String,
-      trim: true,
-    },
-    slots: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-  },
-  { _id: false }
-);
-
-const onboardingSchema = new mongoose.Schema(
-  {
-    goal: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-    focusTags: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-    companyTarget: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-    sessionType: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-    weakestArea: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-  },
-  { _id: false }
-);
+const defaultNotifications = () => ({
+  inviteReceived: true,
+  matchConfirmed: true,
+  sessionReminder: true,
+});
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    _id: {
       type: String,
-      required: true,
-      trim: true,
-      minlength: 1,
-      maxlength: 80,
+      default: () => randomUUID(),
     },
 
     email: {
@@ -71,74 +27,156 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    bio: {
+    displayName: {
       type: String,
+      required: true,
       trim: true,
-      default: "",
     },
 
     role: {
       type: String,
-      trim: true,
-      default: "",
+      default: null,
+    },
+
+    practiceFocus: {
+      type: [String],
+      default: [],
+    },
+
+    targetTier: {
+      type: String,
+      default: null,
+    },
+
+    timeline: {
+      type: String,
+      default: null,
     },
 
     level: {
       type: String,
-      trim: true,
-      default: "",
+      default: null,
     },
 
-    avatar: {
+    weakestArea: {
       type: String,
-      trim: true,
-      default: "",
+      default: null,
+    },
+
+    background: {
+      type: String,
+      default: null,
+    },
+
+    school: {
+      type: String,
+      default: null,
+    },
+
+    bio: {
+      type: String,
+      default: null,
     },
 
     linkedinUrl: {
       type: String,
-      trim: true,
-      default: "",
+      default: null,
     },
 
-    completedSessions: {
+    avatar: {
+      type: String,
+      default: null,
+    },
+
+    availability: {
+      type: mongoose.Schema.Types.Mixed,
+      default: () => ({}),
+    },
+
+    whoGoesFirst: {
+      type: String,
+      default: null,
+    },
+
+    feedbackStyle: {
+      type: String,
+      default: null,
+    },
+
+    timezone: {
+      type: String,
+      default: "America/New_York",
+    },
+
+    sessionsCompleted: {
       type: Number,
       default: 0,
-      min: 0,
     },
 
     showUpRate: {
       type: Number,
+      default: 1,
+    },
+
+    activePartnerships: {
+      type: Number,
       default: 0,
-      min: 0,
-      max: 100,
     },
 
-    isNewUser: {
-      type: Boolean,
-      default: true,
+    totalPartnerships: {
+      type: Number,
+      default: 0,
     },
 
-    onboarding: {
-      type: onboardingSchema,
-      default: () => ({}),
+    pendingReceivedInvites: {
+      type: Number,
+      default: 0,
     },
 
-    availability: {
-      type: [availabilitySchema],
+    inviteResponseRate: {
+      type: Number,
+      default: 1,
+    },
+
+    notifications: {
+      type: mongoose.Schema.Types.Mixed,
+      default: defaultNotifications,
+    },
+
+    friends: {
+      type: [String],
       default: [],
     },
 
-    friends: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
-    timestamps: true,
+    versionKey: false,
+    collection: "users",
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+userSchema.pre("save", function updateTimestamp(next) {
+  this.updatedAt = new Date();
+  next();
+});
+
+userSchema.pre("findOneAndUpdate", function updateTimestampOnFindOneAndUpdate(next) {
+  this.set({ updatedAt: new Date() });
+  next();
+});
+
+userSchema.pre("findByIdAndUpdate", function updateTimestampOnFindByIdAndUpdate(next) {
+  this.set({ updatedAt: new Date() });
+  next();
+});
+
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);

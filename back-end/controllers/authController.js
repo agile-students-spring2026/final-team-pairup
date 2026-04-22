@@ -1,13 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { randomUUID } = require("crypto");
-
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const JWT_SECRET = process.env.JWT_SECRET || "pairup_secret_key";
-
 
 // ---------------------------------------------------------------------------
 // Register
@@ -29,11 +24,14 @@ const registerUser = async (req, res) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const now = new Date().toISOString();
 
     const newUser = await User.create({
       email: normalizedEmail,
       passwordHash,
       displayName: fullName.trim(),
+
+      // onboarding later fills these in
       role: null,
       practiceFocus: [],
       targetTier: null,
@@ -48,16 +46,25 @@ const registerUser = async (req, res) => {
       whoGoesFirst: null,
       feedbackStyle: null,
       timezone: "America/New_York",
+
       sessionsCompleted: 0,
       showUpRate: 1.0,
+      activePartnerships: 0,
+      totalPartnerships: 0,
+      pendingReceivedInvites: 0,
+      inviteResponseRate: 1.0,
+
       notifications: {
         inviteReceived: true,
         matchConfirmed: true,
         sessionReminder: true,
       },
+
+      createdAt: now,
+      updatedAt: now,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "User registered successfully",
       user: {
         id: newUser._id,
@@ -67,7 +74,7 @@ const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Register error:", error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -86,13 +93,11 @@ const loginUser = async (req, res) => {
     const normalizedEmail = email.trim().toLowerCase();
 
     const user = await User.findOne({ email: normalizedEmail });
-
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
-
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -103,7 +108,7 @@ const loginUser = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Login successful",
       token,
       user: {
@@ -114,7 +119,7 @@ const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -129,8 +134,7 @@ const forgotPassword = (req, res) => {
     return res.status(400).json({ message: "Email is required" });
   }
 
-  // Stub — no real email sending yet
-  res.status(200).json({ message: "Reset link sent" });
+  return res.status(200).json({ message: "Reset link sent" });
 };
 
 module.exports = {

@@ -1,53 +1,73 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const { randomUUID } = require('crypto');
-const mockFriendRequests = require('../data/mockFriendRequests.json');
-const mockUsers = require('../data/mockUsers.json');
-const usersRouter = require('./users');
-
-const toPublicUser = usersRouter.toPublicUser;
+const User = require('../models/User');
+const { FriendRequest } = require('../models/FriendRequest');
 
 const router = express.Router();
+
+const PUBLIC_STRIP_FIELDS = new Set([
+  'email',
+  'passwordHash',
+  'notifications',
+  'activePartnerships',
+  'totalPartnerships',
+  'pendingReceivedInvites',
+  'inviteResponseRate',
+]);
+
+function toIso(value) {
+  if (!value) return value;
+  if (value instanceof Date) return value.toISOString();
+  return value;
+}
+
+function toPublicUser(user) {
+  const plain = { ...(user?.toObject ? user.toObject() : user) };
+
+  for (const field of PUBLIC_STRIP_FIELDS) {
+    delete plain[field];
+  }
+
+  plain.createdAt = toIso(plain.createdAt);
+  plain.updatedAt = toIso(plain.updatedAt);
+  return plain;
+}
+
+function serializeRequest(request, currentUserId) {
+  return {
+    id: request._id,
+    fromUserId: request.fromUserId,
+    toUserId: request.toUserId,
+    status: request.status,
+    createdAt: toIso(request.createdAt),
+    updatedAt: toIso(request.updatedAt),
+    direction: request.fromUserId === currentUserId ? 'outgoing' : 'incoming',
+  };
+}
 
 function validationErrors(req, res, next) {
   const result = validationResult(req);
   if (result.isEmpty()) {
     return next();
   }
+
   return res.status(400).json({
     error: 'Validation failed',
     details: result.array().map((item) => item.msg),
   });
 }
 
-function userExists(userId) {
-  return mockUsers.some((u) => u._id === userId);
-}
-
-function findFriendRequestBetween(a, b) {
-  return mockFriendRequests.filter(
-    (r) =>
-      (r.fromUserId === a && r.toUserId === b) || (r.fromUserId === b && r.toUserId === a),
-  );
-}
-
-function areFriends(userId, otherUserId) {
-  return mockFriendRequests.some(
-    (r) =>
-      r.status === 'accepted' &&
-      ((r.fromUserId === userId && r.toUserId === otherUserId) ||
-        (r.fromUserId === otherUserId && r.toUserId === userId)),
-  );
-}
-
-function pendingOutgoing(fromUserId, toUserId) {
-  return mockFriendRequests.find(
-    (r) => r.fromUserId === fromUserId && r.toUserId === toUserId && r.status === 'pending',
-  );
+function asyncHandler(handler) {
+  return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 }
 
 const inviteValidators = [
-  body('toUserId').notEmpty().withMessage('toUserId is required.'),
+  body('toUserId')
+    .isString()
+    .withMessage('toUserId must be a string.')
+    .trim()
+    .notEmpty()
+    .withMessage('toUserId is required.'),
   validationErrors,
 ];
 
@@ -58,177 +78,254 @@ const patchValidators = [
   validationErrors,
 ];
 
-/** List accepted friendships for the current user with public profiles. */
-router.get('/friends', (req, res) => {
-  const userId = req.user._id;
-  const accepted = mockFriendRequests.filter(
-    (r) =>
-      r.status === 'accepted' &&
-      (r.fromUserId === userId || r.toUserId === userId),
-  );
+router.get(
+  '/friends',
+  asyncHandler(async (req, res) => {
+    const userId = req.user._id;
 
-  const friends = accepted.map((r) => {
-    const friendId = r.fromUserId === userId ? r.toUserId : r.fromUserId;
-    const user = mockUsers.find((u) => u._id === friendId);
-    return {
-      friendUserId: friendId,
-      friendsSince: r.updatedAt,
-      user: user ? toPublicUser(user) : { _id: friendId, displayName: 'Unknown user' },
-    };
-  });
+    const accepted = await FriendRequest.find({
+      status: 'accepted',
+      $or: [{ fromUserId: userId }, { toUserId: userId }],
+    })
+      .sort({ updatedAt: -1 })
+      .lean();
 
-  return res.status(200).json({ friends });
-});
+    const friendIds = [
+      ...new Set(
+        accepted.map((request) =>
+          request.fromUserId === userId ? request.toUserId : request.fromUserId
+        )
+      ),
+    ];
 
-/**
- * Friend invites (social). box=incoming | outgoing | pending (both) | all (includes terminal states involving you).
- */
-router.get('/friends/requests', (req, res) => {
-  const userId = req.user._id;
-  const { box = 'pending' } = req.query;
+    const users = await User.find({ _id: { $in: friendIds } }).lean();
+    const usersById = new Map(users.map((user) => [user._id, user]));
 
-  let list = mockFriendRequests;
-  if (box === 'incoming') {
-    list = list.filter((r) => r.toUserId === userId && r.status === 'pending');
-  } else if (box === 'outgoing') {
-    list = list.filter((r) => r.fromUserId === userId && r.status === 'pending');
-  } else if (box === 'pending') {
-    list = list.filter(
-      (r) =>
-        r.status === 'pending' &&
-        (r.fromUserId === userId || r.toUserId === userId),
-    );
-  } else if (box === 'all') {
-    list = list.filter((r) => r.fromUserId === userId || r.toUserId === userId);
-  } else {
-    return res.status(400).json({
-      error: 'box must be one of: incoming, outgoing, pending, all.',
+    const friends = accepted.map((request) => {
+      const friendUserId =
+        request.fromUserId === userId ? request.toUserId : request.fromUserId;
+      const user = usersById.get(friendUserId);
+
+      return {
+        friendUserId,
+        friendsSince: toIso(request.updatedAt),
+        user: user
+          ? toPublicUser(user)
+          : { _id: friendUserId, displayName: 'Unknown user' },
+      };
     });
-  }
 
-  const requests = list.map((r) => ({
-    ...r,
-    direction: r.fromUserId === userId ? 'outgoing' : 'incoming',
-  }));
+    return res.status(200).json({ friends });
+  })
+);
 
-  return res.status(200).json({ requests });
-});
+router.get(
+  '/friends/requests',
+  asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const { box = 'pending' } = req.query;
 
-router.get('/friends/requests/:id', (req, res) => {
-  const userId = req.user._id;
-  const fr = mockFriendRequests.find((r) => r.id === req.params.id);
-  if (!fr) {
-    return res.status(404).json({ error: 'Friend request not found.' });
-  }
-  if (fr.fromUserId !== userId && fr.toUserId !== userId) {
-    return res.status(403).json({ error: 'Not allowed to view this request.' });
-  }
-  return res.status(200).json({
-    request: {
-      ...fr,
-      direction: fr.fromUserId === userId ? 'outgoing' : 'incoming',
-    },
-  });
-});
+    let filter;
+    if (box === 'incoming') {
+      filter = { toUserId: userId, status: 'pending' };
+    } else if (box === 'outgoing') {
+      filter = { fromUserId: userId, status: 'pending' };
+    } else if (box === 'pending') {
+      filter = {
+        status: 'pending',
+        $or: [{ fromUserId: userId }, { toUserId: userId }],
+      };
+    } else if (box === 'all') {
+      filter = {
+        $or: [{ fromUserId: userId }, { toUserId: userId }],
+      };
+    } else {
+      return res.status(400).json({
+        error: 'box must be one of: incoming, outgoing, pending, all.',
+      });
+    }
 
-router.post('/friends/requests', inviteValidators, (req, res) => {
-  const fromUserId = req.user._id;
-  const { toUserId } = req.body;
+    const list = await FriendRequest.find(filter).sort({ updatedAt: -1 }).lean();
+    const requests = list.map((request) => serializeRequest(request, userId));
 
-  if (toUserId === fromUserId) {
-    return res.status(400).json({ error: 'Cannot send a friend invite to yourself.' });
-  }
-  if (!userExists(toUserId)) {
-    return res.status(404).json({ error: 'User not found.' });
-  }
+    return res.status(200).json({ requests });
+  })
+);
 
-  if (areFriends(fromUserId, toUserId)) {
-    return res.status(409).json({ error: 'You are already friends with this user.' });
-  }
+router.get(
+  '/friends/requests/:id',
+  asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const request = await FriendRequest.findById(req.params.id).lean();
 
-  if (pendingOutgoing(fromUserId, toUserId)) {
-    return res.status(409).json({ error: 'A pending invite to this user already exists.' });
-  }
+    if (!request) {
+      return res.status(404).json({ error: 'Friend request not found.' });
+    }
 
-  const reverse = pendingOutgoing(toUserId, fromUserId);
-  if (reverse) {
-    return res.status(409).json({
-      error: 'This user has already sent you a friend invite. Accept theirs instead.',
-      code: 'REVERSE_PENDING',
-      reverseRequestId: reverse.id,
+    if (request.fromUserId !== userId && request.toUserId !== userId) {
+      return res.status(403).json({ error: 'Not allowed to view this request.' });
+    }
+
+    return res.status(200).json({
+      request: serializeRequest(request, userId),
     });
-  }
+  })
+);
 
-  const now = new Date().toISOString();
-  const request = {
-    id: randomUUID(),
-    fromUserId,
-    toUserId,
-    status: 'pending',
-    createdAt: now,
-    updatedAt: now,
-  };
-  mockFriendRequests.push(request);
+router.post(
+  '/friends/requests',
+  inviteValidators,
+  asyncHandler(async (req, res) => {
+    try {
+      const fromUserId = req.user._id;
+      const rawToUserId = req.body?.toUserId;
+      const toUserId = String(rawToUserId || '').trim();
 
-  return res.status(201).json({ request: { ...request, direction: 'outgoing' } });
-});
+      console.log('POST /friends/requests');
+      console.log('fromUserId:', fromUserId);
+      console.log('rawToUserId:', rawToUserId);
+      console.log('toUserId:', toUserId);
 
-router.patch('/friends/requests/:id', patchValidators, (req, res) => {
-  const userId = req.user._id;
-  const { status: nextStatus } = req.body;
-  const idx = mockFriendRequests.findIndex((r) => r.id === req.params.id);
+      if (!toUserId) {
+        return res.status(400).json({ error: 'toUserId is required.' });
+      }
 
-  if (idx === -1) {
-    return res.status(404).json({ error: 'Friend request not found.' });
-  }
+      if (toUserId === fromUserId) {
+        return res
+          .status(400)
+          .json({ error: 'Cannot send a friend invite to yourself.' });
+      }
 
-  const fr = mockFriendRequests[idx];
+      const recipient = await User.findById(toUserId).lean();
+      console.log('recipient exists:', !!recipient);
 
-  if (fr.status !== 'pending') {
-    return res.status(409).json({ error: 'This invite is no longer pending.' });
-  }
+      if (!recipient) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
 
-  if (nextStatus === 'accepted' || nextStatus === 'declined') {
-    if (fr.toUserId !== userId) {
-      return res.status(403).json({ error: 'Only the recipient can accept or decline.' });
+      const acceptedExisting = await FriendRequest.exists({
+        status: 'accepted',
+        $or: [
+          { fromUserId, toUserId },
+          { fromUserId: toUserId, toUserId: fromUserId },
+        ],
+      });
+      console.log('acceptedExisting:', !!acceptedExisting);
+
+      if (acceptedExisting) {
+        return res
+          .status(409)
+          .json({ error: 'You are already friends with this user.' });
+      }
+
+      const outgoingPending = await FriendRequest.findOne({
+        fromUserId,
+        toUserId,
+        status: 'pending',
+      }).lean();
+      console.log('outgoingPending:', !!outgoingPending);
+
+      if (outgoingPending) {
+        return res.status(409).json({
+          error: 'A pending invite to this user already exists.',
+        });
+      }
+
+      const reversePending = await FriendRequest.findOne({
+        fromUserId: toUserId,
+        toUserId: fromUserId,
+        status: 'pending',
+      }).lean();
+      console.log('reversePending:', !!reversePending);
+
+      if (reversePending) {
+        return res.status(409).json({
+          error: 'This user has already sent you a friend invite. Accept theirs instead.',
+          code: 'REVERSE_PENDING',
+          reverseRequestId: reversePending._id,
+        });
+      }
+
+      const request = await FriendRequest.create({
+        fromUserId,
+        toUserId,
+        status: 'pending',
+      });
+
+      console.log('created request:', request);
+
+      return res.status(201).json({
+        request: serializeRequest(request, fromUserId),
+      });
+    } catch (error) {
+      console.error('POST /friends/requests ERROR:', error);
+      return res.status(500).json({
+        error: error.message || 'Internal server error',
+      });
     }
-  }
+  })
+);
 
-  if (nextStatus === 'cancelled') {
-    if (fr.fromUserId !== userId) {
-      return res.status(403).json({ error: 'Only the sender can cancel an invite.' });
+router.patch(
+  '/friends/requests/:id',
+  patchValidators,
+  asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const { status: nextStatus } = req.body;
+
+    console.log('PATCH /friends/requests/:id');
+    console.log('userId:', userId);
+    console.log('requestId:', req.params.id);
+    console.log('nextStatus:', nextStatus);
+
+    const existing = await FriendRequest.findById(req.params.id).lean();
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Friend request not found.' });
     }
-  }
 
-  const now = new Date().toISOString();
-  const updated = {
-    ...fr,
-    status: nextStatus,
-    updatedAt: now,
-  };
-  mockFriendRequests[idx] = updated;
+    console.log('existing request:', existing);
 
-  if (nextStatus === 'accepted') {
-    const others = findFriendRequestBetween(fr.fromUserId, fr.toUserId).filter((r) => r.id !== fr.id && r.status === 'pending');
-    for (const other of others) {
-      const oi = mockFriendRequests.findIndex((x) => x.id === other.id);
-      if (oi !== -1) {
-        mockFriendRequests[oi] = {
-          ...mockFriendRequests[oi],
-          status: 'cancelled',
-          updatedAt: now,
-        };
+    if (existing.status !== 'pending') {
+      return res.status(409).json({ error: 'This invite is no longer pending.' });
+    }
+
+    if (nextStatus === 'accepted' || nextStatus === 'declined') {
+      if (existing.toUserId !== userId) {
+        return res
+          .status(403)
+          .json({ error: 'Only the recipient can accept or decline.' });
       }
     }
-  }
 
-  const out = mockFriendRequests[idx];
-  return res.status(200).json({
-    request: {
-      ...out,
-      direction: out.fromUserId === userId ? 'outgoing' : 'incoming',
-    },
-  });
-});
+    if (nextStatus === 'cancelled') {
+      if (existing.fromUserId !== userId) {
+        return res
+          .status(403)
+          .json({ error: 'Only the sender can cancel an invite.' });
+      }
+    }
+
+    const updated = await FriendRequest.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          status: nextStatus,
+          updatedAt: new Date(),
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).lean();
+
+    console.log('updated request:', updated);
+
+    return res.status(200).json({
+      request: serializeRequest(updated, userId),
+    });
+  })
+);
 
 module.exports = router;
