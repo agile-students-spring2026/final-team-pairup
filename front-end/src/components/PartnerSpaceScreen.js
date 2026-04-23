@@ -53,6 +53,10 @@ function PartnerSpaceScreen({
   const [draft, setDraft] = useState('');
   const [messages, setMessages] = useState([]);
   const [hydrated, setHydrated] = useState(false);
+  const [chatSessionId, setChatSessionId] = useState(null);
+  const [chatStatus, setChatStatus] = useState('unknown');
+  const [chatLoadingError, setChatLoadingError] = useState('');
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [incomingProposal, setIncomingProposal] = useState(null);
   const [proposalLoadingError, setProposalLoadingError] = useState('');
   const [proposalError, setProposalError] = useState('');
@@ -130,32 +134,86 @@ function PartnerSpaceScreen({
   }, [partner.id]);
 
   useEffect(() => {
-    const key = storageFirstVisitKey(partner.id);
-    const isFirstVisit = !sessionStorage.getItem(key);
+    async function loadChatFromApi() {
+      try {
+        setChatLoadingError('');
+        setChatSessionId(null);
+        const key = storageFirstVisitKey(partner.id);
+        const isFirstVisit = !sessionStorage.getItem(key);
+        const seedMessages = [];
 
-    const base = demo.messages.map((m) => ({
-      id: m.id,
-      kind: m.author === 'me' ? 'me' : 'them',
-      body: m.body,
-      at: m.at,
-    }));
+        if (isFirstVisit) {
+          sessionStorage.setItem(key, '1');
+          seedMessages.push({
+            id: `sys-intro-${partner.id}`,
+            kind: 'system',
+            body: buildSystemIntro(partner, demo.introTimeline),
+            at: Date.now(),
+          });
+          setDraft(demo.icebreaker);
+        } else {
+          setDraft('');
+        }
 
-    if (isFirstVisit) {
-      sessionStorage.setItem(key, '1');
-      const intro = {
-        id: `sys-intro-${partner.id}`,
-        kind: 'system',
-        body: buildSystemIntro(partner, demo.introTimeline),
-        at: Date.now(),
-      };
-      setMessages([intro, ...base]);
-      setDraft(demo.icebreaker);
-    } else {
-      setMessages(base);
-      setDraft('');
+        const statusRes = await fetch(withDevUserQuery(`/api/chat/partner-status/${partner.id}`));
+        const statusData = await statusRes.json();
+        if (!statusRes.ok) {
+          throw new Error(statusData.error || 'Failed to load partner chat status');
+        }
+        setChatStatus(statusData.status);
+
+        if (statusData.status !== 'partnered') {
+          setMessages(seedMessages);
+          setHydrated(true);
+          return;
+        }
+
+        const sessionsRes = await fetch(withDevUserQuery('/api/chat/sessions?limit=100'));
+        const sessionsData = await sessionsRes.json();
+        if (!sessionsRes.ok) {
+          throw new Error(sessionsData.error || 'Failed to load chat sessions');
+        }
+
+        const existingSession = (sessionsData.sessions || []).find(
+          (session) => session.otherUserId === partner.id
+        );
+
+        if (!existingSession) {
+          setMessages(seedMessages);
+          setHydrated(true);
+          return;
+        }
+
+        setChatSessionId(existingSession.id);
+
+        const messagesRes = await fetch(
+          withDevUserQuery(`/api/chat/sessions/${existingSession.id}/messages?limit=100`)
+        );
+        const messagesData = await messagesRes.json();
+        if (!messagesRes.ok) {
+          throw new Error(messagesData.error || 'Failed to load chat messages');
+        }
+
+        const uid = devUserId();
+        const mapped = (messagesData.messages || []).map((message) => ({
+          id: message.id,
+          kind: message.senderId === uid ? 'me' : 'them',
+          body: message.text,
+          at: new Date(message.createdAt).getTime(),
+        }));
+
+        setMessages([...seedMessages, ...mapped]);
+      } catch (err) {
+        console.error(err);
+        setChatLoadingError(err.message || 'Failed to load chat');
+        setMessages([]);
+      } finally {
+        setHydrated(true);
+      }
     }
 
-    setHydrated(true);
+    setHydrated(false);
+    loadChatFromApi();
   }, [partner, demo]);
 
   useEffect(() => {
@@ -170,14 +228,63 @@ function PartnerSpaceScreen({
 
   const showOutgoingBanner = demo.outgoingProposalWaiting || localProposalSent;
 
-  const send = () => {
+  const send = async () => {
     const text = draft.trim();
     if (!text) return;
-    setMessages((prev) => [
-      ...prev,
-      { id: `local-${Date.now()}`, kind: 'me', body: text, at: nowMs },
-    ]);
-    setDraft('');
+
+    if (chatStatus !== 'partnered') {
+      setChatLoadingError('You can only chat with partnered users.');
+      return;
+    }
+
+    try {
+      setIsSendingMessage(true);
+      setChatLoadingError('');
+
+      let sessionId = chatSessionId;
+      if (!sessionId) {
+        const createRes = await fetch(withDevUserQuery('/api/chat/sessions'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ otherUserId: partner.id }),
+        });
+        const createData = await createRes.json();
+        if (!createRes.ok) {
+          throw new Error(createData.error || 'Failed to create chat session');
+        }
+        sessionId = createData.session.id;
+        setChatSessionId(sessionId);
+      }
+
+      const messageRes = await fetch(
+        withDevUserQuery(`/api/chat/sessions/${sessionId}/messages`),
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        }
+      );
+      const messageData = await messageRes.json();
+      if (!messageRes.ok) {
+        throw new Error(messageData.error || 'Failed to send message');
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: messageData.message.id,
+          kind: 'me',
+          body: messageData.message.text,
+          at: new Date(messageData.message.createdAt).getTime(),
+        },
+      ]);
+      setDraft('');
+    } catch (err) {
+      console.error(err);
+      setChatLoadingError(err.message || 'Failed to send message');
+    } finally {
+      setIsSendingMessage(false);
+    }
   };
 
   async function handleSendProposal(payload) {
@@ -308,6 +415,11 @@ function PartnerSpaceScreen({
       {proposalLoadingError && (
         <p style={{ color: 'red', padding: '8px 20px' }}>
           {proposalLoadingError}
+        </p>
+      )}
+      {chatLoadingError && (
+        <p style={{ color: 'red', padding: '8px 20px' }}>
+          {chatLoadingError}
         </p>
       )}
 

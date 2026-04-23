@@ -1,8 +1,107 @@
 const request = require('supertest');
 const { expect } = require('chai');
+const mongoose = require('mongoose');
 const app = require('../app');
+const User = require('../models/User');
+const { FriendRequest } = require('../models/FriendRequest');
+const { ChatSession } = require('../models/ChatSession');
+const ChatMessage = require('../models/ChatMessage');
+const { connectToDatabase } = require('../modules/db');
 
-describe('chat routes', () => {
+const TEST_DB_URI = process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/pairup_test';
+
+const seededUsers = [
+  {
+    _id: 'current-user',
+    email: 'current@example.com',
+    passwordHash: 'hash-current',
+    displayName: 'Current User',
+  },
+  {
+    _id: 'user-sde-int-match',
+    email: 'match@example.com',
+    passwordHash: 'hash-match',
+    displayName: 'Matched User',
+  },
+  {
+    _id: 'user-sde-beg-far',
+    email: 'notpartner@example.com',
+    passwordHash: 'hash-non-partner',
+    displayName: 'Not Partnered User',
+  },
+];
+
+const seededFriendRequests = [
+  {
+    _id: 'req-partner-current-match',
+    fromUserId: 'current-user',
+    toUserId: 'user-sde-int-match',
+    status: 'accepted',
+  },
+];
+
+const seededSessions = [
+  {
+    _id: 'chat-session-1',
+    participantIds: ['current-user', 'user-sde-int-match'],
+    pairKey: 'current-user\0user-sde-int-match',
+    status: 'active',
+    createdAt: new Date('2026-04-07T10:00:00.000Z'),
+    updatedAt: new Date('2026-04-07T14:30:00.000Z'),
+  },
+];
+
+const seededMessages = [
+  {
+    _id: 'msg-1',
+    sessionId: 'chat-session-1',
+    senderId: 'current-user',
+    text: 'Hey — want to run a mock this week?',
+    createdAt: new Date('2026-04-07T11:00:00.000Z'),
+  },
+  {
+    _id: 'msg-2',
+    sessionId: 'chat-session-1',
+    senderId: 'user-sde-int-match',
+    text: "Yes, I'm free Thursday evening.",
+    createdAt: new Date('2026-04-07T14:30:00.000Z'),
+  },
+];
+
+describe('chat routes', function chatRoutesSuite() {
+  this.timeout(10000);
+
+  before(async () => {
+    process.env.MONGODB_URI = TEST_DB_URI;
+    await connectToDatabase();
+  });
+
+  beforeEach(async () => {
+    await Promise.all([
+      User.deleteMany({}),
+      FriendRequest.deleteMany({}),
+      ChatSession.deleteMany({}),
+      ChatMessage.deleteMany({}),
+    ]);
+
+    await User.insertMany(seededUsers);
+    await FriendRequest.insertMany(seededFriendRequests);
+    await ChatSession.insertMany(seededSessions);
+    await ChatMessage.insertMany(seededMessages);
+  });
+
+  after(async () => {
+    await Promise.all([
+      User.deleteMany({}),
+      FriendRequest.deleteMany({}),
+      ChatSession.deleteMany({}),
+      ChatMessage.deleteMany({}),
+    ]);
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
+  });
+
   it('GET /api/chat/partner-status/:otherUserId returns partnered for accepted pair', async () => {
     const res = await request(app)
       .get('/api/chat/partner-status/user-sde-int-match')

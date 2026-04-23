@@ -164,19 +164,16 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.pre("save", function updateTimestamp(next) {
+userSchema.pre("save", function updateTimestamp() {
   this.updatedAt = new Date();
-  next();
 });
 
-userSchema.pre("findOneAndUpdate", function updateTimestampOnFindOneAndUpdate(next) {
+userSchema.pre("findOneAndUpdate", function updateTimestampOnFindOneAndUpdate() {
   this.set({ updatedAt: new Date() });
-  next();
 });
 
-userSchema.pre("findByIdAndUpdate", function updateTimestampOnFindByIdAndUpdate(next) {
+userSchema.pre("findByIdAndUpdate", function updateTimestampOnFindByIdAndUpdate() {
   this.set({ updatedAt: new Date() });
-  next();
 });
 
 module.exports = mongoose.models.User || mongoose.model("User", userSchema);
