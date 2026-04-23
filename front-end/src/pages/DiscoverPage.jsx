@@ -67,7 +67,7 @@ function DiscoverPage() {
 
       setUsers((prev) =>
         prev.map((user) =>
-          user.userId === userId ? { ...user, invited: true } : user
+          user.userId === userId ? { ...user, inviteStatus: "sent" } : user
         )
       );
     } catch (err) {
