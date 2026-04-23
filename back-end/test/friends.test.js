@@ -1,10 +1,21 @@
 const request = require('supertest');
 const { expect } = require('chai');
+const jwt = require('jsonwebtoken');
 const app = require('../app');
+
+function makeToken(userId, email = `${userId}@test.com`) {
+  return jwt.sign(
+    { id: userId, email },
+    process.env.JWT_SECRET || 'pairup_secret_key',
+    { expiresIn: '7d' }
+  );
+}
 
 describe('friends routes', () => {
   it('GET /api/friends returns accepted friends for current-user', async () => {
-    const res = await request(app).get('/api/friends').query({ userId: 'current-user' });
+    const res = await request(app)
+      .get('/api/friends')
+      .set('Authorization', `Bearer ${makeToken('current-user')}`);
 
     expect(res.status).to.equal(200);
     expect(res.body.friends).to.be.an('array');
@@ -17,7 +28,8 @@ describe('friends routes', () => {
   it('GET /api/friends/requests?box=incoming returns pending invites to you', async () => {
     const res = await request(app)
       .get('/api/friends/requests')
-      .query({ userId: 'current-user', box: 'incoming' });
+      .query({ box: 'incoming' })
+      .set('Authorization', `Bearer ${makeToken('current-user')}`);
 
     expect(res.status).to.equal(200);
     const incoming = res.body.requests.filter((r) => r.direction === 'incoming');
@@ -28,7 +40,7 @@ describe('friends routes', () => {
   it('PATCH /api/friends/requests/:id accept marks accepted', async () => {
     const res = await request(app)
       .patch('/api/friends/requests/fr-incoming-demo')
-      .query({ userId: 'current-user' })
+      .set('Authorization', `Bearer ${makeToken('current-user')}`)
       .send({ status: 'accepted' });
 
     expect(res.status).to.equal(200);
@@ -38,7 +50,7 @@ describe('friends routes', () => {
   it('POST /api/friends/requests creates outgoing invite', async () => {
     const res = await request(app)
       .post('/api/friends/requests')
-      .query({ userId: 'current-user' })
+      .set('Authorization', `Bearer ${makeToken('current-user')}`)
       .send({ toUserId: 'user-sde-int-new' });
 
     expect(res.status).to.equal(201);
@@ -49,7 +61,7 @@ describe('friends routes', () => {
   it('POST /api/friends/requests returns 409 when reverse pending exists', async () => {
     const res = await request(app)
       .post('/api/friends/requests')
-      .query({ userId: 'user-sde-int-new' })
+      .set('Authorization', `Bearer ${makeToken('user-sde-int-new')}`)
       .send({ toUserId: 'current-user' });
 
     expect(res.status).to.equal(409);
@@ -59,7 +71,7 @@ describe('friends routes', () => {
   it('PATCH decline works for recipient', async () => {
     const create = await request(app)
       .post('/api/friends/requests')
-      .query({ userId: 'user-sde-beg-mid' })
+      .set('Authorization', `Bearer ${makeToken('user-sde-beg-mid')}`)
       .send({ toUserId: 'user-sde-int-flaky' });
 
     expect(create.status).to.equal(201);
@@ -67,7 +79,7 @@ describe('friends routes', () => {
 
     const res = await request(app)
       .patch(`/api/friends/requests/${id}`)
-      .query({ userId: 'user-sde-int-flaky' })
+      .set('Authorization', `Bearer ${makeToken('user-sde-int-flaky')}`)
       .send({ status: 'declined' });
 
     expect(res.status).to.equal(200);
@@ -77,7 +89,7 @@ describe('friends routes', () => {
   it('PATCH cancel works for sender', async () => {
     const create = await request(app)
       .post('/api/friends/requests')
-      .query({ userId: 'user-sde-beg-any-noncs' })
+      .set('Authorization', `Bearer ${makeToken('user-sde-beg-any-noncs')}`)
       .send({ toUserId: 'user-sde-adv-any' });
 
     expect(create.status).to.equal(201);
@@ -85,7 +97,7 @@ describe('friends routes', () => {
 
     const res = await request(app)
       .patch(`/api/friends/requests/${id}`)
-      .query({ userId: 'user-sde-beg-any-noncs' })
+      .set('Authorization', `Bearer ${makeToken('user-sde-beg-any-noncs')}`)
       .send({ status: 'cancelled' });
 
     expect(res.status).to.equal(200);
