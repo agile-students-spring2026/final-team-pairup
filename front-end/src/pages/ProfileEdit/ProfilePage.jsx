@@ -184,7 +184,7 @@ function ProfilePage({ onBackToEdit, successMessage }) {
         </button>
       </div>
 
-      <BottomNav />
+      <BottomNav active="profile" />
     </div>
   );
 }
