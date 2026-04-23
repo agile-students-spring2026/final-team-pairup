@@ -114,15 +114,12 @@ export async function fetchPartnersFromFriendsApi() {
 
 /** Merge API-backed friends into existing partner state (keeps demo rows unless same id). */
 export function mergePartnerRows(existing, fromApi) {
-  const map = new Map();
-  existing.forEach((p) => map.set(p.id, p));
-  fromApi.forEach((p) => map.set(p.id, p));
-  return Array.from(map.values());
+  return Array.isArray(fromApi) ? [...fromApi] : [];
 }
 
-/** Initial partner list for local state; demo rows until GET /api/friends merges in. */
+/** Initial partner list for local state; API-only (no demo seeds). */
 export function getInitialPartners() {
-  return [...partnersMock];
+  return [];
 }
 
 /** Partner-space demo flags/messages; replace with GET /partners/:id/space. */

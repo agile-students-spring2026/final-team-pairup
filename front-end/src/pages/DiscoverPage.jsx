@@ -64,13 +64,13 @@ function DiscoverPage() {
         }
       );
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         throw new Error(data.error || data.message || "Failed to send invite");
       }
 
-      console.log("Invite created:", data);
+      console.log("Friend request created:", data);
 
       setUsers((prev) =>
         prev.map((user) =>
