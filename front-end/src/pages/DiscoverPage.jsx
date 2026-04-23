@@ -41,36 +41,33 @@ function DiscoverPage() {
     navigate(`/profile/${userId}`);
   }
 
-  async function handleSendInvite(userId) {
+    async function handleSendInvite(userId) {
     try {
-      const fromUserId =
-        localStorage.getItem("userId") || "current-user";
-      const res = await fetch(
-        `/api/requests?userId=${encodeURIComponent(fromUserId)}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            fromUserId,
-            toUserId: userId,
-            message: "Want to practice this week?",
-          }),
-        }
-      );
+      const token = localStorage.getItem("token") || "";
 
-      const data = await res.json();
+      const res = await fetch("/api/friends/requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ toUserId: userId }),
+      });
+
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        // 409 = already friends / already pending / reverse pending
+        // 401 = missing or expired token
+        // 400 = validation error
         throw new Error(data.error || "Failed to send invite");
       }
 
-      console.log("Invite created:", data);
+      console.log("Friend request created:", data);
 
       setUsers((prev) =>
         prev.map((user) =>
-          user.id === userId ? { ...user, invited: true } : user
+          user.userId === userId ? { ...user, invited: true } : user
         )
       );
     } catch (err) {
