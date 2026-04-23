@@ -1,15 +1,17 @@
 const User = require("../models/User");
+const { connectToDatabase } = require("../modules/db");
 
 async function authStub(req, res, next) {
   try {
-    const userId = req.query.userId;
+    await connectToDatabase();
 
+    const userId = req.query.userId;
     let user;
 
     if (userId) {
       user = await User.findById(userId);
     } else {
-      user = await User.findOne(); // fallback
+      user = await User.findOne();
     }
 
     if (!user) {

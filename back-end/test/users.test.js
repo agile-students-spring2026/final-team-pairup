@@ -1,13 +1,52 @@
 const request = require('supertest');
 const { expect } = require('chai');
+const mongoose = require('mongoose');
+
 const app = require('../app');
-const mockUsers = require('../data/mockUsers.json');
+const connectDB = require('../config/db');
+const User = require('../models/User');
 
-const originalUsers = JSON.parse(JSON.stringify(mockUsers));
-
-function resetMockUsers() {
-  mockUsers.length = 0;
-  originalUsers.forEach((user) => mockUsers.push(JSON.parse(JSON.stringify(user))));
+function baseUser(overrides = {}) {
+  return {
+    _id: 'current-user',
+    email: 'current@example.com',
+    passwordHash: '$2b$10$placeholderhashedpassword',
+    displayName: 'Saun Current',
+    role: 'SDE',
+    practiceFocus: ['Coding', 'Behavioral'],
+    targetTier: 'Mid-size tech',
+    timeline: '3-6 months',
+    level: 'Intermediate',
+    weakestArea: 'Behavioral',
+    background: 'CS undergrad',
+    school: 'NYU Tandon',
+    bio: 'Ready to practice interviews every week.',
+    linkedinUrl: 'https://linkedin.com/in/currentuser',
+    availability: {
+      mon: [true, false, false],
+      tue: [false, true, false],
+      wed: [false, false, true],
+      thu: [false, false, false],
+      fri: [false, false, false],
+      sat: [false, false, false],
+      sun: [false, false, false],
+    },
+    whoGoesFirst: 'No preference',
+    feedbackStyle: 'Balanced',
+    timezone: 'America/New_York',
+    sessionsCompleted: 0,
+    showUpRate: 1,
+    activePartnerships: 0,
+    totalPartnerships: 0,
+    pendingReceivedInvites: 0,
+    inviteResponseRate: 1,
+    notifications: {
+      inviteReceived: true,
+      matchConfirmed: true,
+      sessionReminder: true,
+    },
+    ...overrides,
+  };
 }
 
 function validUserPayload() {
@@ -39,12 +78,29 @@ function validUserPayload() {
 }
 
 describe('users routes', () => {
-  beforeEach(() => {
-    resetMockUsers();
+  before(async () => {
+    await connectDB();
   });
 
-  after(() => {
-    resetMockUsers();
+  beforeEach(async () => {
+    await User.deleteMany({});
+
+    await User.create(
+      baseUser(),
+    );
+
+    await User.create(
+      baseUser({
+        _id: 'user-sde-int-match',
+        email: 'alex@example.com',
+        displayName: 'Alex Chen',
+      }),
+    );
+  });
+
+  after(async () => {
+    await User.deleteMany({});
+    await mongoose.connection.close();
   });
 
   it('POST /api/users with valid data returns 201 and strips passwordHash', async () => {
@@ -92,7 +148,9 @@ describe('users routes', () => {
   });
 
   it('GET /api/users/me returns current user without passwordHash', async () => {
-    const response = await request(app).get('/api/users/me').expect(200);
+    const response = await request(app)
+      .get('/api/users/me?userId=current-user')
+      .expect(200);
 
     expect(response.body.user._id).to.equal('current-user');
     expect(response.body.user).to.have.property('email');
@@ -124,10 +182,11 @@ describe('users routes', () => {
   });
 
   it('PATCH /api/users/me with valid partial update returns 200 and refreshes updatedAt', async () => {
-    const before = mockUsers.find((user) => user._id === 'current-user').updatedAt;
+    const beforeUser = await User.findById('current-user');
+    const before = beforeUser.updatedAt;
 
     const response = await request(app)
-      .patch('/api/users/me')
+      .patch('/api/users/me?userId=current-user')
       .send({
         displayName: 'Saun Updated',
         targetTier: 'Any',
@@ -138,7 +197,7 @@ describe('users routes', () => {
     expect(response.body.user.displayName).to.equal('Saun Updated');
     expect(response.body.user.targetTier).to.equal('Any');
     expect(response.body.user.bio).to.equal('Updated bio for profile test.');
-    expect(response.body.user.updatedAt).to.not.equal(before);
+    expect(new Date(response.body.user.updatedAt).getTime()).to.be.greaterThan(new Date(before).getTime());
     expect(response.body.user).to.not.have.property('passwordHash');
   });
 });

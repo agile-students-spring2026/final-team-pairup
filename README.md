@@ -1,4 +1,5 @@
 # PairUp
+
 ### NYU CS Job-Prep Teammate Matcher
 
 PairUp is a web app designed to help **NYU Computer Science students find compatible job-prep partners or small prep groups** for activities such as LeetCode practice, system design mock interviews, behavioral interview prep, and resume review.
@@ -51,12 +52,14 @@ We plan to begin with a pilot group of real students we can directly talk to and
 ## Core Features
 
 ### MVP
+
 - Profile creation and editing
 - Matching system that returns a ranked list of compatible partners
 - Match explanations
 - Send and accept connection requests
 
 ### Stretch Goals
+
 - Group matching for 3–4 people
 - Session reminders and lightweight scheduling support
 - Improved matching using user feedback over time
@@ -158,6 +161,34 @@ CI=true npm test
 ```
 
 ---
+
+### Back-end Test
+
+Running the Backend:
+
+```
+cd back-end
+npm install
+npm start
+```
+
+Running Tests:
+
+```
+cd back-end
+npm test
+```
+
+### Environment Variables
+
+Create a `.env` file in `back-end/` with:
+
+```env
+MONGODB_URI=your_mongodb_atlas_connection_string
+JWT_SECRET=your_secret_key
+PORT=3000
+CORS_ORIGIN=http://localhost:3001
+```
 
 ## Additional Documentation
 
