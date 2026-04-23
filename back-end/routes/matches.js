@@ -1,12 +1,13 @@
-// routes/matches.js — GET /api/matches
+// routes/matches.js — GET /api/matches (MongoDB-backed)
 const express = require('express');
 const router = express.Router();
-const mockUsers = require('../data/users');
+const User = require('../models/User');
+const { connectToDatabase } = require('../modules/db');
 const { calculateMatchScore } = require('../modules/matchScoring');
 const { calculateRankScore } = require('../modules/rankScoring');
 const { generateReasons } = require('../modules/matchReasons');
 
-router.get('/matches', (req, res) => {
+router.get('/matches', async (req, res) => {
   try {
     const currentUser = req.user;
 
@@ -16,11 +17,19 @@ router.get('/matches', (req, res) => {
       return res.json({ currentUserId: currentUser._id, matches: [] });
     }
 
+    await connectToDatabase();
+
+    // Pull every other user from Mongo (excluding the current user).
+    const candidates = await User.find({
+      _id: { $ne: currentUser._id },
+    }).lean();
+
     const matches = [];
 
-    for (const candidate of mockUsers) {
+    for (const candidate of candidates) {
       // Skip candidates who haven't completed onboarding
       if (!candidate.availability || candidate.role === null) continue;
+
       // Step a: Score
       const matchResult = calculateMatchScore(currentUser, candidate);
       if (!matchResult) continue;
@@ -34,7 +43,9 @@ router.get('/matches', (req, res) => {
 
       // Step d: Reasons
       const sharedGoals = generateReasons(
-        currentUser, candidate, matchResult.scoreBreakdown
+        currentUser,
+        candidate,
+        matchResult.scoreBreakdown
       );
 
       // Step e: Build response (explicit allowlist)
@@ -56,7 +67,7 @@ router.get('/matches', (req, res) => {
         feedbackStyle: candidate.feedbackStyle,
         sessionsCompleted: candidate.sessionsCompleted,
         showUpRate: candidate.showUpRate,
-        isNew: candidate.sessionsCompleted < 3,
+        isNew: (candidate.sessionsCompleted ?? 0) < 3,
         matchPercent: matchResult.matchPercent,
         sharedGoals,
         sharedCells: matchResult.sharedCells,
@@ -64,20 +75,25 @@ router.get('/matches', (req, res) => {
         inviteStatus: null,
         // Hidden — used for sorting only, stripped before response
         _rankScore: rankScore,
-        _createdAt: candidate.createdAt
+        _createdAt: candidate.createdAt,
       });
     }
 
     // Sort: rankScore desc → matchPercent desc → sharedCells desc → createdAt desc
     matches.sort((a, b) => {
       if (b._rankScore !== a._rankScore) return b._rankScore - a._rankScore;
-      if (b.matchPercent !== a.matchPercent) return b.matchPercent - a.matchPercent;
-      if (b.sharedCells !== a.sharedCells) return b.sharedCells - a.sharedCells;
+      if (b.matchPercent !== a.matchPercent)
+        return b.matchPercent - a.matchPercent;
+      if (b.sharedCells !== a.sharedCells)
+        return b.sharedCells - a.sharedCells;
       return new Date(b._createdAt) - new Date(a._createdAt);
     });
 
     // Strip hidden sort fields before sending
-    matches.forEach(m => { delete m._rankScore; delete m._createdAt; });
+    matches.forEach((m) => {
+      delete m._rankScore;
+      delete m._createdAt;
+    });
 
     res.json({ currentUserId: currentUser._id, matches });
   } catch (err) {
