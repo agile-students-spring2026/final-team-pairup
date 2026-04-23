@@ -1,19 +1,11 @@
 const express = require('express')
 const { body, validationResult } = require('express-validator')
-const Proposal = require('../models/Proposal')
-
+const Meeting = require('../models/Meeting')
+ 
 const router = express.Router()
-
-const SESSION_TYPE_OPTIONS = [
-  'Mock interview',
-  'Behavioral',
-  'System design',
-  'LeetCode pair',
-]
-
-const LEVEL_OPTIONS = ['Beginner', 'Intermediate', 'Advanced']
-const PROPOSAL_STATUS_OPTIONS = ['pending', 'accepted', 'declined', 'cancelled']
-
+ 
+const MEETING_STATUS_OPTIONS = ['scheduled', 'completed', 'cancelled', 'rescheduled']
+ 
 function validationErrors(req, res, next) {
   const result = validationResult(req)
   if (result.isEmpty()) {
@@ -24,99 +16,84 @@ function validationErrors(req, res, next) {
     details: result.array().map((item) => item.msg),
   })
 }
-
+ 
 const createValidators = [
   body('requestId').notEmpty().withMessage('requestId is required.'),
-  body('fromUserId').notEmpty().withMessage('fromUserId is required.'),
-  body('toUserId').notEmpty().withMessage('toUserId is required.'),
-  body('sessionType')
-    .isIn(SESSION_TYPE_OPTIONS)
-    .withMessage(`sessionType must be one of: ${SESSION_TYPE_OPTIONS.join(', ')}`),
-  body('level')
-    .isIn(LEVEL_OPTIONS)
-    .withMessage(`level must be one of: ${LEVEL_OPTIONS.join(', ')}`),
-  body('meetingLink').isString().notEmpty().withMessage('meetingLink is required.'),
-  body('timeOptions')
-    .isArray({ min: 1 })
-    .withMessage('timeOptions must be a non-empty array.'),
+  body('hostUserId').notEmpty().withMessage('hostUserId is required.'),
+  body('guestUserId').notEmpty().withMessage('guestUserId is required.'),
+  body('date').notEmpty().withMessage('date is required.'),
+  body('startTime').notEmpty().withMessage('startTime is required.'),
+  body('endTime').notEmpty().withMessage('endTime is required.'),
+  body('timezone').optional().isString().withMessage('timezone must be a string.'),
+  body('notes').optional().isString().withMessage('notes must be a string.'),
   validationErrors,
 ]
-
+ 
 const patchValidators = [
   body('status')
     .optional()
-    .isIn(PROPOSAL_STATUS_OPTIONS)
-    .withMessage(`status must be one of: ${PROPOSAL_STATUS_OPTIONS.join(', ')}`),
-  body('selectedSlotId')
-    .optional()
-    .isString()
-    .withMessage('selectedSlotId must be a string.'),
+    .isIn(MEETING_STATUS_OPTIONS)
+    .withMessage(`status must be one of: ${MEETING_STATUS_OPTIONS.join(', ')}`),
   validationErrors,
 ]
-
-// GET all proposals
-router.get('/proposals', async (req, res) => {
+ 
+router.get('/meetings', async (req, res) => {
   try {
-    const proposals = await Proposal.find()
-    return res.status(200).json({ proposals })
+    const meetings = await Meeting.find()
+    return res.status(200).json({ meetings })
   } catch (err) {
-    console.error(`Error fetching proposals: ${err}`)
-    return res.status(500).json({ error: 'Failed to fetch proposals.' })
+    console.error(`Error fetching meetings: ${err}`)
+    return res.status(500).json({ error: 'Failed to fetch meetings.' })
   }
 })
-
-// GET single proposal by id
-router.get('/proposals/:id', async (req, res) => {
+ 
+router.get('/meetings/:id', async (req, res) => {
   try {
-    const proposal = await Proposal.findById(req.params.id)
-    if (!proposal) {
-      return res.status(404).json({ error: 'Proposal not found' })
+    const meeting = await Meeting.findById(req.params.id)
+    if (!meeting) {
+      return res.status(404).json({ error: 'Meeting not found' })
     }
-    return res.status(200).json({ proposal })
+    return res.status(200).json({ meeting })
   } catch (err) {
-    console.error(`Error fetching proposal: ${err}`)
-    return res.status(500).json({ error: 'Failed to fetch proposal.' })
+    console.error(`Error fetching meeting: ${err}`)
+    return res.status(500).json({ error: 'Failed to fetch meeting.' })
   }
 })
-
-// POST create new proposal
-router.post('/proposals', createValidators, async (req, res) => {
+ 
+router.post('/meetings', createValidators, async (req, res) => {
   try {
-    const proposal = await new Proposal({
+    const meeting = await new Meeting({
       requestId: req.body.requestId,
-      fromUserId: req.body.fromUserId,
-      toUserId: req.body.toUserId,
-      sessionType: req.body.sessionType,
-      level: req.body.level,
-      meetingLink: req.body.meetingLink,
-      timeOptions: req.body.timeOptions,
+      hostUserId: req.body.hostUserId,
+      guestUserId: req.body.guestUserId,
+      date: req.body.date,
+      startTime: req.body.startTime,
+      endTime: req.body.endTime,
+      timezone: req.body.timezone || 'America/New_York',
+      notes: req.body.notes || '',
     }).save()
-
-    return res.status(201).json({ proposal })
+    return res.status(201).json({ meeting })
   } catch (err) {
-    console.error(`Error creating proposal: ${err}`)
-    return res.status(500).json({ error: 'Failed to create proposal.' })
+    console.error(`Error creating meeting: ${err}`)
+    return res.status(500).json({ error: 'Failed to create meeting.' })
   }
 })
-
-// PATCH update proposal status or selectedSlotId
-router.patch('/proposals/:id', patchValidators, async (req, res) => {
+ 
+router.patch('/meetings/:id', patchValidators, async (req, res) => {
   try {
-    const proposal = await Proposal.findByIdAndUpdate(
+    const meeting = await Meeting.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
       { new: true, runValidators: true }
     )
-
-    if (!proposal) {
-      return res.status(404).json({ error: 'Proposal not found' })
+    if (!meeting) {
+      return res.status(404).json({ error: 'Meeting not found' })
     }
-
-    return res.status(200).json({ proposal })
+    return res.status(200).json({ meeting })
   } catch (err) {
-    console.error(`Error updating proposal: ${err}`)
-    return res.status(500).json({ error: 'Failed to update proposal.' })
+    console.error(`Error updating meeting: ${err}`)
+    return res.status(500).json({ error: 'Failed to update meeting.' })
   }
 })
-
+ 
 module.exports = router

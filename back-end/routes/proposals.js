@@ -1,30 +1,28 @@
-const express = require('express');
-const { body, validationResult } = require('express-validator');
-const { randomUUID } = require('crypto');
-const mockProposals = require('../data/mockProposals.json');
+const express = require('express')
+const { body, validationResult } = require('express-validator')
+const Proposal = require('../models/Proposal')
 
-const router = express.Router();
+const router = express.Router()
 
 const SESSION_TYPE_OPTIONS = [
   'Mock interview',
   'Behavioral',
   'System design',
   'LeetCode pair',
-];
+]
 
-const LEVEL_OPTIONS = ['Beginner', 'Intermediate', 'Advanced'];
-const PROPOSAL_STATUS_OPTIONS = ['pending', 'accepted', 'declined', 'cancelled'];
+const LEVEL_OPTIONS = ['Beginner', 'Intermediate', 'Advanced']
+const PROPOSAL_STATUS_OPTIONS = ['pending', 'accepted', 'declined', 'cancelled']
 
 function validationErrors(req, res, next) {
-  const result = validationResult(req);
+  const result = validationResult(req)
   if (result.isEmpty()) {
-    return next();
+    return next()
   }
-
   return res.status(400).json({
     error: 'Validation failed',
     details: result.array().map((item) => item.msg),
-  });
+  })
 }
 
 const createValidators = [
@@ -42,7 +40,7 @@ const createValidators = [
     .isArray({ min: 1 })
     .withMessage('timeOptions must be a non-empty array.'),
   validationErrors,
-];
+]
 
 const patchValidators = [
   body('status')
@@ -54,60 +52,71 @@ const patchValidators = [
     .isString()
     .withMessage('selectedSlotId must be a string.'),
   validationErrors,
-];
+]
 
-router.get('/proposals', (req, res) => {
-  return res.status(200).json({ proposals: mockProposals });
-});
-
-router.get('/proposals/:id', (req, res) => {
-  const proposal = mockProposals.find((candidate) => candidate.id === req.params.id);
-
-  if (!proposal) {
-    return res.status(404).json({ error: 'Proposal not found' });
+// GET all proposals
+router.get('/proposals', async (req, res) => {
+  try {
+    const proposals = await Proposal.find()
+    return res.status(200).json({ proposals })
+  } catch (err) {
+    console.error(`Error fetching proposals: ${err}`)
+    return res.status(500).json({ error: 'Failed to fetch proposals.' })
   }
+})
 
-  return res.status(200).json({ proposal });
-});
-
-router.post('/proposals', createValidators, (req, res) => {
-  const newProposal = {
-    id: randomUUID(),
-    requestId: req.body.requestId,
-    fromUserId: req.body.fromUserId,
-    toUserId: req.body.toUserId,
-    sessionType: req.body.sessionType,
-    level: req.body.level,
-    meetingLink: req.body.meetingLink,
-    timeOptions: req.body.timeOptions,
-    status: 'pending',
-    selectedSlotId: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  mockProposals.push(newProposal);
-
-  return res.status(201).json({ proposal: newProposal });
-});
-
-router.patch('/proposals/:id', patchValidators, (req, res) => {
-  const proposalIndex = mockProposals.findIndex((candidate) => candidate.id === req.params.id);
-
-  if (proposalIndex === -1) {
-    return res.status(404).json({ error: 'Proposal not found' });
+// GET single proposal by id
+router.get('/proposals/:id', async (req, res) => {
+  try {
+    const proposal = await Proposal.findById(req.params.id)
+    if (!proposal) {
+      return res.status(404).json({ error: 'Proposal not found' })
+    }
+    return res.status(200).json({ proposal })
+  } catch (err) {
+    console.error(`Error fetching proposal: ${err}`)
+    return res.status(500).json({ error: 'Failed to fetch proposal.' })
   }
+})
 
-  const existingProposal = mockProposals[proposalIndex];
-  const updatedProposal = {
-    ...existingProposal,
-    ...req.body,
-    updatedAt: new Date().toISOString(),
-  };
+// POST create new proposal
+router.post('/proposals', createValidators, async (req, res) => {
+  try {
+    const proposal = await new Proposal({
+      requestId: req.body.requestId,
+      fromUserId: req.body.fromUserId,
+      toUserId: req.body.toUserId,
+      sessionType: req.body.sessionType,
+      level: req.body.level,
+      meetingLink: req.body.meetingLink,
+      timeOptions: req.body.timeOptions,
+    }).save()
 
-  mockProposals[proposalIndex] = updatedProposal;
+    return res.status(201).json({ proposal })
+  } catch (err) {
+    console.error(`Error creating proposal: ${err}`)
+    return res.status(500).json({ error: 'Failed to create proposal.' })
+  }
+})
 
-  return res.status(200).json({ proposal: updatedProposal });
-});
+// PATCH update proposal status or selectedSlotId
+router.patch('/proposals/:id', patchValidators, async (req, res) => {
+  try {
+    const proposal = await Proposal.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true, runValidators: true }
+    )
 
-module.exports = router;
+    if (!proposal) {
+      return res.status(404).json({ error: 'Proposal not found' })
+    }
+
+    return res.status(200).json({ proposal })
+  } catch (err) {
+    console.error(`Error updating proposal: ${err}`)
+    return res.status(500).json({ error: 'Failed to update proposal.' })
+  }
+})
+
+module.exports = router
