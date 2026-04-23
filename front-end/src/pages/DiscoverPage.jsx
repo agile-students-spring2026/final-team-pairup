@@ -22,14 +22,14 @@ function DiscoverPage() {
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const matchesUrl = userId ? `/api/matches?userId=${userId}` : "/api/matches";
+
     fetch(matchesUrl)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        // Backend returns matches already sorted by rankScore
-        setUsers(data.matches);
+        setUsers(data.matches || []);
       })
       .catch((err) => {
         console.error("Failed to fetch matches:", err);
@@ -41,37 +41,52 @@ function DiscoverPage() {
     navigate(`/profile/${userId}`);
   }
 
-    async function handleSendInvite(userId) {
+  async function handleSendInvite(targetUserId) {
     try {
-      const token = localStorage.getItem("token") || "";
+      const fromUserId = localStorage.getItem("userId") || "current-user";
+      const token = localStorage.getItem("token");
 
-      const res = await fetch("/api/friends/requests", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ toUserId: userId }),
-      });
+      if (!token) {
+        throw new Error("You must be logged in to send an invite.");
+      }
+
+      const res = await fetch(
+        `/api/friends/requests?userId=${encodeURIComponent(fromUserId)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            toUserId: targetUserId,
+          }),
+        }
+      );
 
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        // 409 = already friends / already pending / reverse pending
-        // 401 = missing or expired token
-        // 400 = validation error
-        throw new Error(data.error || "Failed to send invite");
+        throw new Error(data.error || data.message || "Failed to send invite");
       }
 
       console.log("Friend request created:", data);
 
       setUsers((prev) =>
         prev.map((user) =>
-          user.userId === userId ? { ...user, inviteStatus: "sent" } : user
+          user.userId === targetUserId ||
+          user.id === targetUserId ||
+          user._id === targetUserId
+            ? {
+                ...user,
+                inviteStatus: "sent",
+                invited: true,
+              }
+            : user
         )
       );
     } catch (err) {
-      console.error(err);
+      console.error("Failed to send invite:", err);
       alert(err.message || "Something went wrong");
     }
   }
@@ -170,7 +185,7 @@ function DiscoverPage() {
         <div className="discover-feed">
           {filteredUsers.map((user) => (
             <DiscoverCard
-              key={user.userId}
+              key={user.userId || user.id || user._id}
               user={user}
               onSendInvite={handleSendInvite}
               onViewProfile={handleViewProfile}
