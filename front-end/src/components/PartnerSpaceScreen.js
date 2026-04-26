@@ -366,6 +366,13 @@ function PartnerSpaceScreen({
     }
   }
 
+  const upcomingSession = confirmedSlot
+  ? {
+      dateLabel: confirmedSlot.label,
+      sessionType: incomingProposal?.sessionType || 'Session',
+    }
+  : partner.upcomingSession;
+
   const firstName = partner.name.split(' ')[0] ?? partner.name;
 
   return (
@@ -392,19 +399,20 @@ function PartnerSpaceScreen({
         </button>
       </header>
 
-      {partner.upcomingSession && (
+      {upcomingSession && (
         <div className="partner-space__upcoming-pill" role="status">
           <span className="partner-space__upcoming-label">Upcoming</span>
           <span className="partner-space__upcoming-sep" aria-hidden="true">
-            ·
+            路
           </span>
-          <span>{partner.upcomingSession.dateLabel}</span>
+          <span>{upcomingSession.dateLabel}</span>
           <span className="partner-space__upcoming-sep" aria-hidden="true">
-            ·
+            路
           </span>
-          <span>{partner.upcomingSession.sessionType}</span>
+          <span>{upcomingSession.sessionType}</span>
         </div>
       )}
+
 
       {proposalLoadingError && (
         <p style={{ color: 'red', padding: '8px 20px' }}>
@@ -417,7 +425,7 @@ function PartnerSpaceScreen({
         </p>
       )}
 
-      {incomingProposal && (
+      {incomingProposal?.status === 'pending' && (
         <section className="partner-space__proposal-in" aria-label="Incoming session proposal">
           <p className="partner-space__proposal-in-kicker">Session proposal</p>
           <p className="partner-space__proposal-in-title">

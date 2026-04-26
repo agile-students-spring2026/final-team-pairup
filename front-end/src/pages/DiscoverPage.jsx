@@ -73,18 +73,14 @@ function DiscoverPage() {
       console.log("Friend request created:", data);
 
       setUsers((prev) =>
-        prev.map((user) =>
-          user.userId === targetUserId ||
-          user.id === targetUserId ||
-          user._id === targetUserId
-            ? {
-                ...user,
-                inviteStatus: "sent",
-                invited: true,
-              }
-            : user
+        prev.filter(
+          (user) =>
+            user.userId !== targetUserId &&
+            user.id !== targetUserId &&
+            user._id !== targetUserId
         )
       );
+
     } catch (err) {
       console.error("Failed to send invite:", err);
       alert(err.message || "Something went wrong");
@@ -123,8 +119,8 @@ function DiscoverPage() {
           <h1 className="discover-title">Discover</h1>
           {!isAlgorithmEmpty && (
             <p className="discover-subtitle">
-              {filteredUsers.length} match
-              {filteredUsers.length !== 1 ? "es" : ""} found for you
+              {users.length} match
+              {users.length !== 1 ? "es" : ""} found for you
             </p>
           )}
         </div>
