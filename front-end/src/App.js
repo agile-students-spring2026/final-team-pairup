@@ -271,11 +271,11 @@ function AppRoutes({ initialIsAuthenticated = false }) {
     localStorage.removeItem("pairup_profile_data");
   }
 
-  function handleLogout() {
+  function handleLogout({ redirectState } = {}) {
     clearLocalSession();
     setIsAuthenticated(false);
     setIsOnboarding(false);
-    navigate("/login", { replace: true });
+    navigate("/login", { replace: true, state: redirectState });
   }
 
   const selectedPartnerIds = useMemo(

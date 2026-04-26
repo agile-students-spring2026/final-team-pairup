@@ -1,11 +1,16 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Users } from "lucide-react";
 import "./Auth.css";
 
 const API_BASE = "http://localhost:3000";
 
 function LoginPage({ onLoginSuccess }) {
+  const location = useLocation();
+  const accountDeletedMessage =
+    location.state?.accountDeleted && location.state?.message
+      ? location.state.message
+      : "";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -123,6 +128,9 @@ function LoginPage({ onLoginSuccess }) {
         ) : (
           <form onSubmit={handleSubmit} className="auth-form">
             <h2>{forgot ? "Reset your password" : "Welcome back"}</h2>
+            {accountDeletedMessage ? (
+              <p className="auth-success-text">{accountDeletedMessage}</p>
+            ) : null}
 
             <label>Email</label>
             <input

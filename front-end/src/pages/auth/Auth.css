@@ -164,6 +164,16 @@
   margin-top: -4px;
 }
 
+.auth-success-text {
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin: -4px 0 6px;
+}
+
 .auth-success {
   text-align: center;
   margin-top: 220px;
