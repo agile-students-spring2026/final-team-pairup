@@ -1,6 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { formatRelativeAgo } from '../utils/relativeTime';
-import { getPartnerSpaceDemo } from '../services/mockApi';
 import { DEFAULT_SCHEDULE_AVAILABILITY_SLOTS } from '../utils/scheduleCalendar';
 import ScheduleSessionSheet from './ScheduleSessionSheet';
 import './PartnerSpaceScreen.css';
@@ -32,10 +31,6 @@ function buildProposalSystemMessage(payload, partnerFirstName) {
   return `Proposal sent: ${payload.interviewType} (${payload.level}). ${partnerFirstName} will pick one of ${payload.slots.length} time option(s). Meeting link is included for your partner.`;
 }
 
-function feedbackDoneStorageKey(partnerId, sessionLabel) {
-  return `pairup-feedback-done-${partnerId}-${sessionLabel}`;
-}
-
 function PartnerSpaceScreen({
   partner,
   onBack,
@@ -43,9 +38,10 @@ function PartnerSpaceScreen({
   availabilitySlots = DEFAULT_SCHEDULE_AVAILABILITY_SLOTS,
   nowMs = Date.now(),
 }) {
-  const demo = useMemo(() => getPartnerSpaceDemo(partner.id), [partner.id]);
   const dialogTitleId = useId();
   const referenceDate = useMemo(() => new Date(nowMs), [nowMs]);
+  const introTimeline = partner.timeline || 'your prep timeline';
+  const icebreakerDraft = `Hey ${partner.name.split(' ')[0] || 'there'}! Want to prep together this week?`;
 
   const [disconnectOpen, setDisconnectOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
@@ -91,9 +87,7 @@ function PartnerSpaceScreen({
 
     fetchProposals();
   }, [partner.id]);
-  const feedbackKey = demo.postSessionFeedback
-    ? feedbackDoneStorageKey(partner.id, demo.postSessionFeedback.sessionLabel)
-    : null;
+  const feedbackKey = null;
   const [feedbackDone, setFeedbackDone] = useState(false);
   const [fbStep, setFbStep] = useState(1);
   const [q1AckVisible, setQ1AckVisible] = useState(false);
@@ -147,10 +141,10 @@ function PartnerSpaceScreen({
           seedMessages.push({
             id: `sys-intro-${partner.id}`,
             kind: 'system',
-            body: buildSystemIntro(partner, demo.introTimeline),
+            body: buildSystemIntro(partner, introTimeline),
             at: Date.now(),
           });
-          setDraft(demo.icebreaker);
+          setDraft(icebreakerDraft);
         } else {
           setDraft('');
         }
@@ -214,7 +208,7 @@ function PartnerSpaceScreen({
 
     setHydrated(false);
     loadChatFromApi();
-  }, [partner, demo]);
+  }, [partner, introTimeline, icebreakerDraft]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -224,9 +218,9 @@ function PartnerSpaceScreen({
     }
   }, [messages, hydrated, feedbackDone, fbStep]);
 
-  const showFeedback = demo.postSessionFeedback && !feedbackDone;
+  const showFeedback = false;
 
-  const showOutgoingBanner = demo.outgoingProposalWaiting || localProposalSent;
+  const showOutgoingBanner = localProposalSent;
 
   const send = async () => {
     const text = draft.trim();
@@ -506,17 +500,17 @@ function PartnerSpaceScreen({
         <div ref={endRef} />
       </div>
 
-      {showFeedback && demo.postSessionFeedback && (
+      {showFeedback && (
         <div className="partner-space__feedback" role="region" aria-label="Session feedback">
           <div className="partner-space__feedback-head">
             <p className="partner-space__feedback-kicker">Session feedback</p>
-            <p className="partner-space__feedback-meta-right">{demo.postSessionFeedback.sessionLabel}</p>
+            <p className="partner-space__feedback-meta-right">Recent session</p>
           </div>
 
           {fbStep === 1 && !q1AckVisible && (
             <>
               <p className="partner-space__feedback-q">
-                Did {demo.postSessionFeedback.partnerFirstName} show up to the session?
+                Did {firstName} show up to the session?
               </p>
               <div className="partner-space__feedback-actions">
                 <button

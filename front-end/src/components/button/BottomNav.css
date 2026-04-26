@@ -1,5 +1,5 @@
 .bottom-nav {
-  position: sticky;
+  position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
@@ -9,6 +9,7 @@
   border-top: 1px solid #d9e3ea;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.04);
   z-index: 20;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .bottom-nav__item {

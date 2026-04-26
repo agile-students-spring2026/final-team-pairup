@@ -14,8 +14,10 @@ function PartnersList({ partners, onOpenPartner, onGoToMatches, nowMs = Date.now
   if (count === 0) {
     return (
       <div className="partners-list partners-list--empty">
-        <div className="partners-list__empty-inner">
+        <header className="partners-list__header">
           <h1 className="partners-list__title">Partners</h1>
+        </header>
+        <div className="partners-list__empty-inner">
           <h2 className="partners-list__empty-title">No active partnerships yet</h2>
           <p className="partners-list__empty-copy">
             Accept a match to start a prep partnership — you&apos;ll manage every ongoing relationship

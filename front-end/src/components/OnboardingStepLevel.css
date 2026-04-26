@@ -16,7 +16,7 @@
   min-height: 100dvh;
   background: #ffffff;
   border-radius: 0;
-  padding: 16px 20px 28px;
+  padding: 24px 20px 28px;
   box-shadow: none;
 }
 
@@ -29,12 +29,12 @@
 
 .onboarding-level__back {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  margin: -4px 0 0 -6px;
+  width: 32px;
+  height: 32px;
+  margin: -4px 0 0 -2px;
   border: none;
   background: transparent;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   line-height: 1;
   color: #0a2540;
   cursor: pointer;

@@ -51,7 +51,7 @@ function ExpandPanel({ open, children }) {
   return <div className="settings-expand">{children}</div>;
 }
 
-function SettingsPage() {
+function SettingsPage({ onLogout }) {
   const navigate = useNavigate();
   const { profile, updateField, saveProfile } = useProfile();
 
@@ -269,8 +269,12 @@ function SettingsPage() {
       }
 
       localStorage.removeItem("token");
+      localStorage.removeItem("userId");
       localStorage.removeItem("userEmail");
       localStorage.removeItem("fullName");
+      localStorage.removeItem("sessionEmail");
+      localStorage.removeItem("sessionFullName");
+      localStorage.removeItem("pairup_profile_data");
 
       setMessage("Account deleted.");
       navigate("/login");
@@ -339,6 +343,23 @@ function SettingsPage() {
       console.error("Notification update error:", error);
       setMessage("Server error.");
     }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("fullName");
+    localStorage.removeItem("sessionEmail");
+    localStorage.removeItem("sessionFullName");
+    localStorage.removeItem("pairup_profile_data");
+
+    if (typeof onLogout === "function") {
+      onLogout();
+      return;
+    }
+
+    navigate("/login");
   }
 
   return (
@@ -473,6 +494,13 @@ function SettingsPage() {
               {loading ? "Deleting..." : "Delete account"}
             </button>
           </ExpandPanel>
+
+          <ChevronRow
+            title="Log out"
+            subtitle="Sign out of your PairUp account on this device"
+            danger
+            onClick={handleLogout}
+          />
         </section>
 
         <section className="settings-section">
