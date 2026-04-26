@@ -29,24 +29,37 @@
 
 .onboarding-avail__back {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   margin: -4px 0 0 -2px;
   border: none;
   background: transparent;
-  font-size: 1.5rem;
-  line-height: 1;
-  color: #0a2540;
+  color: #2f343a;
   cursor: pointer;
-  border-radius: 10px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease;
+  padding: 0;
+  line-height: 1;
+  transition: opacity 0.15s ease, transform 0.12s ease;
+}
+
+.onboarding-avail__back-icon {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .onboarding-avail__back:hover {
-  background: #f3f4f6;
+  opacity: 0.75;
+}
+
+.onboarding-avail__back:active {
+  transform: scale(0.97);
 }
 
 .onboarding-avail__back:focus-visible {

@@ -37,8 +37,17 @@ function DiscoverPage() {
       });
   }, []);
 
-  function handleViewProfile(userId) {
-    navigate(`/profile/${userId}`);
+  function handleViewProfile(user) {
+    const targetId = user.userId || user.id || user._id;
+    navigate(`/profile/${targetId}`, {
+      state: {
+        metrics: {
+          matchPercent: user.matchPercent,
+          sessionsCompleted: user.sessionsCompleted,
+          showUpRate: user.showUpRate,
+        },
+      },
+    });
   }
 
   async function handleSendInvite(targetUserId) {

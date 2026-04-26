@@ -374,7 +374,9 @@ function PartnerSpaceScreen({
         <div className="partner-space__card app-shell__card app-shell__card--fill">
       <header className="partner-space__top">
         <button type="button" className="partner-space__back" onClick={onBack} aria-label="Back to partners">
-          ‹
+          <svg className="partner-space__back-icon" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+            <path d="M15 6L9 12L15 18" />
+          </svg>
         </button>
         <button
           type="button"

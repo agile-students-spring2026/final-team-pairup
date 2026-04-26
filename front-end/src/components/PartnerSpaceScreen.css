@@ -36,20 +36,42 @@
 }
 
 .partner-space__back {
-  width: 44px;
-  height: 44px;
+  width: 34px;
+  height: 34px;
   border: none;
   background: transparent;
-  font-size: 1.75rem;
+  padding: 0;
   line-height: 1;
-  color: #0f172a;
+  color: #2f343a;
   cursor: pointer;
-  border-radius: 10px;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s ease, transform 0.12s ease;
+}
+
+.partner-space__back-icon {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .partner-space__back:hover {
-  background: #f1f5f9;
+  opacity: 0.75;
+}
+
+.partner-space__back:active {
+  transform: scale(0.97);
+}
+
+.partner-space__back:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .partner-space__identity {
