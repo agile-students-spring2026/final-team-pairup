@@ -370,8 +370,16 @@ function SettingsPage({ onLogout }) {
             className="settings-back"
             type="button"
             onClick={() => navigate(-1)}
+            aria-label="Go back"
           >
-            ←
+            <svg
+              className="settings-back-icon"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path d="M15 6L9 12L15 18" />
+            </svg>
           </button>
           <h1 className="settings-title">Settings</h1>
         </header>

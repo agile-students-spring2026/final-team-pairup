@@ -61,7 +61,7 @@ function DiscoverCard({ user, onSendInvite, onViewProfile }) {
 
         <button
           className="secondary-btn"
-          onClick={() => onViewProfile(user.userId)}
+          onClick={() => onViewProfile(user)}
         >
           View profile
         </button>
