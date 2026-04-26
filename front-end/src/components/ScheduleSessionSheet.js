@@ -87,9 +87,22 @@ function ScheduleSessionSheet({
       interviewTypeId: interviewType,
       level: levelLabel,
       levelId: level,
-      slots: selectedSlots.map((s) => ({ id: s.id, label: s.label })),
+      slots: selectedSlots.map((s) => {
+        const start = new Date(s.startMs);
+        const end = new Date(s.startMs + 60 * 60 * 1000);
+
+        return {
+          id: s.id,
+          label: s.label,
+          date: s.id.slice(0, 10),
+          startTime: start.toTimeString().slice(0, 5),
+          endTime: end.toTimeString().slice(0, 5),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York',
+        };
+      }),
       meetingLink: meetingLink.trim(),
     });
+
     resetAndClose();
   };
 

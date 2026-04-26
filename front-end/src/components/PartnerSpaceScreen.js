@@ -287,7 +287,7 @@ function PartnerSpaceScreen({
       setProposalError('');
 
       const requestBody = {
-        requestId: 'req-1',
+        requestId: `friend-${devUserId()}-${partner.id}`,
         fromUserId: devUserId(),
         toUserId: partner.id,
         sessionType: payload.interviewType,
