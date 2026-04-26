@@ -7,15 +7,25 @@ const { calculateMatchScore } = require('../modules/matchScoring');
 const { calculateRankScore } = require('../modules/rankScoring');
 const { generateReasons } = require('../modules/matchReasons');
 
+
 router.get('/matches', async (req, res) => {
   try {
     const currentUser = req.user;
 
     // If the current user hasn't completed onboarding yet (availability is null),
     // return empty matches instead of crashing countSharedCells.
-    if (!currentUser.availability || currentUser.role === null) {
+    const hasFullAvailability =
+      currentUser.availability &&
+      ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].every(
+        (day) =>
+          Array.isArray(currentUser.availability[day]) &&
+          currentUser.availability[day].length === 3
+      );
+
+    if (!hasFullAvailability || currentUser.role == null) {
       return res.json({ currentUserId: currentUser._id, matches: [] });
     }
+
 
     await connectToDatabase();
 
@@ -28,18 +38,27 @@ router.get('/matches', async (req, res) => {
 
     for (const candidate of candidates) {
       // Skip candidates who haven't completed onboarding
-      if (!candidate.availability || candidate.role === null) continue;
+      const candidateHasFullAvailability =
+        candidate.availability &&
+        ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].every(
+          (day) =>
+            Array.isArray(candidate.availability[day]) &&
+            candidate.availability[day].length === 3
+        );
+
+      if (!candidateHasFullAvailability || candidate.role == null) continue;
+
+
+      
 
       // Step a: Score
       const matchResult = calculateMatchScore(currentUser, candidate);
       if (!matchResult) continue;
 
-      // Step b: Threshold
-      if (matchResult.matchPercent < 55) continue;
 
       // Step c: Rank
       const rankScore = calculateRankScore(matchResult.matchPercent, candidate);
-      if (rankScore === null) continue;
+
 
       // Step d: Reasons
       const sharedGoals = generateReasons(
@@ -74,20 +93,22 @@ router.get('/matches', async (req, res) => {
         isCrossRole: matchResult.isCrossRole,
         inviteStatus: null,
         // Hidden — used for sorting only, stripped before response
-        _rankScore: rankScore,
+        _rankScore: rankScore ?? matchResult.matchPercent,
         _createdAt: candidate.createdAt,
       });
     }
 
     // Sort: rankScore desc → matchPercent desc → sharedCells desc → createdAt desc
     matches.sort((a, b) => {
-      if (b._rankScore !== a._rankScore) return b._rankScore - a._rankScore;
-      if (b.matchPercent !== a.matchPercent)
+      if (b.matchPercent !== a.matchPercent) {
         return b.matchPercent - a.matchPercent;
-      if (b.sharedCells !== a.sharedCells)
+      }
+      if (b.sharedCells !== a.sharedCells) {
         return b.sharedCells - a.sharedCells;
+      }
       return new Date(b._createdAt) - new Date(a._createdAt);
     });
+
 
     // Strip hidden sort fields before sending
     matches.forEach((m) => {

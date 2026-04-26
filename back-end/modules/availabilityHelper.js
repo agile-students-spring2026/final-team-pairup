@@ -14,12 +14,16 @@ const BAND_NAMES = ['mornings', 'afternoons', 'evenings'];
 function countSharedCells(userAvail, candidateAvail) {
   let count = 0;
   for (const day of DAYS) {
+    const userDay = Array.isArray(userAvail?.[day]) ? userAvail[day] : [false, false, false];
+    const candidateDay = Array.isArray(candidateAvail?.[day]) ? candidateAvail[day] : [false, false, false];
+
     for (let band = 0; band < 3; band++) {
-      if (userAvail[day][band] && candidateAvail[day][band]) {
+      if (userDay[band] && candidateDay[band]) {
         count++;
       }
     }
   }
+
   return count;
 }
 
@@ -38,9 +42,13 @@ function summarizeSharedAvailability(userAvail, candidateAvail) {
   for (let d = 0; d < DAYS.length; d++) {
     const bands = new Set();
     for (let b = 0; b < 3; b++) {
-      if (userAvail[DAYS[d]][b] && candidateAvail[DAYS[d]][b]) {
+      const userDay = Array.isArray(userAvail?.[DAYS[d]]) ? userAvail[DAYS[d]] : [false, false, false];
+      const candidateDay = Array.isArray(candidateAvail?.[DAYS[d]]) ? candidateAvail[DAYS[d]] : [false, false, false];
+
+      if (userDay[b] && candidateDay[b]) {
         bands.add(b);
       }
+
     }
     sharedByDay.push(bands);
   }

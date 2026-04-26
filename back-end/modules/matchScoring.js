@@ -24,10 +24,12 @@ function calculateMatchScore(currentUser, candidate) {
 
   // Factor 1: Availability (35 max)
   let availability;
-  if (sharedCells === 1) availability = 10;
+  if (sharedCells === 0) availability = 0;
+  else if (sharedCells === 1) availability = 10;
   else if (sharedCells === 2) availability = 20;
   else if (sharedCells <= 4) availability = 28;
   else availability = 35;
+
 
   // Factor 2: Practice focus overlap (20 max)
   const sharedFocusAreas = currentUser.practiceFocus.filter(f =>
