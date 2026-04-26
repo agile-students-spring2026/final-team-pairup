@@ -277,7 +277,24 @@ function SettingsPage({ onLogout }) {
       localStorage.removeItem("pairup_profile_data");
 
       setMessage("Account deleted.");
-      navigate("/login");
+
+      if (typeof onLogout === "function") {
+        onLogout({
+          redirectState: {
+            accountDeleted: true,
+            message: "Account deleted successfully.",
+          },
+        });
+        return;
+      }
+
+      navigate("/login", {
+        replace: true,
+        state: {
+          accountDeleted: true,
+          message: "Account deleted successfully.",
+        },
+      });
     } catch (error) {
       console.error("Delete account error:", error);
       setMessage("Server error.");
