@@ -6,6 +6,8 @@ const { connectToDatabase } = require('../modules/db');
 const { calculateMatchScore } = require('../modules/matchScoring');
 const { calculateRankScore } = require('../modules/rankScoring');
 const { generateReasons } = require('../modules/matchReasons');
+const { FriendRequest } = require('../models/FriendRequest');
+
 
 
 router.get('/matches', async (req, res) => {
@@ -28,6 +30,22 @@ router.get('/matches', async (req, res) => {
 
 
     await connectToDatabase();
+    const existingRelationships = await FriendRequest.find({
+      $or: [
+        { fromUserId: currentUser._id },
+        { toUserId: currentUser._id },
+      ],
+      status: { $in: ['pending', 'accepted'] },
+    }).lean();
+
+    const excludedUserIds = new Set(
+      existingRelationships.map((request) =>
+        request.fromUserId === currentUser._id
+          ? request.toUserId
+          : request.fromUserId
+      )
+    );
+
 
     // Pull every other user from Mongo (excluding the current user).
     const candidates = await User.find({
@@ -38,6 +56,7 @@ router.get('/matches', async (req, res) => {
 
     for (const candidate of candidates) {
       // Skip candidates who haven't completed onboarding
+      if (excludedUserIds.has(candidate._id)) continue;
       const candidateHasFullAvailability =
         candidate.availability &&
         ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].every(
