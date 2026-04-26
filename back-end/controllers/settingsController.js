@@ -106,60 +106,54 @@ const deleteAccount = async (req, res) => {
   res.status(200).json({ message: "Account deleted successfully" });
 };
 
-const getNotificationSettings = (req, res) => {
-  const { email } = req.query;
+const getNotificationSettings = async (req, res) => {
+  try {
+    const { email } = req.query;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-  const user = users.find((u) => u.email === email);
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    const n = user.notifications || {};
+    return res.status(200).json({
+      newInvitationReceived: n.newInvitationReceived ?? n.inviteReceived ?? true,
+      inviteAccepted: n.inviteAccepted ?? n.matchConfirmed ?? true,
+      sessionReminder: n.sessionReminder ?? true,
+      sessionBookingConfirmation: n.sessionBookingConfirmation ?? true,
+    });
+  } catch (_err) {
+    return res.status(500).json({ message: "Server error" });
   }
-
-  // Seed missing notifications block (covers legacy mock users)
-  if (!user.notifications) {
-    user.notifications = {
-      newInvitationReceived: true,
-      inviteAccepted: true,
-      sessionReminder: true,
-      sessionBookingConfirmation: true,
-    };
-  }
-
-  // The unified schema stores keys as { inviteReceived, matchConfirmed, sessionReminder }.
-  // The front-end SettingsPage expects { newInvitationReceived, inviteAccepted, sessionReminder, sessionBookingConfirmation }.
-  // Normalise outbound so both sides stay happy.
-  const n = user.notifications;
-  res.status(200).json({
-    newInvitationReceived: n.newInvitationReceived ?? n.inviteReceived ?? true,
-    inviteAccepted:        n.inviteAccepted        ?? n.matchConfirmed ?? true,
-    sessionReminder:       n.sessionReminder       ?? true,
-    sessionBookingConfirmation: n.sessionBookingConfirmation ?? true,
-  });
 };
 
-const updateNotificationSettings = (req, res) => {
-  const { email, notifications } = req.body;
+const updateNotificationSettings = async (req, res) => {
+  try {
+    const { email, notifications } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-  const user = users.find((u) => u.email === email);
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    user.notifications = {
+      ...(user.notifications || {}),
+      ...(notifications || {}),
+    };
+    user.updatedAt = new Date();
+    await user.save();
+
+    const n = user.notifications;
+    return res.status(200).json({
+      message: "Notification settings updated successfully",
+      notifications: {
+        newInvitationReceived: n.newInvitationReceived ?? n.inviteReceived ?? true,
+        inviteAccepted: n.inviteAccepted ?? n.matchConfirmed ?? true,
+        sessionReminder: n.sessionReminder ?? true,
+        sessionBookingConfirmation: n.sessionBookingConfirmation ?? true,
+      },
+    });
+  } catch (_err) {
+    return res.status(500).json({ message: "Server error" });
   }
-
-  user.notifications = {
-    ...user.notifications,
-    ...notifications,
-  };
-  user.updatedAt = new Date().toISOString();
-
-  const n = user.notifications;
-  res.status(200).json({
-    message: "Notification settings updated successfully",
-    notifications: {
-      newInvitationReceived: n.newInvitationReceived ?? n.inviteReceived ?? true,
-      inviteAccepted:        n.inviteAccepted        ?? n.matchConfirmed ?? true,
-      sessionReminder:       n.sessionReminder       ?? true,
-      sessionBookingConfirmation: n.sessionBookingConfirmation ?? true,
-    },
-  });
 };
 
 module.exports = {

@@ -198,15 +198,15 @@
 
 .partners-list__empty-title {
   margin: 0 0 8px;
-  font-size: 2rem;
-  letter-spacing: -0.02em;
-  font-weight: 800;
+  font-size: 1.125rem;
+  letter-spacing: 0;
+  font-weight: 700;
   color: #0a2540;
 }
 
 .partners-list__empty-copy {
   margin: 0 0 20px;
-  font-size: 1.05rem;
+  font-size: 0.9375rem;
   line-height: 1.5;
   color: #6b7280;
 }
@@ -250,6 +250,6 @@
   }
 
   .partners-list__empty-title {
-    font-size: 1.95rem;
+    font-size: 1.125rem;
   }
 }

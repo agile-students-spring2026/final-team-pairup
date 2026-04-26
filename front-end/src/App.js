@@ -261,6 +261,23 @@ function AppRoutes({ initialIsAuthenticated = false }) {
 
   const navigate = useNavigate();
 
+  function clearLocalSession() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("fullName");
+    localStorage.removeItem("sessionEmail");
+    localStorage.removeItem("sessionFullName");
+    localStorage.removeItem("pairup_profile_data");
+  }
+
+  function handleLogout() {
+    clearLocalSession();
+    setIsAuthenticated(false);
+    setIsOnboarding(false);
+    navigate("/login", { replace: true });
+  }
+
   const selectedPartnerIds = useMemo(
     () => new Set(partners.map((p) => p.id)),
     [partners]
@@ -496,7 +513,7 @@ function AppRoutes({ initialIsAuthenticated = false }) {
         path="/settings"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <SettingsPage />
+            <SettingsPage onLogout={handleLogout} />
           </ProtectedRoute>
         }
       />

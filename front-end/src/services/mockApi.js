@@ -1,24 +1,9 @@
 /**
- * mockApi.js — simulated async service layer.
- *
- * Pages and components must NEVER import directly from src/data/.
- * All data access goes through this file so that swapping in a real API
- * later only requires changes here.
+ * Central frontend API service layer.
+ * Note: no local mock datasets are used here.
  */
 
-import { mockDiscoverUsers } from "../data/mockDiscoverUsers";
-import { mockUsers } from "../data/mockUsers";
-import { PARTNERS_MOCK_NOW, partnersMock } from "../data/partnersMock";
-import { getPartnerSpaceDemo as getPartnerSpaceDemoFromData } from "../data/partnerSpaceDemo";
-import mockProfile from "../data/mockProfile.json";
-import {
-  receivedInvitesMock,
-  sentInvitesMock,
-  matchRecommendationsMock,
-} from "../data/matchesMock.js";
-
-// Re-export for consumers that need the demo clock anchor (tests, app shell).
-export { PARTNERS_MOCK_NOW };
+export const PARTNERS_MOCK_NOW = Date.now();
 
 /** Dispatched after a friend invite is accepted so App can refetch GET /api/friends. */
 export const PARTNERS_REFRESH_EVENT = "pairup:partners-refresh";
@@ -55,6 +40,18 @@ function notifyPartnersRefresh() {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(PARTNERS_REFRESH_EVENT));
   }
+}
+
+async function requestJson(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    headers: withBearer(options.headers || {}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || data.message || `HTTP ${res.status}`);
+  }
+  return data;
 }
 
 function initialsFromName(name) {
@@ -122,37 +119,31 @@ export function getInitialPartners() {
   return [];
 }
 
-/** Partner-space demo flags/messages; replace with GET /partners/:id/space. */
-export function getPartnerSpaceDemo(partnerId) {
-  return getPartnerSpaceDemoFromData(partnerId);
-}
-
-/** Seed row for default profile form; replace with GET /profile/me. */
+/** Seed row for default profile form (empty until profile API loads). */
 export function getDefaultProfileSeed() {
-  return mockProfile[0] ?? null;
+  return null;
 }
 
 // ── Discover ──────────────────────────────────────────────────────────────────
 
-export function fetchDiscoverUsers() {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(mockDiscoverUsers);
-    }, 250);
-  });
+export async function fetchDiscoverUsers() {
+  try {
+    const data = await requestJson(withAuthQuery("/api/matches"));
+    return data.matches || [];
+  } catch {
+    return [];
+  }
 }
 
 // ── User profile (view another user) ─────────────────────────────────────────
 
-function wait(ms = 220) {
-  return new Promise((res) => setTimeout(res, ms));
-}
-
-/** Replace with GET /users/:id */
 export async function fetchUserById(id) {
-  await wait(180);
-  const user = mockUsers.find((u) => u.id === Number(id));
-  return user ? { ...user } : null;
+  try {
+    const data = await requestJson(withAuthQuery(`/api/users/${id}`));
+    return data.user || null;
+  } catch {
+    return null;
+  }
 }
 
 // ── Matches ───────────────────────────────────────────────────────────────────
@@ -200,71 +191,74 @@ function mapFriendRequestToSentInviteCard(request, user) {
   };
 }
 
-/** Returns received invites: friend requests from the API when available, else demo match cards. */
 export async function getReceivedInvites() {
   try {
-    const res = await fetch("/api/friends/requests?box=incoming", {
-      headers: withBearer(),
-    });
-
-    if (!res.ok) throw new Error("incoming friend requests failed");
-
-    const data = await res.json();
+    const data = await requestJson("/api/friends/requests?box=incoming");
     const requests = data.requests || [];
-
     const cards = await Promise.all(
       requests.map(async (r) => {
         const user = await fetchLegacyUser(r.fromUserId);
         return mapFriendRequestToInviteCard(r, user);
       })
     );
-
     return cards.filter(Boolean);
   } catch {
-    await wait();
-    return [...receivedInvitesMock];
+    return [];
   }
 }
 
 /** Returns invites the current user has sent that are still pending. */
 export async function getSentInvites() {
   try {
-    const res = await fetch("/api/friends/requests?box=outgoing", {
-      headers: withBearer(),
-    });
-
-    if (!res.ok) throw new Error("outgoing friend requests failed");
-
-    const data = await res.json();
+    const data = await requestJson("/api/friends/requests?box=outgoing");
     const requests = data.requests || [];
-
     const cards = await Promise.all(
       requests.map(async (r) => {
         const user = await fetchLegacyUser(r.toUserId);
         return mapFriendRequestToSentInviteCard(r, user);
       })
     );
-
     return cards.filter(Boolean);
   } catch {
-    await wait();
-    return [...sentInvitesMock];
+    return [];
   }
 }
 
 /** Returns recommended users to invite (shown inline on the Waiting tab). */
 export async function getMatchRecommendations() {
-  await wait();
-  return [...matchRecommendationsMock];
+  try {
+    const [matchesData, outgoingData] = await Promise.all([
+      requestJson(withAuthQuery("/api/matches")),
+      requestJson("/api/friends/requests?box=outgoing"),
+    ]);
+
+    const blockedIds = new Set((outgoingData.requests || []).map((r) => r.toUserId));
+    return (matchesData.matches || [])
+      .filter((m) => {
+        const id = m.userId || m.id || m._id;
+        return id && !blockedIds.has(id);
+      })
+      .slice(0, 5)
+      .map((m) => {
+        const id = m.userId || m.id || m._id;
+        const name = m.displayName || m.name || "Someone";
+        return {
+          id,
+          name,
+          avatarSeed: String(id).replace(/[^a-zA-Z0-9]/g, "") || "match",
+          role: m.role ?? "—",
+          tier: m.targetTier ?? "—",
+          background: m.background ?? "—",
+          matchScore: m.matchPercent ?? 0,
+        };
+      });
+  } catch {
+    return [];
+  }
 }
 
-/** Accept a received invite by id (friend request UUID or demo recv-* id). */
+/** Accept a received invite by id. */
 export async function acceptInvite(id) {
-  if (String(id).startsWith("recv-")) {
-    await wait(400);
-    return { id, status: "accepted" };
-  }
-
   const res = await fetch(`/api/friends/requests/${id}`, {
     method: "PATCH",
     headers: withBearer({
@@ -284,11 +278,6 @@ export async function acceptInvite(id) {
 
 /** Decline a received invite by id. */
 export async function declineInvite(id) {
-  if (String(id).startsWith("recv-")) {
-    await wait(300);
-    return { id, status: "declined" };
-  }
-
   const res = await fetch(`/api/friends/requests/${id}`, {
     method: "PATCH",
     headers: withBearer({
@@ -307,14 +296,6 @@ export async function declineInvite(id) {
 
 /** Cancel a sent invite by id. */
 export async function cancelSentInvite(id) {
-  if (
-    String(id).startsWith("sent-") ||
-    String(id).startsWith("recv-")
-  ) {
-    await wait(300);
-    return { id, status: "cancelled" };
-  }
-
   const res = await fetch(`/api/friends/requests/${id}`, {
     method: "PATCH",
     headers: withBearer({
