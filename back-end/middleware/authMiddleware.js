@@ -11,10 +11,12 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { connectToDatabase } = require('../modules/db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'pairup_secret_key';
-
 async function authMiddleware(req, res, next) {
   try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is missing.');
+    }
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -27,7 +29,7 @@ async function authMiddleware(req, res, next) {
 
     let payload;
     try {
-      payload = jwt.verify(token, JWT_SECRET);
+      payload = jwt.verify(token, process.env.JWT_SECRET);
     } catch (_error) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }

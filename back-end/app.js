@@ -4,13 +4,6 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const mongoose = require('mongoose')
-
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err))
-
-const authStub = require("./middleware/authStub");
 const authMiddleware = require("./middleware/authMiddleware");
 
 const authRoutes = require("./routes/authRoutes");
@@ -36,18 +29,13 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
-
-// keep existing unfinished routes on stub auth
-app.use("/api", authStub);
-app.use("/api/settings", settingsRoutes);
-app.use("/api", matchesRouter);
-app.use("/api", usersRouter);
-app.use("/api", requestsRouter);
-app.use("/api", meetingsRouter);
-app.use("/api", proposalsRouter);
-app.use("/api", chatRouter);
-
-// sprint 3 route using real JWT + MongoDB
+app.use("/api/settings", authMiddleware, settingsRoutes);
+app.use("/api", authMiddleware, matchesRouter);
+app.use("/api", authMiddleware, usersRouter);
+app.use("/api", authMiddleware, requestsRouter);
+app.use("/api", authMiddleware, meetingsRouter);
+app.use("/api", authMiddleware, proposalsRouter);
+app.use("/api", authMiddleware, chatRouter);
 app.use("/api", authMiddleware, friendsRouter);
 
 app.use((err, req, res, next) => {

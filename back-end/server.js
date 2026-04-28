@@ -1,13 +1,13 @@
 require("dotenv").config();
 
 const app = require("./app");
-const connectDB = require("./config/db");
+const { connectToDatabase } = require("./modules/db");
 
 const PORT = process.env.PORT || 3000;
 let listener = null;
 
 async function start() {
-  await connectDB();
+  await connectToDatabase();
 
   return new Promise((resolve) => {
     listener = app.listen(PORT, () => {

@@ -2,14 +2,16 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-const JWT_SECRET = process.env.JWT_SECRET || "pairup_secret_key";
-
 // ---------------------------------------------------------------------------
 // Register
 // ---------------------------------------------------------------------------
 
 const registerUser = async (req, res) => {
   try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is missing.");
+    }
+
     const { fullName, email, password } = req.body;
 
     if (!fullName || !email || !password) {
@@ -64,8 +66,15 @@ const registerUser = async (req, res) => {
       updatedAt: now,
     });
 
+    const token = jwt.sign(
+      { id: newUser._id, email: newUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
     return res.status(201).json({
       message: "User registered successfully",
+      token,
       user: {
         id: newUser._id,
         fullName: newUser.displayName,
@@ -84,6 +93,10 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is missing.");
+    }
+
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -104,7 +117,7 @@ const loginUser = async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id, email: user.email },
-      JWT_SECRET,
+      process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
