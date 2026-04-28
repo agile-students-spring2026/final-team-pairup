@@ -1,10 +1,15 @@
 const request = require('supertest');
 const { expect } = require('chai');
+const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
 const app = require('../app');
 const connectDB = require('../config/db');
 const User = require('../models/User');
+
+function makeToken(userId, email = `${userId}@test.com`) {
+  return jwt.sign({ id: userId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+}
 
 function baseUser(overrides = {}) {
   return {
@@ -106,6 +111,7 @@ describe('users routes', () => {
   it('POST /api/users with valid data returns 201 and strips passwordHash', async () => {
     const response = await request(app)
       .post('/api/users')
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`)
       .send(validUserPayload())
       .expect(201);
 
@@ -127,6 +133,7 @@ describe('users routes', () => {
 
     const response = await request(app)
       .post('/api/users')
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`)
       .send(payload)
       .expect(400);
 
@@ -140,6 +147,7 @@ describe('users routes', () => {
 
     const response = await request(app)
       .post('/api/users')
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`)
       .send(payload)
       .expect(400);
 
@@ -149,7 +157,8 @@ describe('users routes', () => {
 
   it('GET /api/users/me returns current user without passwordHash', async () => {
     const response = await request(app)
-      .get('/api/users/me?userId=current-user')
+      .get('/api/users/me')
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`)
       .expect(200);
 
     expect(response.body.user._id).to.equal('current-user');
@@ -160,6 +169,7 @@ describe('users routes', () => {
   it('GET /api/users/:id returns public profile without private fields', async () => {
     const response = await request(app)
       .get('/api/users/user-sde-int-match')
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`)
       .expect(200);
 
     expect(response.body.user).to.include({
@@ -176,6 +186,7 @@ describe('users routes', () => {
   it('GET /api/users/:id with non-existent ID returns 404', async () => {
     const response = await request(app)
       .get('/api/users/not-a-real-user')
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`)
       .expect(404);
 
     expect(response.body.error).to.equal('User not found');
@@ -186,7 +197,8 @@ describe('users routes', () => {
     const before = beforeUser.updatedAt;
 
     const response = await request(app)
-      .patch('/api/users/me?userId=current-user')
+      .patch('/api/users/me')
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`)
       .send({
         displayName: 'Saun Updated',
         targetTier: 'Any',

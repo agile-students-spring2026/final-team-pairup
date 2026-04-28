@@ -1,17 +1,49 @@
 const request = require('supertest');
 const { expect } = require('chai');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const app = require('../app');
+const { connectToDatabase } = require('../modules/db');
+const User = require('../models/User');
+const { FriendRequest } = require('../models/FriendRequest');
+const mockUsers = require('../data/mockUsers.json');
+const mockFriendRequests = require('../data/mockFriendRequests.json');
 
 function makeToken(userId, email = `${userId}@test.com`) {
   return jwt.sign(
     { id: userId, email },
-    process.env.JWT_SECRET || 'pairup_secret_key',
+    process.env.JWT_SECRET,
     { expiresIn: '7d' }
   );
 }
 
 describe('friends routes', () => {
+  before(async () => {
+    await connectToDatabase();
+  });
+
+  beforeEach(async () => {
+    await Promise.all([User.deleteMany({}), FriendRequest.deleteMany({})]);
+    await User.insertMany(mockUsers);
+    await FriendRequest.insertMany(
+      mockFriendRequests.map((request) => ({
+        _id: request.id,
+        fromUserId: request.fromUserId,
+        toUserId: request.toUserId,
+        status: request.status,
+        createdAt: request.createdAt,
+        updatedAt: request.updatedAt,
+      }))
+    );
+  });
+
+  after(async () => {
+    await Promise.all([User.deleteMany({}), FriendRequest.deleteMany({})]);
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.connection.close();
+    }
+  });
+
   it('GET /api/friends returns accepted friends for current-user', async () => {
     const res = await request(app)
       .get('/api/friends')
@@ -59,6 +91,12 @@ describe('friends routes', () => {
   });
 
   it('POST /api/friends/requests returns 409 when reverse pending exists', async () => {
+    await request(app)
+      .post('/api/friends/requests')
+      .set('Authorization', `Bearer ${makeToken('current-user')}`)
+      .send({ toUserId: 'user-sde-int-new' })
+      .expect(201);
+
     const res = await request(app)
       .post('/api/friends/requests')
       .set('Authorization', `Bearer ${makeToken('user-sde-int-new')}`)

@@ -185,10 +185,13 @@ Create a `.env` file in `back-end/` with:
 
 ```env
 MONGODB_URI=your_mongodb_atlas_connection_string
+TEST_MONGODB_URI=your_separate_test_database_connection_string
 JWT_SECRET=your_secret_key
 PORT=3000
 CORS_ORIGIN=http://localhost:3001
 ```
+
+Use a different database name for `TEST_MONGODB_URI` (for example `pairup_test`) and never point it at the same database as `MONGODB_URI`.
 
 ## Additional Documentation
 

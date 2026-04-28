@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import { getAuthHeaders } from "../services/mockApi";
 
 const ProfileContext = createContext();
 
@@ -186,7 +187,7 @@ export function ProfileProvider({ children }) {
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const meUrl = userId ? `/api/users/me?userId=${userId}` : "/api/users/me";
-    fetch(meUrl, { cache: "no-store" })
+    fetch(meUrl, { cache: "no-store", headers: getAuthHeaders() })
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);
@@ -260,9 +261,9 @@ export function ProfileProvider({ children }) {
     const meUrl = userId ? `/api/users/me?userId=${userId}` : "/api/users/me";
     const res = await fetch(meUrl, {
       method: "PATCH",
-      headers: {
+      headers: getAuthHeaders({
         "Content-Type": "application/json",
-      },
+      }),
       body: JSON.stringify(payload),
     });
 

@@ -45,6 +45,9 @@ function RegisterPage({ onRegisterSuccess }) {
       }
 
       localStorage.removeItem("pairup_profile_data");
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
       localStorage.setItem("userId", data.user.id);
       localStorage.setItem("userEmail", data.user.email);
       localStorage.setItem("sessionEmail", data.user.email);
