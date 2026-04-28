@@ -218,7 +218,7 @@ PairUp aims to reduce the friction of finding that partner and make job prep mor
 
 ## Current Status
 
-The team is in Sprint 2. The **back-end** exposes JSON APIs under `/api` (mock/in-memory data). The **front-end** calls those routes for core flows; some screens still use `front-end/src/services/mockApi.js` for local demo data where the UI is not fully wired yet.
+The team is in **Sprint 3**. The **back-end** exposes JSON APIs under `/api` with MongoDB-backed data and JWT-protected routes. The **front-end** is wired to these routes for core flows.
 
 ---
 
