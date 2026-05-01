@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { formatRelativeAgo } from '../utils/relativeTime';
 import { DEFAULT_SCHEDULE_AVAILABILITY_SLOTS } from '../utils/scheduleCalendar';
 import ScheduleSessionSheet from './ScheduleSessionSheet';
+import { getAuthHeaders } from '../services/mockApi';
 import './PartnerSpaceScreen.css';
 
 function devUserId() {
@@ -9,11 +10,6 @@ function devUserId() {
     (typeof localStorage !== 'undefined' && localStorage.getItem('userId')) ||
     'current-user'
   );
-}
-
-function withDevUserQuery(url) {
-  const uid = devUserId();
-  return `${url}${url.includes('?') ? '&' : '?'}userId=${encodeURIComponent(uid)}`;
 }
 
 function storageFirstVisitKey(partnerId) {
@@ -66,7 +62,7 @@ function PartnerSpaceScreen({
       try {
         setProposalLoadingError('');
 
-        const res = await fetch(withDevUserQuery('/api/proposals'));
+        const res = await fetch('/api/proposals', { headers: getAuthHeaders() });
         const data = await res.json();
 
         if (!res.ok) {
@@ -149,7 +145,9 @@ function PartnerSpaceScreen({
           setDraft('');
         }
 
-        const statusRes = await fetch(withDevUserQuery(`/api/chat/partner-status/${partner.id}`));
+        const statusRes = await fetch(`/api/chat/partner-status/${partner.id}`, {
+          headers: getAuthHeaders(),
+        });
         const statusData = await statusRes.json();
         if (!statusRes.ok) {
           throw new Error(statusData.error || 'Failed to load partner chat status');
@@ -162,7 +160,9 @@ function PartnerSpaceScreen({
           return;
         }
 
-        const sessionsRes = await fetch(withDevUserQuery('/api/chat/sessions?limit=100'));
+        const sessionsRes = await fetch('/api/chat/sessions?limit=100', {
+          headers: getAuthHeaders(),
+        });
         const sessionsData = await sessionsRes.json();
         if (!sessionsRes.ok) {
           throw new Error(sessionsData.error || 'Failed to load chat sessions');
@@ -181,7 +181,8 @@ function PartnerSpaceScreen({
         setChatSessionId(existingSession.id);
 
         const messagesRes = await fetch(
-          withDevUserQuery(`/api/chat/sessions/${existingSession.id}/messages?limit=100`)
+          `/api/chat/sessions/${existingSession.id}/messages?limit=100`,
+          { headers: getAuthHeaders() }
         );
         const messagesData = await messagesRes.json();
         if (!messagesRes.ok) {
@@ -237,9 +238,9 @@ function PartnerSpaceScreen({
 
       let sessionId = chatSessionId;
       if (!sessionId) {
-        const createRes = await fetch(withDevUserQuery('/api/chat/sessions'), {
+        const createRes = await fetch('/api/chat/sessions', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ otherUserId: partner.id }),
         });
         const createData = await createRes.json();
@@ -251,10 +252,10 @@ function PartnerSpaceScreen({
       }
 
       const messageRes = await fetch(
-        withDevUserQuery(`/api/chat/sessions/${sessionId}/messages`),
+        `/api/chat/sessions/${sessionId}/messages`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ text }),
         }
       );
@@ -296,11 +297,11 @@ function PartnerSpaceScreen({
         timeOptions: payload.slots,
       };
 
-      const res = await fetch(withDevUserQuery('/api/proposals'), {
+      const res = await fetch('/api/proposals', {
         method: 'POST',
-        headers: {
+        headers: getAuthHeaders({
           'Content-Type': 'application/json',
-        },
+        }),
         body: JSON.stringify(requestBody),
       });
 
@@ -335,11 +336,11 @@ function PartnerSpaceScreen({
       setIsUpdating(true);
       setSelectedSlotId(slotId);
 
-      const res = await fetch(withDevUserQuery(`/api/proposals/${incomingProposal.id}`), {
+      const res = await fetch(`/api/proposals/${incomingProposal.id}`, {
         method: 'PATCH',
-        headers: {
+        headers: getAuthHeaders({
           'Content-Type': 'application/json',
-        },
+        }),
         body: JSON.stringify({
           status: 'accepted',
           selectedSlotId: slotId,
@@ -381,7 +382,9 @@ function PartnerSpaceScreen({
         <div className="partner-space__card app-shell__card app-shell__card--fill">
       <header className="partner-space__top">
         <button type="button" className="partner-space__back" onClick={onBack} aria-label="Back to partners">
-          ‹
+          <svg className="partner-space__back-icon" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+            <path d="M15 6L9 12L15 18" />
+          </svg>
         </button>
         <button
           type="button"

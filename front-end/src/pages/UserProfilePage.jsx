@@ -8,9 +8,20 @@ import AvailabilityGrid from "../components/profile/AvailabilityGrid";
 import SessionPreferencesSection from "../components/profile/SessionPreferencesSection";
 import StickyInviteBar from "../components/profile/StickyInviteBar";
 import "../styles/profile.css";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
+import { getAuthHeaders } from "../services/mockApi";
 
-function mapApiUserToProfile(apiUser) {
+function toPercentValue(value) {
+  if (typeof value !== "number" || Number.isNaN(value)) return null;
+  const normalized = value <= 1 ? value * 100 : value;
+  return Math.round(normalized);
+}
+
+function mapApiUserToProfile(apiUser, metrics = {}) {
+  const showUpRateFromMetrics = toPercentValue(metrics.showUpRate);
+  const showUpRateFromApi = toPercentValue(apiUser.showUpRate);
+  const matchPercentage = toPercentValue(metrics.matchPercent);
+
   return {
     ...apiUser,
 
@@ -23,7 +34,7 @@ function mapApiUserToProfile(apiUser) {
 
     name: apiUser.displayName,
     linkedin: apiUser.linkedinUrl,
-    matchPercentage: null,
+    matchPercentage,
 
     goal: {
       role: apiUser.role,
@@ -65,8 +76,11 @@ function mapApiUserToProfile(apiUser) {
       notes: apiUser.feedbackStyle,
     },
 
-    completedSessions: apiUser.sessionsCompleted,
-    showUpRate: apiUser.showUpRate,
+    completedSessions:
+      typeof metrics.sessionsCompleted === "number"
+        ? metrics.sessionsCompleted
+        : apiUser.sessionsCompleted,
+    showUpRate: showUpRateFromMetrics ?? showUpRateFromApi ?? 100,
     invited: false,
   };
 }
@@ -76,13 +90,14 @@ function UserProfilePage() {
   const [loading, setLoading] = useState(true);
   const [selectedTimezone, setSelectedTimezone] = useState("ET");
   const { id } = useParams();
+  const location = useLocation();
 
   useEffect(() => {
     let cancelled = false;
   
     setLoading(true);
   
-    fetch(`/api/users/${id}`)
+    fetch(`/api/users/${id}`, { headers: getAuthHeaders() })
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);
@@ -91,7 +106,8 @@ function UserProfilePage() {
       })
       .then((data) => {
         if (!cancelled) {
-          setUser(mapApiUserToProfile(data.user));
+          const navMetrics = location.state?.metrics || {};
+          setUser(mapApiUserToProfile(data.user, navMetrics));
           setLoading(false);
         }
       })
@@ -105,7 +121,7 @@ function UserProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, location.state]);
 
   function handleInvite() {
     setUser((prev) => (prev ? { ...prev, invited: true } : null));

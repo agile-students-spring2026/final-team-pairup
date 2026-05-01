@@ -29,10 +29,24 @@
 .profile-back-btn {
   border: none;
   background: transparent;
-  color: #3f6275;
-  font-weight: 600;
+  color: #2f343a;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  line-height: 1;
+}
+
+.profile-back-btn__icon {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
 }
 
 .profile-match-badge {

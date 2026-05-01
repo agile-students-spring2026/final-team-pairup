@@ -25,9 +25,9 @@ function toSettingsUser(user) {
 
 const changeDisplayName = async (req, res) => {
   try {
-    const { email, newDisplayName } = req.body;
+    const { newDisplayName } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findById(req.user._id);
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -46,9 +46,9 @@ const changeDisplayName = async (req, res) => {
 };
 
 const changeEmail = async (req, res) => {
-  const { currentEmail, currentPassword, newEmail } = req.body;
+  const { currentPassword, newEmail } = req.body;
 
-  const user = await User.findOne({ email: currentEmail });
+  const user = await User.findById(req.user._id);
 
   if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -72,9 +72,9 @@ const changeEmail = async (req, res) => {
 };
 
 const changePassword = async (req, res) => {
-  const { email, currentPassword, newPassword } = req.body;
+  const { currentPassword, newPassword } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findById(req.user._id);
 
   if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -90,9 +90,9 @@ const changePassword = async (req, res) => {
 };
 
 const deleteAccount = async (req, res) => {
-  const { email, currentPassword } = req.body;
+  const { currentPassword } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findById(req.user._id);
 
   if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -108,8 +108,7 @@ const deleteAccount = async (req, res) => {
 
 const getNotificationSettings = async (req, res) => {
   try {
-    const { email } = req.query;
-    const user = await User.findOne({ email });
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -128,8 +127,8 @@ const getNotificationSettings = async (req, res) => {
 
 const updateNotificationSettings = async (req, res) => {
   try {
-    const { email, notifications } = req.body;
-    const user = await User.findOne({ email });
+    const { notifications } = req.body;
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

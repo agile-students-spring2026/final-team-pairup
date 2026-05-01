@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "../../context/ProfileContext";
+import { getAuthHeaders } from "../../services/mockApi";
 import "./SettingsPage.css";
 
 const API_BASE = "http://localhost:3000";
@@ -78,7 +79,8 @@ function SettingsPage({ onLogout }) {
 
       try {
         const response = await fetch(
-          `${API_BASE}/api/settings/notifications?email=${encodeURIComponent(currentEmail)}`
+          `${API_BASE}/api/settings/notifications`,
+          { headers: getAuthHeaders() }
         );
         const data = await response.json();
 
@@ -123,10 +125,10 @@ function SettingsPage({ onLogout }) {
       const response = await fetch(`${API_BASE}/api/settings/display-name`, {
         method: "PUT",
         headers: {
+          ...getAuthHeaders(),
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: currentEmail,
           newDisplayName: profile.displayName.trim(),
         }),
       });
@@ -164,10 +166,10 @@ function SettingsPage({ onLogout }) {
       const response = await fetch(`${API_BASE}/api/settings/email`, {
         method: "PUT",
         headers: {
+          ...getAuthHeaders(),
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          currentEmail,
           currentPassword: emailPassword,
           newEmail: newEmail.trim(),
         }),
@@ -207,10 +209,10 @@ function SettingsPage({ onLogout }) {
       const response = await fetch(`${API_BASE}/api/settings/password`, {
         method: "PUT",
         headers: {
+          ...getAuthHeaders(),
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: currentEmail,
           currentPassword,
           newPassword,
         }),
@@ -253,10 +255,10 @@ function SettingsPage({ onLogout }) {
       const response = await fetch(`${API_BASE}/api/settings/account`, {
         method: "DELETE",
         headers: {
+          ...getAuthHeaders(),
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: currentEmail,
           currentPassword: deletePassword,
         }),
       });
@@ -277,7 +279,24 @@ function SettingsPage({ onLogout }) {
       localStorage.removeItem("pairup_profile_data");
 
       setMessage("Account deleted.");
-      navigate("/login");
+
+      if (typeof onLogout === "function") {
+        onLogout({
+          redirectState: {
+            accountDeleted: true,
+            message: "Account deleted successfully.",
+          },
+        });
+        return;
+      }
+
+      navigate("/login", {
+        replace: true,
+        state: {
+          accountDeleted: true,
+          message: "Account deleted successfully.",
+        },
+      });
     } catch (error) {
       console.error("Delete account error:", error);
       setMessage("Server error.");
@@ -316,10 +335,10 @@ function SettingsPage({ onLogout }) {
       const response = await fetch(`${API_BASE}/api/settings/notifications`, {
         method: "PUT",
         headers: {
+          ...getAuthHeaders(),
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: currentEmail,
           notifications: updatedBackendNotifications,
         }),
       });
@@ -370,8 +389,16 @@ function SettingsPage({ onLogout }) {
             className="settings-back"
             type="button"
             onClick={() => navigate(-1)}
+            aria-label="Go back"
           >
-            ←
+            <svg
+              className="settings-back-icon"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path d="M15 6L9 12L15 18" />
+            </svg>
           </button>
           <h1 className="settings-title">Settings</h1>
         </header>

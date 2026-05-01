@@ -19,27 +19,55 @@
   height: 74px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
   padding: 0 18px;
   background: #ffffff;
   border-bottom: 1px solid #d7e1e8;
 }
 
 .settings-back {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   background: transparent;
-  font-size: 28px;
-  color: #5f7487;
+  color: #2f343a;
   cursor: pointer;
   padding: 0;
   line-height: 1;
+  transition: opacity 0.15s ease, transform 0.12s ease;
+}
+
+.settings-back-icon {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.settings-back:hover {
+  opacity: 0.75;
+}
+
+.settings-back:active {
+  transform: scale(0.97);
+}
+
+.settings-back:focus-visible {
+  outline: 2px solid #156b8f;
+  outline-offset: 2px;
 }
 
 .settings-title {
   margin: 0;
   font-size: 28px;
   font-weight: 700;
-  color: #10253d;
+  color: #2f343a;
 }
 
 .settings-section {

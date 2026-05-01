@@ -5,6 +5,7 @@ import FilterBar from "../components/discover/FilterBar";
 import EmptyFilteredState from "../components/discover/EmptyFilteredState";
 import EmptyAlgorithmState from "../components/discover/EmptyAlgorithmState";
 import BottomNav from "../components/button/BottomNav";
+import { fetchDiscoverUsers, getAuthHeaders } from "../services/mockApi";
 
 import "../styles/discover.css";
 
@@ -20,16 +21,9 @@ function DiscoverPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    const matchesUrl = userId ? `/api/matches?userId=${userId}` : "/api/matches";
-
-    fetch(matchesUrl)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        setUsers(data.matches || []);
+    fetchDiscoverUsers()
+      .then((matches) => {
+        setUsers(matches || []);
       })
       .catch((err) => {
         console.error("Failed to fetch matches:", err);
@@ -37,13 +31,21 @@ function DiscoverPage() {
       });
   }, []);
 
-  function handleViewProfile(userId) {
-    navigate(`/profile/${userId}`);
+  function handleViewProfile(user) {
+    const targetId = user.userId || user.id || user._id;
+    navigate(`/profile/${targetId}`, {
+      state: {
+        metrics: {
+          matchPercent: user.matchPercent,
+          sessionsCompleted: user.sessionsCompleted,
+          showUpRate: user.showUpRate,
+        },
+      },
+    });
   }
 
   async function handleSendInvite(targetUserId) {
     try {
-      const fromUserId = localStorage.getItem("userId") || "current-user";
       const token = localStorage.getItem("token");
 
       if (!token) {
@@ -51,13 +53,12 @@ function DiscoverPage() {
       }
 
       const res = await fetch(
-        `/api/friends/requests?userId=${encodeURIComponent(fromUserId)}`,
+        `/api/friends/requests`,
         {
           method: "POST",
-          headers: {
+          headers: getAuthHeaders({
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          }),
           body: JSON.stringify({
             toUserId: targetUserId,
           }),

@@ -18,6 +18,15 @@ function getStoredToken() {
   return localStorage.getItem("token") || "";
 }
 
+export function getAuthHeaders(headers = {}) {
+  const token = getStoredToken();
+  if (!token) return headers;
+  return {
+    ...headers,
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 /**
  * Legacy stub routes still expect ?userId= in dev
  * (for example some older /api/users/:id paths).
@@ -28,12 +37,7 @@ export function withAuthQuery(url) {
 }
 
 function withBearer(headers = {}) {
-  const token = getStoredToken();
-  if (!token) return headers;
-  return {
-    ...headers,
-    Authorization: `Bearer ${token}`,
-  };
+  return getAuthHeaders(headers);
 }
 
 function notifyPartnersRefresh() {

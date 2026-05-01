@@ -7,8 +7,13 @@ const { FriendRequest } = require('../models/FriendRequest');
 const { ChatSession } = require('../models/ChatSession');
 const ChatMessage = require('../models/ChatMessage');
 const { connectToDatabase } = require('../modules/db');
+const jwt = require('jsonwebtoken');
 
-const TEST_DB_URI = process.env.TEST_MONGODB_URI || 'mongodb://127.0.0.1:27017/pairup_test';
+const TEST_DB_URI = process.env.TEST_MONGODB_URI;
+
+function makeToken(userId, email = `${userId}@test.com`) {
+  return jwt.sign({ id: userId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+}
 
 const seededUsers = [
   {
@@ -72,6 +77,9 @@ describe('chat routes', function chatRoutesSuite() {
   this.timeout(10000);
 
   before(async () => {
+    if (!TEST_DB_URI) {
+      throw new Error('TEST_MONGODB_URI must be set for chat tests.');
+    }
     process.env.MONGODB_URI = TEST_DB_URI;
     await connectToDatabase();
   });
@@ -105,7 +113,7 @@ describe('chat routes', function chatRoutesSuite() {
   it('GET /api/chat/partner-status/:otherUserId returns partnered for accepted pair', async () => {
     const res = await request(app)
       .get('/api/chat/partner-status/user-sde-int-match')
-      .query({ userId: 'current-user' });
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`);
 
     expect(res.status).to.equal(200);
     expect(res.body.status).to.equal('partnered');
@@ -113,7 +121,9 @@ describe('chat routes', function chatRoutesSuite() {
   });
 
   it('GET /api/chat/sessions as current-user returns seeded session', async () => {
-    const res = await request(app).get('/api/chat/sessions').query({ userId: 'current-user' });
+    const res = await request(app)
+      .get('/api/chat/sessions')
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`);
 
     expect(res.status).to.equal(200);
     expect(res.body).to.have.property('sessions');
@@ -129,7 +139,8 @@ describe('chat routes', function chatRoutesSuite() {
   it('GET /api/chat/sessions/:id/messages returns chronological window', async () => {
     const res = await request(app)
       .get('/api/chat/sessions/chat-session-1/messages')
-      .query({ userId: 'current-user', limit: 10 });
+      .query({ limit: 10 })
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`);
 
     expect(res.status).to.equal(200);
     expect(res.body.messages).to.be.an('array');
@@ -140,7 +151,7 @@ describe('chat routes', function chatRoutesSuite() {
   it('POST /api/chat/sessions/:id/messages creates a message', async () => {
     const res = await request(app)
       .post('/api/chat/sessions/chat-session-1/messages')
-      .query({ userId: 'current-user' })
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`)
       .send({ text: 'Ping from test' });
 
     expect(res.status).to.equal(201);
@@ -151,7 +162,7 @@ describe('chat routes', function chatRoutesSuite() {
   it('POST /api/chat/sessions returns existing session when pair already exists', async () => {
     const res = await request(app)
       .post('/api/chat/sessions')
-      .query({ userId: 'current-user' })
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`)
       .send({ otherUserId: 'user-sde-int-match' });
 
     expect(res.status).to.equal(200);
@@ -162,7 +173,7 @@ describe('chat routes', function chatRoutesSuite() {
   it('POST /api/chat/sessions returns 403 when not partnered', async () => {
     const res = await request(app)
       .post('/api/chat/sessions')
-      .query({ userId: 'user-sde-beg-far' })
+      .set('Authorization', `Bearer ${makeToken('user-sde-beg-far', 'notpartner@example.com')}`)
       .send({ otherUserId: 'current-user' });
 
     expect(res.status).to.equal(403);
@@ -171,7 +182,7 @@ describe('chat routes', function chatRoutesSuite() {
   it('GET /api/chat/sessions/:id/messages returns 403 for non-participant', async () => {
     const res = await request(app)
       .get('/api/chat/sessions/chat-session-1/messages')
-      .query({ userId: 'user-sde-beg-far' });
+      .set('Authorization', `Bearer ${makeToken('user-sde-beg-far', 'notpartner@example.com')}`);
 
     expect(res.status).to.equal(403);
   });
@@ -179,7 +190,8 @@ describe('chat routes', function chatRoutesSuite() {
   it('GET /api/chat/history returns sessions with nested messages', async () => {
     const res = await request(app)
       .get('/api/chat/history')
-      .query({ userId: 'current-user', sessionLimit: 5, messageLimit: 50 });
+      .query({ sessionLimit: 5, messageLimit: 50 })
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`);
 
     expect(res.status).to.equal(200);
     expect(res.body.sessions).to.be.an('array');
@@ -192,7 +204,7 @@ describe('chat routes', function chatRoutesSuite() {
   it('PATCH /api/chat/sessions/:id updates status', async () => {
     const res = await request(app)
       .patch('/api/chat/sessions/chat-session-1')
-      .query({ userId: 'current-user' })
+      .set('Authorization', `Bearer ${makeToken('current-user', 'current@example.com')}`)
       .send({ status: 'archived' });
 
     expect(res.status).to.equal(200);

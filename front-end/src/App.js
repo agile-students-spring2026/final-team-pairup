@@ -27,7 +27,7 @@ import EditProfileForm from "./pages/ProfileEdit/EditProfileForm";
 
 import MatchesPage from "./pages/matches/MatchesPage";
 
-import { PARTNERS_MOCK_NOW, PARTNERS_REFRESH_EVENT, fetchPartnersFromFriendsApi, getInitialPartners, mergePartnerRows } from "./services/mockApi";
+import { PARTNERS_MOCK_NOW, PARTNERS_REFRESH_EVENT, fetchPartnersFromFriendsApi, getAuthHeaders, getInitialPartners, mergePartnerRows } from "./services/mockApi";
 import { useProfile } from "./context/ProfileContext";
 
 // ---------------------------------------------------------------------------
@@ -271,11 +271,11 @@ function AppRoutes({ initialIsAuthenticated = false }) {
     localStorage.removeItem("pairup_profile_data");
   }
 
-  function handleLogout() {
+  function handleLogout({ redirectState } = {}) {
     clearLocalSession();
     setIsAuthenticated(false);
     setIsOnboarding(false);
-    navigate("/login", { replace: true });
+    navigate("/login", { replace: true, state: redirectState });
   }
 
   const selectedPartnerIds = useMemo(
@@ -325,7 +325,7 @@ function AppRoutes({ initialIsAuthenticated = false }) {
     try {
       const res = await fetch("http://localhost:3000/api/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(apiPayload),
       });
       if (!res.ok) {

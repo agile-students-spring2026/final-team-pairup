@@ -154,7 +154,9 @@ function OnboardingStepAvailability({ initialValues, onBack, onComplete }) {
             onClick={handleBack}
             aria-label="Back to previous step"
           >
-            <span aria-hidden="true">‹</span>
+            <svg className="onboarding-avail__back-icon" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+              <path d="M15 6L9 12L15 18" />
+            </svg>
           </button>
           <div className="onboarding-avail__progress-wrap">
             <div className="onboarding-avail__progress-bar" role="presentation">
