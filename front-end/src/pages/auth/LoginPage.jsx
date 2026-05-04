@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Users } from "lucide-react";
 import "./Auth.css";
 
-const API_BASE = "http://localhost:3000";
+import { API_BASE_URL } from "../../config/apiBase";
 
 function LoginPage({ onLoginSuccess }) {
   const location = useLocation();
@@ -34,7 +34,7 @@ function LoginPage({ onLoginSuccess }) {
       try {
         setLoading(true);
 
-        const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -65,7 +65,7 @@ function LoginPage({ onLoginSuccess }) {
     try {
       setLoading(true);
 
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -29,6 +29,7 @@ import MatchesPage from "./pages/matches/MatchesPage";
 
 import { PARTNERS_MOCK_NOW, PARTNERS_REFRESH_EVENT, fetchPartnersFromFriendsApi, getAuthHeaders, getInitialPartners, mergePartnerRows } from "./services/mockApi";
 import { useProfile } from "./context/ProfileContext";
+import { API_BASE_URL } from "./config/apiBase";
 
 // ---------------------------------------------------------------------------
 // Onboarding payload helpers
@@ -323,7 +324,7 @@ function AppRoutes({ initialIsAuthenticated = false }) {
     // POST to backend (best-effort — don't block navigation if it fails)
     console.log("POST /api/users payload:", JSON.stringify(apiPayload, null, 2));
     try {
-      const res = await fetch("http://localhost:3000/api/users", {
+      const res = await fetch(`${API_BASE_URL}/api/users`, {
         method: "POST",
         headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(apiPayload),

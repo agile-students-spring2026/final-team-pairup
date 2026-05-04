@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Users } from "lucide-react";
 import "./Auth.css";
 
-const API_BASE = "http://localhost:3000";
+import { API_BASE_URL } from "../../config/apiBase";
 
 function RegisterPage({ onRegisterSuccess }) {
 
@@ -25,7 +25,7 @@ function RegisterPage({ onRegisterSuccess }) {
     try {
       setLoading(true);
 
-      const response = await fetch(`${API_BASE}/api/auth/register`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
