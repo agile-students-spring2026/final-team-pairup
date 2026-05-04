@@ -1,8 +1,9 @@
 import SharedGoalsBox from "./SharedGoalsBox";
+import { initialsFromDisplayName } from "../../utils/initials";
 
 function DiscoverCard({ user, onSendInvite, onViewProfile }) {
   const isExperienced = user.sessionsCompleted >= 3;
-  const initials = user.displayName.split(' ').map(n => n[0]).join('');
+  const initials = initialsFromDisplayName(user.displayName);
 
   // inviteStatus: null → can invite, "sent" → already sent
   const isSent = user.inviteStatus === 'sent';
