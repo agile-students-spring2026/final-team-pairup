@@ -57,22 +57,10 @@ function apiTimelineToUi(value) {
   return value;
 }
 
-function uiTimelineToApi(value) {
-  if (value === "1–3 months") return "1-3 months";
-  if (value === "3–6 months") return "3-6 months";
-  return value;
-}
-
 function apiTimezoneToUi(value) {
   if (value === "America/Chicago") return "CT";
   if (value === "America/Los_Angeles") return "PT";
   return "ET";
-}
-
-function uiTimezoneToApi(value) {
-  if (value === "CT") return "America/Chicago";
-  if (value === "PT") return "America/Los_Angeles";
-  return "America/New_York";
 }
 
 function apiAvailabilityToUi(apiAvailability = {}) {
@@ -102,27 +90,6 @@ function apiAvailabilityToUi(apiAvailability = {}) {
   return result;
 }
 
-function uiAvailabilityToApi(uiAvailability = {}) {
-  const dayMap = {
-    Mon: "mon",
-    Tue: "tue",
-    Wed: "wed",
-    Thu: "thu",
-    Fri: "fri",
-    Sat: "sat",
-    Sun: "sun",
-  };
-
-  const result = {};
-
-  Object.entries(dayMap).forEach(([uiDay, apiDay]) => {
-    const row = uiAvailability[uiDay] || {};
-    result[apiDay] = [!!row.AM, !!row.PM, !!row.EVE];
-  });
-
-  return result;
-}
-
 function mapApiUserToProfile(apiUser) {
   return {
     displayName: apiUser.displayName || "",
@@ -144,23 +111,6 @@ function mapApiUserToProfile(apiUser) {
       inviteAccepted: apiUser.notifications?.matchConfirmed ?? true,
       sessionReminder: apiUser.notifications?.sessionReminder ?? true,
     },
-  };
-}
-
-function mapProfileToPatchPayload(profile) {
-  return {
-    displayName: profile.displayName,
-    role: profile.targetRole === "Product Manager" ? "PM" : "SDE",
-    targetTier: profile.companyTier,
-    timeline: uiTimelineToApi(profile.timeline),
-    level: profile.overallLevel,
-    background: profile.background,
-    bio: profile.bio,
-    linkedinUrl: profile.linkedinUrl || null,
-    timezone: uiTimezoneToApi(profile.timezone),
-    availability: uiAvailabilityToApi(profile.availability),
-    whoGoesFirst: profile.whoGoesFirst,
-    weakestArea: profile.wantsToImprove || null,
   };
 }
 

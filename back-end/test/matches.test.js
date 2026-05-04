@@ -14,7 +14,7 @@ function makeToken(userId, email = `${userId}@test.com`) {
   return jwt.sign({ id: userId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
 }
 
-describe('GET /api/matches', function () {
+describe('Matches routes', function () {
   before(async () => {
     await connectToDatabase();
   });
@@ -41,59 +41,89 @@ describe('GET /api/matches', function () {
     }
   });
 
-  it('returns 200 with currentUserId and matches array', async function () {
-    const res = await request(app)
-      .get('/api/matches')
-      .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
-    expect(res.status).to.equal(200);
-    expect(res.body).to.have.property('currentUserId', 'current-user');
-    expect(res.body).to.have.property('matches').that.is.an('array');
+  describe('GET /api/matches', function () {
+    it('returns 200 with currentUserId and matches array', async function () {
+      const res = await request(app)
+        .get('/api/matches')
+        .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.have.property('currentUserId', 'current-user');
+      expect(res.body).to.have.property('matches').that.is.an('array');
+    });
+
+    it('each match has matchPercent, sharedGoals, and inviteStatus', async function () {
+      const res = await request(app)
+        .get('/api/matches')
+        .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
+      for (const match of res.body.matches) {
+        expect(match).to.have.property('matchPercent').that.is.a('number');
+        expect(match).to.have.property('sharedGoals').that.is.an('array');
+        expect(match).to.have.property('inviteStatus');
+      }
+    });
+
+    it('results are sorted by score descending', async function () {
+      const res = await request(app)
+        .get('/api/matches')
+        .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
+      const percents = res.body.matches.map((m) => m.matchPercent);
+      if (percents.length >= 2) {
+        expect(percents[0]).to.be.at.least(percents[percents.length - 1]);
+      }
+    });
+
+    it('response excludes email and passwordHash', async function () {
+      const res = await request(app)
+        .get('/api/matches')
+        .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
+      for (const match of res.body.matches) {
+        expect(match).to.not.have.property('email');
+        expect(match).to.not.have.property('passwordHash');
+      }
+    });
+
+    it('current user is not in results', async function () {
+      const res = await request(app)
+        .get('/api/matches')
+        .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
+      const ids = res.body.matches.map((m) => m.userId);
+      expect(ids).to.not.include('current-user');
+    });
+
+    it('returns 401 for invalid JWT user', async function () {
+      const res = await request(app)
+        .get('/api/matches')
+        .set('Authorization', `Bearer ${makeToken('nonexistent', 'none@example.com')}`);
+      expect(res.status).to.equal(401);
+      expect(res.body).to.have.property('error', 'User not found');
+    });
   });
 
-  it('each match has matchPercent, sharedGoals, and inviteStatus', async function () {
-    const res = await request(app)
-      .get('/api/matches')
-      .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
-    for (const match of res.body.matches) {
-      expect(match).to.have.property('matchPercent').that.is.a('number');
-      expect(match).to.have.property('sharedGoals').that.is.an('array');
-      expect(match).to.have.property('inviteStatus');
-    }
-  });
+  describe('GET /api/matches/random', function () {
+    it('returns 200 with matches array (subset for discover browse)', async function () {
+      const res = await request(app)
+        .get('/api/matches/random')
+        .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.have.property('currentUserId', 'current-user');
+      expect(res.body).to.have.property('matches').that.is.an('array');
+      const full = await request(app)
+        .get('/api/matches')
+        .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
+      if (full.body.matches.length > 0) {
+        expect(res.body.matches.length).to.be.at.most(full.body.matches.length);
+        expect(res.body.matches.length).to.be.at.most(12);
+      }
+    });
 
-  it('results are sorted by score descending', async function () {
-    const res = await request(app)
-      .get('/api/matches')
-      .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
-    const percents = res.body.matches.map(m => m.matchPercent);
-    if (percents.length >= 2) {
-      expect(percents[0]).to.be.at.least(percents[percents.length - 1]);
-    }
-  });
-
-  it('response excludes email and passwordHash', async function () {
-    const res = await request(app)
-      .get('/api/matches')
-      .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
-    for (const match of res.body.matches) {
-      expect(match).to.not.have.property('email');
-      expect(match).to.not.have.property('passwordHash');
-    }
-  });
-
-  it('current user is not in results', async function () {
-    const res = await request(app)
-      .get('/api/matches')
-      .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
-    const ids = res.body.matches.map(m => m.userId);
-    expect(ids).to.not.include('current-user');
-  });
-
-  it('returns 401 for invalid JWT user', async function () {
-    const res = await request(app)
-      .get('/api/matches')
-      .set('Authorization', `Bearer ${makeToken('nonexistent', 'none@example.com')}`);
-    expect(res.status).to.equal(401);
-    expect(res.body).to.have.property('error', 'User not found');
+    it('each random match has matchPercent and sharedGoals', async function () {
+      const res = await request(app)
+        .get('/api/matches/random')
+        .set('Authorization', `Bearer ${makeToken('current-user', 'saun@nyu.edu')}`);
+      for (const match of res.body.matches) {
+        expect(match).to.have.property('matchPercent').that.is.a('number');
+        expect(match).to.have.property('sharedGoals').that.is.an('array');
+      }
+    });
   });
 });

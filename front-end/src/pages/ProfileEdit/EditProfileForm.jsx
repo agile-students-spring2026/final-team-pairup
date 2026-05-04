@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../styles/profile.css";
 import "./EditProfileForm.css";
 import { useProfile } from "../../context/ProfileContext";
 import {
@@ -99,6 +100,23 @@ function EditProfileForm({ onSuccess }) {
   return (
     <div className="edit-profile-page">
       <div className="edit-profile-card">
+        <div className="edit-profile-card__topbar">
+          <button
+            type="button"
+            className="profile-back-btn edit-profile-back-btn"
+            onClick={() => navigate("/profile/me")}
+            aria-label="Back to profile"
+          >
+            <svg
+              className="profile-back-btn__icon"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path d="M15 6L9 12L15 18" />
+            </svg>
+          </button>
+        </div>
         <div className="edit-profile-header">
           <p className="eyebrow">PAIRUP PROFILE</p>
           <h1>Build your interview profile</h1>
@@ -364,7 +382,7 @@ function EditProfileForm({ onSuccess }) {
           </section>
 
           <button type="button" className="next-button" onClick={handleSave}>
-            Next
+            Save
           </button>
         </div>
       </div>
