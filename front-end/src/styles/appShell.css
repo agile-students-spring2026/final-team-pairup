@@ -1,13 +1,12 @@
 /**
- * Post-onboarding phone UI shell — matches onboarding pages:
- * dark #1c1c1e canvas, centered white card (max 420px), 16px radius, soft shadow.
+ * Post-onboarding phone UI shell — dark canvas, white content area.
  */
 
 .app-shell {
   box-sizing: border-box;
   min-height: 100vh;
   min-height: 100dvh;
-  background: #1c1c1e;
+  background: #141416;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -18,9 +17,9 @@
   max-width: none;
   min-height: 100vh;
   min-height: 100dvh;
-  background: #ffffff;
+  background: #fafbfc;
   border-radius: 0;
-  box-shadow: none;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
   box-sizing: border-box;
 }
 

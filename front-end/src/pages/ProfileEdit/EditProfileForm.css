@@ -14,6 +14,37 @@
   border: 1px solid #e6edf2;
 }
 
+.edit-profile-card__topbar {
+  margin: 0 0 12px;
+}
+
+/* Match Settings / Partner / onboarding back: 34px hit area, chevron icon */
+.edit-profile-back-btn {
+  width: 34px;
+  height: 34px;
+  justify-content: center;
+  border-radius: 8px;
+  transition: opacity 0.15s ease, transform 0.12s ease;
+}
+
+.edit-profile-back-btn:hover {
+  opacity: 0.75;
+}
+
+.edit-profile-back-btn:active {
+  transform: scale(0.97);
+}
+
+.edit-profile-back-btn:focus-visible {
+  outline: 2px solid #156b8f;
+  outline-offset: 2px;
+}
+
+.edit-profile-back-btn .profile-back-btn__icon {
+  width: 28px;
+  height: 28px;
+}
+
 .edit-profile-header {
   margin-bottom: 28px;
 }

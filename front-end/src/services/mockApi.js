@@ -130,9 +130,28 @@ export function getDefaultProfileSeed() {
 
 // ── Discover ──────────────────────────────────────────────────────────────────
 
-export async function fetchDiscoverUsers() {
+/** Shuffled sample for Discover browse (GET /api/matches/random). */
+export async function fetchDiscoverRandomUsers() {
   try {
-    const data = await requestJson(withAuthQuery("/api/matches"));
+    const base = withAuthQuery("/api/matches/random");
+    const url = `${base}&_=${Date.now()}`;
+    const data = await requestJson(url, {
+      cache: "no-store",
+    });
+    return data.matches || [];
+  } catch {
+    return [];
+  }
+}
+
+/** Ranked algorithm matches (GET /api/matches). */
+export async function fetchDiscoverBestMatches() {
+  try {
+    const base = withAuthQuery("/api/matches");
+    const url = `${base}&_=${Date.now()}`;
+    const data = await requestJson(url, {
+      cache: "no-store",
+    });
     return data.matches || [];
   } catch {
     return [];

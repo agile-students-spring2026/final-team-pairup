@@ -48,11 +48,9 @@ function PartnerSpaceScreen({
   const [chatSessionId, setChatSessionId] = useState(null);
   const [chatStatus, setChatStatus] = useState('unknown');
   const [chatLoadingError, setChatLoadingError] = useState('');
-  const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [incomingProposal, setIncomingProposal] = useState(null);
   const [proposalLoadingError, setProposalLoadingError] = useState('');
   const [proposalError, setProposalError] = useState('');
-  const [isSendingProposal, setIsSendingProposal] = useState(false);
   const [selectedSlotId, setSelectedSlotId] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [confirmedSlot, setConfirmedSlot] = useState(null);
@@ -233,7 +231,6 @@ function PartnerSpaceScreen({
     }
 
     try {
-      setIsSendingMessage(true);
       setChatLoadingError('');
 
       let sessionId = chatSessionId;
@@ -277,14 +274,11 @@ function PartnerSpaceScreen({
     } catch (err) {
       console.error(err);
       setChatLoadingError(err.message || 'Failed to send message');
-    } finally {
-      setIsSendingMessage(false);
     }
   };
 
   async function handleSendProposal(payload) {
     try {
-      setIsSendingProposal(true);
       setProposalError('');
 
       const requestBody = {
@@ -326,8 +320,6 @@ function PartnerSpaceScreen({
     } catch (err) {
       console.error(err);
       setProposalError(err.message || 'Something went wrong');
-    } finally {
-      setIsSendingProposal(false);
     }
   }
 
