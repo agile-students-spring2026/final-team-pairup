@@ -13,92 +13,115 @@
   min-height: 100vh;
   background: #edf3f6;
   color: #13293d;
+  padding-bottom: 40px;
 }
 
+/* ── Header — matches profile page dark navy ── */
 .settings-header {
   height: 74px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 18px;
-  background: #ffffff;
-  border-bottom: 1px solid #d7e1e8;
+  gap: 12px;
+  padding: 0 20px;
+  background: #156b8f;
+  border-bottom: none;
 }
 
 .settings-back {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: none;
-  background: transparent;
-  color: #2f343a;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  color: #ffffff;
   cursor: pointer;
   padding: 0;
-  line-height: 1;
-  transition: opacity 0.15s ease, transform 0.12s ease;
+  transition: background 0.15s ease, transform 0.12s ease;
 }
 
 .settings-back-icon {
-  width: 28px;
-  height: 28px;
+  width: 18px;
+  height: 18px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.4;
+  stroke-width: 2.6;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .settings-back:hover {
-  opacity: 0.75;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .settings-back:active {
-  transform: scale(0.97);
+  transform: scale(0.95);
 }
 
 .settings-back:focus-visible {
-  outline: 2px solid #156b8f;
+  outline: 2px solid #5bc4e8;
   outline-offset: 2px;
 }
 
 .settings-title {
   margin: 0;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
-  color: #2f343a;
+  color: #ffffff;
+  letter-spacing: -0.3px;
 }
 
+/* ── Section cards — white card blocks like profile ── */
 .settings-section {
-  margin-top: 22px;
-  width: 100%;
+  margin: 20px 16px 0;
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(19, 41, 61, 0.07);
 }
 
 .settings-section-label {
-  padding: 0 22px 12px;
+  padding: 16px 20px 10px;
   color: #8398a8;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
+  background: #f5f9fb;
+  border-bottom: 1px solid #e8f0f5;
 }
 
+/* ── Rows ── */
 .settings-row {
   width: 100%;
   border: none;
-  border-top: 1px solid #d7e1e8;
+  border-top: 1px solid #e8f0f5;
   background: transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 22px;
+  gap: 14px;
+  padding: 18px 20px;
   text-align: left;
+  transition: background 0.12s ease;
+}
+
+.settings-row:first-of-type {
+  border-top: none;
 }
 
 button.settings-row {
   cursor: pointer;
+}
+
+button.settings-row:hover {
+  background: #f5f9fb;
+}
+
+button.settings-row:active {
+  background: #edf3f6;
 }
 
 .settings-row-text {
@@ -107,69 +130,92 @@ button.settings-row {
 }
 
 .settings-row-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
-  color: #1b2d3d;
-  margin-bottom: 4px;
+  color: #13293d;
+  margin-bottom: 3px;
 }
 
 .settings-row-subtitle {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.35;
   color: #7e95a7;
 }
 
+/* ── Chevron — teal to match profile accent ── */
 .settings-chevron {
-  font-size: 32px;
+  font-size: 22px;
   line-height: 1;
-  color: #8aa0b1;
+  color: #5bc4e8;
   flex-shrink: 0;
+  font-weight: 300;
 }
 
+/* ── "Always on" pill — matches profile tag pills ── */
 .settings-pill {
-  padding: 9px 14px;
+  padding: 6px 13px;
   border-radius: 999px;
-  background: #e7eef3;
-  color: #8aa0b1;
-  font-size: 14px;
+  background: #dff0f7;
+  color: #156b8f;
+  font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
 }
 
+/* ── Danger rows ── */
 .danger .settings-row-title {
-  color: #eb3b32;
+  color: #d73b33;
 }
 
+/* ── Expand panel ── */
 .settings-expand {
-  padding: 0 22px 18px;
-  border-top: 1px solid #d7e1e8;
+  padding: 4px 20px 18px;
+  border-top: 1px solid #e8f0f5;
+  background: #f9fcfd;
   width: 100%;
 }
 
 .settings-input {
   width: 100%;
-  margin-top: 14px;
+  margin-top: 12px;
   padding: 13px 14px;
-  border: 1px solid #ccd7df;
+  border: 1.5px solid #ccd7df;
   border-radius: 12px;
   font-size: 14px;
   background: #ffffff;
+  color: #13293d;
+  transition: border-color 0.15s ease;
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: #156b8f;
 }
 
 .settings-action-btn,
 .settings-danger-btn {
-  margin-top: 14px;
+  margin-top: 12px;
   border: none;
   border-radius: 12px;
-  padding: 12px 16px;
+  padding: 13px 20px;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+  width: 100%;
+  transition: opacity 0.15s ease, transform 0.1s ease;
 }
 
 .settings-action-btn {
-  background: #1f6988;
+  background: #156b8f;
   color: white;
+}
+
+.settings-action-btn:hover {
+  opacity: 0.85;
+}
+
+.settings-action-btn:active {
+  transform: scale(0.98);
 }
 
 .settings-danger-btn {
@@ -177,16 +223,21 @@ button.settings-row {
   color: white;
 }
 
+.settings-danger-btn:hover {
+  opacity: 0.85;
+}
+
+/* ── Toggle switch — teal ON state like profile ── */
 .switch {
-  width: 62px;
-  height: 34px;
+  width: 54px;
+  height: 30px;
   border: none;
   border-radius: 999px;
   background: #dce5eb;
   position: relative;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.2s ease;
+  transition: background 0.22s ease;
   padding: 0;
 }
 
@@ -195,33 +246,37 @@ button.settings-row {
 }
 
 .switch-knob {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: #f7f7f7;
+  background: #ffffff;
   position: absolute;
   top: 2px;
   left: 2px;
-  transition: transform 0.2s ease;
+  transition: transform 0.22s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
 }
 
 .switch.on .switch-knob {
-  transform: translateX(28px);
+  transform: translateX(24px);
 }
 
+/* ── Status message ── */
 .settings-message {
-  margin: 16px 22px 0;
-  padding: 12px 14px;
+  margin: 16px 16px 0;
+  padding: 12px 16px;
   border-radius: 12px;
-  background: #e7f5ea;
-  color: #2d6f3b;
+  background: #dff0f7;
+  color: #156b8f;
   font-size: 14px;
   font-weight: 600;
+  border-left: 3px solid #156b8f;
 }
 
+/* ── About text ── */
 .settings-paragraph {
-  margin-top: 12px;
+  margin-top: 10px;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.65;
   color: #6f8597;
 }
