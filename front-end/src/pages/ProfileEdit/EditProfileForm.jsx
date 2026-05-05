@@ -69,32 +69,42 @@ function EditProfileForm({ onSuccess }) {
     }, 0);
   }, [profile.availability]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const newErrors = {};
-
+  
     if (!profile.displayName.trim()) {
       newErrors.displayName = "Display name is required.";
     }
-
+  
     if (!profile.targetRole) {
       newErrors.targetRole = "Please choose a target role.";
     }
-
+  
     if (profile.bio.length > 150) {
       newErrors.bio = "Bio must be 150 characters or fewer.";
     }
-
+  
     if (selectedSlotsCount < 3) {
       newErrors.availability = "Please select at least 3 availability slots.";
     }
-
+  
     setErrors(newErrors);
+  
     if (Object.keys(newErrors).length > 0) return;
-
-    saveProfile();
-
-    if (onSuccess) onSuccess();
-    else navigate("/profile/me");
+  
+    try {
+      await saveProfile();
+  
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate("/profile/me");
+      }
+    } catch (error) {
+      setErrors({
+        form: error.message || "Failed to save profile. Please try again.",
+      });
+    }
   };
 
   return (
@@ -373,6 +383,8 @@ function EditProfileForm({ onSuccess }) {
             </div>
           </section>
 
+          {errors.form && <p className="error-text">{errors.form}</p>}
+          
           <button type="button" className="next-button" onClick={handleSave}>
             Save
           </button>
