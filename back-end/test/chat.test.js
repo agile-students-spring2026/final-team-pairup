@@ -1,15 +1,12 @@
 const request = require('supertest');
 const { expect } = require('chai');
-const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+
 const app = require('../app');
 const User = require('../models/User');
 const { FriendRequest } = require('../models/FriendRequest');
 const { ChatSession } = require('../models/ChatSession');
 const ChatMessage = require('../models/ChatMessage');
-const { connectToDatabase } = require('../modules/db');
-const jwt = require('jsonwebtoken');
-
-const TEST_DB_URI = process.env.TEST_MONGODB_URI;
 
 function makeToken(userId, email = `${userId}@test.com`) {
   return jwt.sign({ id: userId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -61,7 +58,7 @@ const seededMessages = [
     _id: 'msg-1',
     sessionId: 'chat-session-1',
     senderId: 'current-user',
-    text: 'Hey — want to run a mock this week?',
+    text: 'Hey - want to run a mock this week?',
     createdAt: new Date('2026-04-07T11:00:00.000Z'),
   },
   {
@@ -75,14 +72,6 @@ const seededMessages = [
 
 describe('chat routes', function chatRoutesSuite() {
   this.timeout(10000);
-
-  before(async () => {
-    if (!TEST_DB_URI) {
-      throw new Error('TEST_MONGODB_URI must be set for chat tests.');
-    }
-    process.env.MONGODB_URI = TEST_DB_URI;
-    await connectToDatabase();
-  });
 
   beforeEach(async () => {
     await Promise.all([
@@ -98,16 +87,13 @@ describe('chat routes', function chatRoutesSuite() {
     await ChatMessage.insertMany(seededMessages);
   });
 
-  after(async () => {
+  afterEach(async () => {
     await Promise.all([
       User.deleteMany({}),
       FriendRequest.deleteMany({}),
       ChatSession.deleteMany({}),
       ChatMessage.deleteMany({}),
     ]);
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.disconnect();
-    }
   });
 
   it('GET /api/chat/partner-status/:otherUserId returns partnered for accepted pair', async () => {
@@ -128,8 +114,8 @@ describe('chat routes', function chatRoutesSuite() {
     expect(res.status).to.equal(200);
     expect(res.body).to.have.property('sessions');
     expect(res.body.sessions).to.be.an('array');
-    expect(res.body.sessions.some((s) => s.id === 'chat-session-1')).to.equal(true);
-    expect(res.body.sessions.find((s) => s.id === 'chat-session-1')).to.have.property(
+    expect(res.body.sessions.some((session) => session.id === 'chat-session-1')).to.equal(true);
+    expect(res.body.sessions.find((session) => session.id === 'chat-session-1')).to.have.property(
       'otherUserId',
       'user-sde-int-match',
     );
@@ -195,7 +181,8 @@ describe('chat routes', function chatRoutesSuite() {
 
     expect(res.status).to.equal(200);
     expect(res.body.sessions).to.be.an('array');
-    const first = res.body.sessions.find((s) => s.id === 'chat-session-1');
+
+    const first = res.body.sessions.find((session) => session.id === 'chat-session-1');
     expect(first).to.exist;
     expect(first.messages).to.be.an('array');
     expect(res.body).to.have.property('totalSessions');

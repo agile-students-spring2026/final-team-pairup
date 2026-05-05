@@ -1,10 +1,8 @@
 const request = require('supertest');
 const { expect } = require('chai');
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
 
 const app = require('../app');
-const connectDB = require('../config/db');
 const User = require('../models/User');
 
 function makeToken(userId, email = `${userId}@test.com`) {
@@ -83,16 +81,10 @@ function validUserPayload() {
 }
 
 describe('users routes', () => {
-  before(async () => {
-    await connectDB();
-  });
-
   beforeEach(async () => {
     await User.deleteMany({});
 
-    await User.create(
-      baseUser(),
-    );
+    await User.create(baseUser());
 
     await User.create(
       baseUser({
@@ -103,9 +95,8 @@ describe('users routes', () => {
     );
   });
 
-  after(async () => {
+  afterEach(async () => {
     await User.deleteMany({});
-    await mongoose.connection.close();
   });
 
   it('POST /api/users with valid data returns 201 and strips passwordHash', async () => {

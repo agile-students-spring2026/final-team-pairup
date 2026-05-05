@@ -10,13 +10,6 @@ const mockUsers = require('../data/mockUsers.json');
 const mockFriendRequests = require('../data/mockFriendRequests.json');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'pairup_secret_key';
-const mongoose = require('mongoose');
-const app = require('../app');
-const { connectToDatabase } = require('../modules/db');
-const User = require('../models/User');
-const { FriendRequest } = require('../models/FriendRequest');
-const mockUsers = require('../data/mockUsers.json');
-const mockFriendRequests = require('../data/mockFriendRequests.json');
 
 function makeToken(userId, email = `${userId}@test.com`) {
   return jwt.sign({ id: userId, email }, JWT_SECRET, { expiresIn: '7d' });
@@ -31,13 +24,13 @@ async function seedFriendData() {
   await User.insertMany(mockUsers);
 
   await FriendRequest.insertMany(
-    mockFriendRequests.map((request) => ({
-      _id: request.id,
-      fromUserId: request.fromUserId,
-      toUserId: request.toUserId,
-      status: request.status,
-      createdAt: request.createdAt,
-      updatedAt: request.updatedAt,
+    mockFriendRequests.map((requestItem) => ({
+      _id: requestItem.id,
+      fromUserId: requestItem.fromUserId,
+      toUserId: requestItem.toUserId,
+      status: requestItem.status,
+      createdAt: requestItem.createdAt,
+      updatedAt: requestItem.updatedAt,
     }))
   );
 }
@@ -52,31 +45,6 @@ describe('friends routes', () => {
       User.deleteMany({}),
       FriendRequest.deleteMany({}),
     ]);
-  });
-  before(async () => {
-    await connectToDatabase();
-  });
-
-  beforeEach(async () => {
-    await Promise.all([User.deleteMany({}), FriendRequest.deleteMany({})]);
-    await User.insertMany(mockUsers);
-    await FriendRequest.insertMany(
-      mockFriendRequests.map((request) => ({
-        _id: request.id,
-        fromUserId: request.fromUserId,
-        toUserId: request.toUserId,
-        status: request.status,
-        createdAt: request.createdAt,
-        updatedAt: request.updatedAt,
-      }))
-    );
-  });
-
-  after(async () => {
-    await Promise.all([User.deleteMany({}), FriendRequest.deleteMany({})]);
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.connection.close();
-    }
   });
 
   it('GET /api/friends returns accepted friends for current-user', async () => {
