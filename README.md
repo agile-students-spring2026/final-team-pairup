@@ -114,7 +114,6 @@ The deployed front-end is available at:
   - `.github/workflows/ci.yml`
   - Runs full build-and-test checks on both `push` and `pull_request`:
     - backend automated tests
-    - front-end automated tests
     - front-end production build
 - **Continuous Deployment (Railway)**:
   - Railway is connected to the repository and automatically deploys new changes from Git updates.
