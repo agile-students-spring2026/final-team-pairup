@@ -10,6 +10,7 @@ import StickyInviteBar from "../components/profile/StickyInviteBar";
 import "../styles/profile.css";
 import { useLocation, useParams } from "react-router-dom";
 import { getAuthHeaders } from "../services/mockApi";
+import { apiUrl } from "../config/apiBase";
 
 function toPercentValue(value) {
   if (typeof value !== "number" || Number.isNaN(value)) return null;
@@ -97,7 +98,7 @@ function UserProfilePage() {
   
     setLoading(true);
   
-    fetch(`/api/users/${id}`, { headers: getAuthHeaders() })
+    fetch(apiUrl(`/api/users/${id}`), { headers: getAuthHeaders() })
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);

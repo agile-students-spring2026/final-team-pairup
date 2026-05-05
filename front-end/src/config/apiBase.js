@@ -15,3 +15,8 @@ function normalizeBaseUrl(value) {
  */
 export const API_BASE_URL = normalizeBaseUrl(process.env.REACT_APP_API_BASE_URL);
 
+/** Absolute URL for API paths when frontend and backend are on different hosts. */
+export function apiUrl(path) {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return API_BASE_URL ? `${API_BASE_URL}${p}` : p;
+}

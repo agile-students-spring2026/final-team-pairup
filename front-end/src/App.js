@@ -565,7 +565,9 @@ function AppRoutes({ initialIsAuthenticated = false }) {
 function App({ initialIsAuthenticated = false }) {
   return (
     <BrowserRouter>
-      <AppRoutes initialIsAuthenticated={initialIsAuthenticated} />
+      <div className="app-phone-frame">
+        <AppRoutes initialIsAuthenticated={initialIsAuthenticated} />
+      </div>
     </BrowserRouter>
   );
 }
