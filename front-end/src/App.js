@@ -27,7 +27,7 @@ import EditProfileForm from "./pages/ProfileEdit/EditProfileForm";
 
 import MatchesPage from "./pages/matches/MatchesPage";
 
-import { PARTNERS_MOCK_NOW, PARTNERS_REFRESH_EVENT, fetchPartnersFromFriendsApi, getAuthHeaders, getInitialPartners, mergePartnerRows } from "./services/mockApi";
+import { AUTH_EXPIRED_EVENT, PARTNERS_MOCK_NOW, PARTNERS_REFRESH_EVENT, fetchPartnersFromFriendsApi, getAuthHeaders, getInitialPartners, mergePartnerRows } from "./services/mockApi";
 import { useProfile } from "./context/ProfileContext";
 import { API_BASE_URL } from "./config/apiBase";
 
@@ -200,6 +200,34 @@ function buildUserPayload(stepOne, stepTwo, stepThree) {
 }
 
 // ---------------------------------------------------------------------------
+// Auth helpers (module-scope so the useState initializer can call them)
+// ---------------------------------------------------------------------------
+function clearLocalSessionSync() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("token");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("fullName");
+  localStorage.removeItem("sessionEmail");
+  localStorage.removeItem("sessionFullName");
+  localStorage.removeItem("pairup_profile_data");
+}
+
+function decodeJwtExp(token) {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const padded = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const json = atob(padded);
+    const data = JSON.parse(json);
+    return typeof data.exp === "number" ? data.exp : null;
+  } catch {
+    return null;
+  }
+}
+
+
+// ---------------------------------------------------------------------------
 // Route guards
 // ---------------------------------------------------------------------------
 
@@ -248,7 +276,14 @@ function AppRoutes({ initialIsAuthenticated = false }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (initialIsAuthenticated) return true;
     if (typeof window === "undefined") return false;
-    return Boolean(localStorage.getItem("token"));
+    const token = localStorage.getItem("token");
+    if (!token) return false;
+    const exp = decodeJwtExp(token);
+    if (exp && exp * 1000 < Date.now()) {
+      clearLocalSessionSync();
+      return false;
+    }
+    return true;
   });
   const [isOnboarding, setIsOnboarding] = useState(false);
   const { refetchProfile } = useProfile();
@@ -263,27 +298,23 @@ function AppRoutes({ initialIsAuthenticated = false }) {
   const navigate = useNavigate();
 
   function clearLocalSession() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("fullName");
-    localStorage.removeItem("sessionEmail");
-    localStorage.removeItem("sessionFullName");
-    localStorage.removeItem("pairup_profile_data");
+    clearLocalSessionSync();
   }
 
   function handleLogout({ redirectState } = {}) {
     clearLocalSession();
     setIsAuthenticated(false);
     setIsOnboarding(false);
-    navigate("/login", { replace: true, state: redirectState });
+    const search =
+      redirectState?.reason === "session-expired" ? "?session-expired=1" : "";
+    navigate(`/login${search}`, { replace: true, state: redirectState });
   }
-
+  
   const selectedPartnerIds = useMemo(
     () => new Set(partners.map((p) => p.id)),
     [partners]
   );
-
+  
   // Teammate: merge friends/chat data when authenticated
   useEffect(() => {
     if (!isAuthenticated) return undefined;
@@ -298,6 +329,15 @@ function AppRoutes({ initialIsAuthenticated = false }) {
     window.addEventListener(PARTNERS_REFRESH_EVENT, mergeFriendsFromApi);
     return () => window.removeEventListener(PARTNERS_REFRESH_EVENT, mergeFriendsFromApi);
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    function onAuthExpired() {
+      handleLogout({ redirectState: { reason: "session-expired" } });
+    }
+    window.addEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * Called when the user finishes the last onboarding step.

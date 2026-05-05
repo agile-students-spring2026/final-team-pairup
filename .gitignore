@@ -128,14 +128,5 @@ typings/
 **/.jekyll-cache
 **/_site/
 
-# Claude / AI tooling — local only, never push
-# .claude/
-# **/.claude/
-# .claude*
-# CLAUDE.md
-# **/CLAUDE.md
-# PROGRESS.md
-# **/PROGRESS.md
-# RYAN-INSTRUCTIONS.md
-# **/RYAN-INSTRUCTIONS.md
-# docs/superpowers/
+# local environment fix
+dnsfix.local.js

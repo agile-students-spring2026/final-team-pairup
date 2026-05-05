@@ -11,6 +11,12 @@ function LoginPage({ onLoginSuccess }) {
     location.state?.accountDeleted && location.state?.message
       ? location.state.message
       : "";
+  
+  //add a message when the session expires
+  // add a message when the session expires (carried via URL search param)
+  const sessionExpiredMessage = location.search.includes("session-expired=1")
+    ? "Your session expired. Please sign in again."
+    : "";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -130,6 +136,9 @@ function LoginPage({ onLoginSuccess }) {
             <h2>{forgot ? "Reset your password" : "Welcome back"}</h2>
             {accountDeletedMessage ? (
               <p className="auth-success-text">{accountDeletedMessage}</p>
+            ) : null}
+            {sessionExpiredMessage ? (
+              <p className="auth-success-text">{sessionExpiredMessage}</p>
             ) : null}
 
             <label>Email</label>
