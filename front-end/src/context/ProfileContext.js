@@ -30,9 +30,43 @@ function createDefaultAvailability() {
   };
 }
 
+function getDefaultPracticeFocus(apiRole) {
+  if (apiRole === "PM") {
+    return ["Product Sense"];
+  }
+
+  return ["Coding"];
+}
+
+function normalizePracticeFocus(apiRole, practiceFocus) {
+  const validOptions =
+    PRACTICE_OPTIONS_BY_ROLE[apiRole] || PRACTICE_OPTIONS_BY_ROLE.SDE;
+
+  const cleanedFocus = Array.isArray(practiceFocus)
+    ? practiceFocus.filter((focus) => validOptions.includes(focus))
+    : [];
+
+  if (cleanedFocus.length > 0) {
+    return cleanedFocus;
+  }
+
+  return getDefaultPracticeFocus(apiRole);
+}
+
+function normalizeWeakestArea(apiRole, weakestArea, practiceFocus) {
+  const normalizedFocus = normalizePracticeFocus(apiRole, practiceFocus);
+
+  if (normalizedFocus.includes(weakestArea)) {
+    return weakestArea;
+  }
+
+  return normalizedFocus[0];
+}
+
 const DEFAULT_PROFILE = {
   displayName: "",
   targetRole: "Software Engineer",
+  practiceFocus: ["Coding"],
   companyTier: "FAANG",
   timeline: "1–3 months",
   overallLevel: "Intermediate",
@@ -49,13 +83,21 @@ const DEFAULT_PROFILE = {
   whoGoesFirst: "No preference",
   sessions: 0,
   showUp: "100%",
-  wantsToImprove: "",
+  wantsToImprove: "Coding",
   notifications: {
     newInvitation: true,
     inviteAccepted: true,
     sessionReminder: true,
   },
 };
+
+function uiRoleToApiRole(targetRole) {
+  return targetRole === "Product Manager" ? "PM" : "SDE";
+}
+
+function apiRoleToUiRole(role) {
+  return role === "PM" ? "Product Manager" : "Software Engineer";
+}
 
 function apiTimelineToUi(value) {
   if (value === "1-3 months") return "1–3 months";
@@ -72,36 +114,15 @@ function uiTimelineToApi(value) {
 function apiTimezoneToUi(value) {
   if (value === "America/Chicago") return "CT";
   if (value === "America/Los_Angeles") return "PT";
+  if (value === "America/Denver") return "MT";
   return "ET";
 }
 
 function uiTimezoneToApi(value) {
   if (value === "CT") return "America/Chicago";
   if (value === "PT") return "America/Los_Angeles";
+  if (value === "MT") return "America/Denver";
   return "America/New_York";
-}
-
-function uiRoleToApiRole(targetRole) {
-  return targetRole === "Product Manager" ? "PM" : "SDE";
-}
-
-function apiRoleToUiRole(role) {
-  return role === "PM" ? "Product Manager" : "Software Engineer";
-}
-
-function getValidPracticeFocus(apiRole, currentWeakestArea) {
-  const options = PRACTICE_OPTIONS_BY_ROLE[apiRole] || PRACTICE_OPTIONS_BY_ROLE.SDE;
-
-  if (options.includes(currentWeakestArea)) {
-    return [currentWeakestArea];
-  }
-
-  return [options[0]];
-}
-
-function getValidWeakestArea(apiRole, currentWeakestArea) {
-  const practiceFocus = getValidPracticeFocus(apiRole, currentWeakestArea);
-  return practiceFocus[0];
 }
 
 function apiAvailabilityToUi(apiAvailability = {}) {
@@ -173,9 +194,18 @@ function uiAvailabilityToApi(uiAvailability = {}) {
 }
 
 function mapApiUserToProfile(apiUser) {
+  const apiRole = apiUser.role === "PM" ? "PM" : "SDE";
+  const practiceFocus = normalizePracticeFocus(apiRole, apiUser.practiceFocus);
+  const weakestArea = normalizeWeakestArea(
+    apiRole,
+    apiUser.weakestArea,
+    practiceFocus
+  );
+
   return {
     displayName: apiUser.displayName || "",
-    targetRole: apiRoleToUiRole(apiUser.role),
+    targetRole: apiRoleToUiRole(apiRole),
+    practiceFocus,
     companyTier: apiUser.targetTier || "FAANG",
     timeline: apiTimelineToUi(apiUser.timeline || "1-3 months"),
     overallLevel: apiUser.level || "Intermediate",
@@ -187,7 +217,7 @@ function mapApiUserToProfile(apiUser) {
     whoGoesFirst: apiUser.whoGoesFirst || "No preference",
     sessions: apiUser.sessionsCompleted ?? 0,
     showUp: `${Math.round((apiUser.showUpRate ?? 1) * 100)}%`,
-    wantsToImprove: apiUser.weakestArea || "",
+    wantsToImprove: weakestArea,
     notifications: {
       newInvitation: apiUser.notifications?.inviteReceived ?? true,
       inviteAccepted: apiUser.notifications?.matchConfirmed ?? true,
@@ -207,7 +237,27 @@ export function ProfileProvider({ children }) {
       return DEFAULT_PROFILE;
     }
 
-    return saved ? JSON.parse(saved) : DEFAULT_PROFILE;
+    if (saved) {
+      const parsedProfile = JSON.parse(saved);
+      const apiRole = uiRoleToApiRole(parsedProfile.targetRole);
+      const practiceFocus = normalizePracticeFocus(
+        apiRole,
+        parsedProfile.practiceFocus
+      );
+
+      return {
+        ...DEFAULT_PROFILE,
+        ...parsedProfile,
+        practiceFocus,
+        wantsToImprove: normalizeWeakestArea(
+          apiRole,
+          parsedProfile.wantsToImprove,
+          practiceFocus
+        ),
+      };
+    }
+
+    return DEFAULT_PROFILE;
   });
 
   const [successMessage, setSuccessMessage] = useState("");
@@ -263,15 +313,13 @@ export function ProfileProvider({ children }) {
     setProfile((prev) => {
       if (field === "targetRole") {
         const apiRole = uiRoleToApiRole(value);
-        const validWeakestArea = getValidWeakestArea(
-          apiRole,
-          prev.wantsToImprove
-        );
+        const practiceFocus = getDefaultPracticeFocus(apiRole);
 
         return {
           ...prev,
           targetRole: value,
-          wantsToImprove: validWeakestArea,
+          practiceFocus,
+          wantsToImprove: practiceFocus[0],
         };
       }
 
@@ -297,11 +345,15 @@ export function ProfileProvider({ children }) {
 
   const saveProfile = useCallback(async () => {
     const apiRole = uiRoleToApiRole(profile.targetRole);
-    const practiceFocus = getValidPracticeFocus(
+    const practiceFocus = normalizePracticeFocus(
       apiRole,
-      profile.wantsToImprove
+      profile.practiceFocus
     );
-    const weakestArea = getValidWeakestArea(apiRole, profile.wantsToImprove);
+    const weakestArea = normalizeWeakestArea(
+      apiRole,
+      profile.wantsToImprove,
+      practiceFocus
+    );
 
     const payload = {
       displayName: profile.displayName,

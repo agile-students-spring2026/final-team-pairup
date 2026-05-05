@@ -16,6 +16,13 @@ function ProfilePage({ onBackToEdit, successMessage }) {
     .slice(0, 2)
     .toUpperCase();
 
+  const practiceFocus =
+    Array.isArray(profile.practiceFocus) && profile.practiceFocus.length > 0
+      ? profile.practiceFocus
+      : profile.targetRole === "Product Manager"
+      ? ["Product Sense"]
+      : ["Coding"];
+
   return (
     <div className="profile-page">
       <div className="profile-card">
@@ -63,8 +70,11 @@ function ProfilePage({ onBackToEdit, successMessage }) {
           <div className="info-row">
             <span className="info-label">Practice focus</span>
             <div className="pill-group">
-              <span className="info-pill">Coding</span>
-              <span className="info-pill">Concepts</span>
+              {practiceFocus.map((focus) => (
+                <span key={focus} className="info-pill">
+                  {focus}
+                </span>
+              ))}
             </div>
           </div>
 
@@ -86,6 +96,7 @@ function ProfilePage({ onBackToEdit, successMessage }) {
             <span className="level-value">{profile.overallLevel}</span>
             <span className="level-dots">● ● ○</span>
           </div>
+
           <p className="muted-copy">
             {profile.overallLevel === "Beginner" &&
               "Primarily Easy problems / just getting started"}
@@ -94,6 +105,7 @@ function ProfilePage({ onBackToEdit, successMessage }) {
             {profile.overallLevel === "Advanced" &&
               "Hard + OA-level / want to keep sharp"}
           </p>
+
           <div className="improve-row">
             <span className="info-label">Wants to improve:</span>
             <span className="accent-pill">{profile.wantsToImprove}</span>
@@ -129,6 +141,7 @@ function ProfilePage({ onBackToEdit, successMessage }) {
 
           <div className="profile-grid">
             <div className="profile-grid-header" />
+
             {BAND_KEYS.map((band) => (
               <div key={band} className="profile-grid-header">
                 <div className="profile-grid-title">{BAND_LABELS[band]}</div>
@@ -141,8 +154,10 @@ function ProfilePage({ onBackToEdit, successMessage }) {
             {DAYS.map((day) => (
               <React.Fragment key={day}>
                 <div className="profile-day-label">{day}</div>
+
                 {BAND_KEYS.map((band) => {
                   const active = profile.availability[day][band];
+
                   return (
                     <div
                       key={`${day}-${band}`}
@@ -167,8 +182,11 @@ function ProfilePage({ onBackToEdit, successMessage }) {
         <button
           className="edit-again-button"
           onClick={() => {
-            if (onBackToEdit) onBackToEdit();
-            else navigate("/profile/edit");
+            if (onBackToEdit) {
+              onBackToEdit();
+            } else {
+              navigate("/profile/edit");
+            }
           }}
         >
           Edit Profile
