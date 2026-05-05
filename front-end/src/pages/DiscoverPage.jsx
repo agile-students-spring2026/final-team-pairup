@@ -10,6 +10,7 @@ import {
   fetchDiscoverRandomUsers,
   getAuthHeaders,
 } from "../services/mockApi";
+import { apiUrl } from "../config/apiBase";
 
 import "../styles/discover.css";
 
@@ -121,7 +122,7 @@ function DiscoverPage() {
       }
 
       const res = await fetch(
-        `/api/friends/requests`,
+        apiUrl("/api/friends/requests"),
         {
           method: "POST",
           headers: getAuthHeaders({
