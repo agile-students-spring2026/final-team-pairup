@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import { getAuthHeaders } from "../services/mockApi";
+import { apiUrl } from "../config/apiBase";
 
 const ProfileContext = createContext();
 
@@ -136,7 +137,9 @@ export function ProfileProvider({ children }) {
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
-    const meUrl = userId ? `/api/users/me?userId=${userId}` : "/api/users/me";
+    const meUrl = userId
+      ? apiUrl(`/api/users/me?userId=${userId}`)
+      : apiUrl("/api/users/me");
     fetch(meUrl, { cache: "no-store", headers: getAuthHeaders() })
       .then((res) => {
         if (!res.ok) {
@@ -208,7 +211,9 @@ export function ProfileProvider({ children }) {
     };
 
     const userId = localStorage.getItem("userId");
-    const meUrl = userId ? `/api/users/me?userId=${userId}` : "/api/users/me";
+    const meUrl = userId
+      ? apiUrl(`/api/users/me?userId=${userId}`)
+      : apiUrl("/api/users/me");
     const res = await fetch(meUrl, {
       method: "PATCH",
       headers: getAuthHeaders({
