@@ -1,9 +1,8 @@
 const request = require('supertest');
 const { expect } = require('chai');
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
+
 const app = require('../app');
-const { connectToDatabase } = require('../modules/db');
 const User = require('../models/User');
 const { Request: RequestModel } = require('../models/Request');
 
@@ -12,12 +11,9 @@ function makeToken(userId, email = `${userId}@test.com`) {
 }
 
 describe('requests routes', () => {
-  before(async () => {
-    await connectToDatabase();
-  });
-
   beforeEach(async () => {
     await Promise.all([User.deleteMany({}), RequestModel.deleteMany({})]);
+
     await User.create({
       _id: 'current-user',
       email: 'current@example.com',
@@ -26,11 +22,8 @@ describe('requests routes', () => {
     });
   });
 
-  after(async () => {
+  afterEach(async () => {
     await Promise.all([User.deleteMany({}), RequestModel.deleteMany({})]);
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.connection.close();
-    }
   });
 
   it('GET /api/requests returns 200 and requests array', async () => {
