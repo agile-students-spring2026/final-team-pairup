@@ -39,6 +39,28 @@ body {
   min-height: 100dvh;
 }
 
+/* Phone-first UI: on wide viewports, keep a centered column so desktop matches mobile proportions. */
+.app-phone-frame {
+  margin: 0 auto;
+  max-width: min(100%, 430px);
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+}
+
+@media (min-width: 520px) {
+  body {
+    background: #0e0e10;
+  }
+
+  .app-phone-frame {
+    /* Establishes a containing block so position:fixed chrome (e.g. bottom nav) stays inside the column. */
+    transform: translateZ(0);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 16px 48px rgba(0, 0, 0, 0.35);
+  }
+}
+
 ::selection {
   background: rgba(15, 103, 133, 0.2);
   color: var(--color-text);

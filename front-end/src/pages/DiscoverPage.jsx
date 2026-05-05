@@ -50,7 +50,6 @@ function DiscoverPage() {
   const [selectedLevel, setSelectedLevel] = useState("");
   const [selectedCompany, setSelectedCompany] = useState("");
   const [notifyEnabled, setNotifyEnabled] = useState(false);
-  const [isAlgorithmEmpty, setIsAlgorithmEmpty] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [isLoadingMatches, setIsLoadingMatches] = useState(true);
   const [listSource, setListSource] = useState("random");
@@ -191,17 +190,15 @@ function DiscoverPage() {
       <div className="discover-header">
         <div>
           <h1 className="discover-title">Discover</h1>
-          {!isAlgorithmEmpty && (
-            <p className="discover-subtitle">
-              {listSource === "random"
-                ? hasActiveConstraints
-                  ? `Showing ${filteredUsers.length} of ${users.length} profiles`
-                  : `${users.length} random profile${users.length !== 1 ? "s" : ""}`
-                : hasActiveConstraints
-                  ? `Showing ${filteredUsers.length} of ${users.length} matches`
-                  : `${users.length} best match${users.length !== 1 ? "es" : ""} for you`}
-            </p>
-          )}
+          <p className="discover-subtitle">
+            {listSource === "random"
+              ? hasActiveConstraints
+                ? `Showing ${filteredUsers.length} of ${users.length} profiles`
+                : `${users.length} random profile${users.length !== 1 ? "s" : ""}`
+              : hasActiveConstraints
+                ? `Showing ${filteredUsers.length} of ${users.length} matches`
+                : `${users.length} best match${users.length !== 1 ? "es" : ""} for you`}
+          </p>
         </div>
 
         <div className="discover-header__actions">
@@ -331,23 +328,16 @@ function DiscoverPage() {
         />
       )}
 
-      <div className="discover-debug-row">
-        <button
-          className="debug-toggle"
-          onClick={() => setIsAlgorithmEmpty((prev) => !prev)}
-        >
-          Toggle algorithm empty state
-        </button>
-      </div>
-
-      {isAlgorithmEmpty ? (
+      {filteredUsers.length === 0 && hasActiveConstraints ? (
+        <EmptyFilteredState onClearFilters={handleClearFilters} />
+      ) : users.length === 0 &&
+        listSource === "best" &&
+        !hasActiveConstraints ? (
         <EmptyAlgorithmState
           notifyEnabled={notifyEnabled}
           onToggleNotify={() => setNotifyEnabled((prev) => !prev)}
           onUpdatePreferences={handleUpdatePreferences}
         />
-      ) : filteredUsers.length === 0 && hasActiveConstraints ? (
-        <EmptyFilteredState onClearFilters={handleClearFilters} />
       ) : (
         <div className="discover-feed">
           {filteredUsers.map((user) => (
