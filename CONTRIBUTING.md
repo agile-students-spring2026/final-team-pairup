@@ -52,13 +52,12 @@ During standups, each team member should briefly share:
 
 ## Git Workflow
 
-We use GitHub for version control and collaboration. To keep the `main` branch stable, our team follows a branch-based workflow using a shared `dev` branch.
+We use GitHub for version control and collaboration. To keep the `main` branch stable and deployable, our team follows a feature-branch workflow centered on `main`.
 
 ### Branch Structure
 
 - `main` contains the most stable and production-ready version of the project
-- `dev` is the integration branch where completed work is merged and tested first
-- Individual contributors should create separate feature branches from `dev`
+- Individual contributors should create separate feature branches from `main`
 
 ### Branch Naming Convention
 
@@ -72,22 +71,22 @@ Use clear and descriptive branch names such as:
 
 ### Workflow Steps
 
-1. Pull the latest changes from `dev`
-2. Create a new branch from `dev` for your task
+1. Pull the latest changes from `main`
+2. Create a new branch from `main` for your task
 3. Make and test your changes locally
 4. Commit your work with clear commit messages
 5. Push your feature branch to GitHub
-6. Open a Pull Request into `dev`
-7. Review, test, and resolve any conflicts in `dev`
-8. Once `dev` is stable and working correctly, merge `dev` into `main`
+6. Open a Pull Request into `main`
+7. Review, run CI checks, and resolve any conflicts in your branch
+8. Merge into `main` only after required approvals and passing checks
 
 ### Why We Use This Workflow
 
 This workflow helps us:
 
 - keep `main` clean and stable
-- catch merge conflicts earlier
-- test combined features before release
+- catch merge conflicts during pull request review
+- enforce automated checks before release
 - reduce the chance of breaking the main branch
 - collaborate more safely as a team
 
@@ -125,10 +124,9 @@ PRs should be reviewed before merging whenever possible.
 ## Rules for Contributing
 
 - Do not push directly to `main`
-- Do not merge feature branches directly into `main`
-- All feature work should branch off from `dev`
-- All completed work should be merged into `dev` first
-- Only merge `dev` into `main` when the team agrees it is stable
+- All feature work should branch off from `main`
+- All completed work should go through a Pull Request into `main`
+- Merge only when required approvals and status checks pass
 - Keep changes small and focused when possible
 - Communicate blockers early
 

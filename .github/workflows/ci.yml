@@ -1,11 +1,11 @@
-name: Backend CI
+name: CI Build and Test
 
 on:
   push:
   pull_request:
 
 jobs:
-  test:
+  backend-test:
     runs-on: ubuntu-latest
 
     defaults:
@@ -22,10 +22,35 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run tests
         run: npm test
         env:
           TEST_MONGODB_URI: ${{ secrets.TEST_MONGODB_URI }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+  frontend-build-and-test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: front-end
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run front-end tests
+        run: CI=true npm test -- --watchAll=false
+
+      - name: Build front-end
+        run: npm run build
