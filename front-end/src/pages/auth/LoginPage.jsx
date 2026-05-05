@@ -12,11 +12,11 @@ function LoginPage({ onLoginSuccess }) {
       ? location.state.message
       : "";
   
-  //add a message for when the session expires
-  const sessionExpiredMessage =
-    location.state?.reason === "session-expired"
-      ? "Your session expired. Please sign in again."
-      : "";
+  //add a message when the session expires
+  // add a message when the session expires (carried via URL search param)
+  const sessionExpiredMessage = location.search.includes("session-expired=1")
+    ? "Your session expired. Please sign in again."
+    : "";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
