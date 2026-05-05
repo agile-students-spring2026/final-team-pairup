@@ -1,9 +1,8 @@
 const request = require('supertest');
 const { expect } = require('chai');
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
+
 const app = require('../app');
-const { connectToDatabase } = require('../modules/db');
 const User = require('../models/User');
 const Meeting = require('../models/Meeting');
 
@@ -12,12 +11,9 @@ function makeToken(userId, email = `${userId}@test.com`) {
 }
 
 describe('meetings routes', () => {
-  before(async () => {
-    await connectToDatabase();
-  });
-
   beforeEach(async () => {
     await Promise.all([User.deleteMany({}), Meeting.deleteMany({})]);
+
     await User.create({
       _id: 'current-user',
       email: 'current@example.com',
@@ -26,11 +22,8 @@ describe('meetings routes', () => {
     });
   });
 
-  after(async () => {
+  afterEach(async () => {
     await Promise.all([User.deleteMany({}), Meeting.deleteMany({})]);
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.connection.close();
-    }
   });
 
   it('GET /api/meetings returns 200 and meetings array', async () => {
@@ -54,7 +47,7 @@ describe('meetings routes', () => {
         date: '2026-03-24',
         startTime: '11:00',
         endTime: '12:00',
-        timezone: 'PT',
+        timezone: 'America/New_York',
         notes: 'Mock interview',
       });
 
