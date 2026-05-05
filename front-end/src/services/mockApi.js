@@ -7,6 +7,8 @@ export const PARTNERS_MOCK_NOW = Date.now();
 
 /** Dispatched after a friend invite is accepted so App can refetch GET /api/friends. */
 export const PARTNERS_REFRESH_EVENT = "pairup:partners-refresh";
+export const AUTH_EXPIRED_EVENT = "pairup:auth-expired";
+let authExpiryNotified = false;
 
 function getStoredUserId() {
   if (typeof window === "undefined") return "current-user";
@@ -52,6 +54,13 @@ async function requestJson(url, options = {}) {
     headers: withBearer(options.headers || {}),
   });
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401) {
+    if (!authExpiryNotified && typeof window !== "undefined") {
+      authExpiryNotified = true;
+      window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+    }
+    throw new Error(data.error || data.message || "Unauthorized");
+  }
   if (!res.ok) {
     throw new Error(data.error || data.message || `HTTP ${res.status}`);
   }
@@ -92,7 +101,8 @@ async function fetchLegacyUser(userId) {
 
     const data = await res.json();
     return data.user || null;
-  } catch {
+  } catch (err) {
+    console.warn("fetchLegacyUser:", err.message);
     return null;
   }
 }
@@ -108,7 +118,8 @@ export async function fetchPartnersFromFriendsApi() {
 
     const data = await res.json();
     return (data.friends || []).map(apiFriendToPartnerRow);
-  } catch {
+  } catch (err) {
+    console.warn("fetchPartnersFromFriendsApi:", err.message);
     return [];
   }
 }
@@ -139,7 +150,8 @@ export async function fetchDiscoverRandomUsers() {
       cache: "no-store",
     });
     return data.matches || [];
-  } catch {
+  } catch (err) {
+    console.warn("fetchDiscoverRandomUsers:", err.message);
     return [];
   }
 }
@@ -153,7 +165,8 @@ export async function fetchDiscoverBestMatches() {
       cache: "no-store",
     });
     return data.matches || [];
-  } catch {
+  } catch (err) {
+    console.warn("fetchDiscoverBestMatches:", err.message);
     return [];
   }
 }
@@ -164,7 +177,8 @@ export async function fetchUserById(id) {
   try {
     const data = await requestJson(withAuthQuery(`/api/users/${id}`));
     return data.user || null;
-  } catch {
+  } catch (err) {
+    console.warn("fetchUserById:", err.message);
     return null;
   }
 }
