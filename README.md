@@ -160,6 +160,38 @@ cd front-end
 CI=true npm test
 ```
 
+### Docker
+
+This repository includes a minimal Docker setup for extra credit:
+
+- `back-end/Dockerfile` runs the Express API
+- `front-end/Dockerfile` builds the React app and serves it with Nginx
+- `docker-compose.yml` starts both services together
+
+Before running Docker, create `back-end/.env` (you can copy from `.env.example`) and set at least:
+
+```env
+MONGODB_URI=your_mongodb_atlas_connection_string
+JWT_SECRET=your_secret_key
+```
+
+Run:
+
+```bash
+docker compose up --build
+```
+
+Then open:
+
+- Front-end: [http://localhost:8080](http://localhost:8080)
+- Back-end health check: [http://localhost:3000/health.txt](http://localhost:3000/health.txt)
+
+Stop containers:
+
+```bash
+docker compose down
+```
+
 ---
 
 ### Back-end Test
