@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../styles/profile.css";
 import "./EditProfileForm.css";
 import { useProfile } from "../../context/ProfileContext";
 import {
@@ -68,37 +69,66 @@ function EditProfileForm({ onSuccess }) {
     }, 0);
   }, [profile.availability]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const newErrors = {};
-
+  
     if (!profile.displayName.trim()) {
       newErrors.displayName = "Display name is required.";
     }
-
+  
     if (!profile.targetRole) {
       newErrors.targetRole = "Please choose a target role.";
     }
-
+  
     if (profile.bio.length > 150) {
       newErrors.bio = "Bio must be 150 characters or fewer.";
     }
-
+  
     if (selectedSlotsCount < 3) {
       newErrors.availability = "Please select at least 3 availability slots.";
     }
-
+  
     setErrors(newErrors);
+  
     if (Object.keys(newErrors).length > 0) return;
-
-    saveProfile();
-
-    if (onSuccess) onSuccess();
-    else navigate("/profile/me");
+  
+    try {
+      await saveProfile();
+  
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate("/profile/me");
+      }
+    } catch (error) {
+      setErrors({
+        form: error.message || "Failed to save profile. Please try again.",
+      });
+    }
   };
 
   return (
     <div className="edit-profile-page">
       <div className="edit-profile-card">
+        <div className="edit-profile-card__topbar">
+          <button
+            type="button"
+            className="profile-back-btn edit-profile-back-btn"
+            onClick={() => navigate("/profile/me")}
+            aria-label="Back to profile"
+          >
+            <svg
+              className="profile-back-btn__icon"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path d="M15 6L9 12L15 18" />
+            </svg>
+          </button>
+          <span className="edit-profile-topbar-title">Edit Profile</span>
+        </div>
+
         <div className="edit-profile-header">
           <p className="eyebrow">PAIRUP PROFILE</p>
           <h1>Build your interview profile</h1>
@@ -175,7 +205,7 @@ function EditProfileForm({ onSuccess }) {
           <section className="section-block">
             <label className="field-label">Timeline</label>
             <p className="field-hint">
-              We’ll surface people with the same urgency
+              We'll surface people with the same urgency
             </p>
             <div className="chip-row">
               {timelineOptions.map((option) => (
@@ -194,19 +224,14 @@ function EditProfileForm({ onSuccess }) {
             <label className="field-label">
               Overall level <span className="required">*</span>
             </label>
-            <p className="field-hint">
-              So your partner knows what to expect
-            </p>
-
+            <p className="field-hint">So your partner knows what to expect</p>
             <div className="level-stack">
               {levelOptions.map((item) => (
                 <button
                   key={item.title}
                   type="button"
                   className={`level-card ${
-                    profile.overallLevel === item.title
-                      ? "level-card--active"
-                      : ""
+                    profile.overallLevel === item.title ? "level-card--active" : ""
                   }`}
                   onClick={() => updateField("overallLevel", item.title)}
                 >
@@ -219,9 +244,7 @@ function EditProfileForm({ onSuccess }) {
 
           <section className="section-block">
             <label className="field-label">Background</label>
-            <p className="field-hint">
-              Context helps partners set expectations
-            </p>
+            <p className="field-hint">Context helps partners set expectations</p>
             <div className="chip-row">
               {backgroundOptions.map((option) => (
                 <SelectChip
@@ -344,16 +367,13 @@ function EditProfileForm({ onSuccess }) {
               Who goes first <span className="required">*</span>
             </label>
             <p className="field-hint">Your preferred interview order</p>
-
             <div className="first-choice-stack">
               {firstOptions.map((option) => (
                 <button
                   key={option}
                   type="button"
                   className={`first-choice ${
-                    profile.whoGoesFirst === option
-                      ? "first-choice--active"
-                      : ""
+                    profile.whoGoesFirst === option ? "first-choice--active" : ""
                   }`}
                   onClick={() => updateField("whoGoesFirst", option)}
                 >
@@ -363,8 +383,10 @@ function EditProfileForm({ onSuccess }) {
             </div>
           </section>
 
+          {errors.form && <p className="error-text">{errors.form}</p>}
+          
           <button type="button" className="next-button" onClick={handleSave}>
-            Next
+            Save
           </button>
         </div>
       </div>

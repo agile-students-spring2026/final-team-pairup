@@ -6,6 +6,7 @@ import {
   getMatchRecommendations,
   cancelSentInvite,
 } from '../../services/mockApi';
+import { initialsFromDisplayName } from '../../utils/initials';
 import './WaitingTab.css';
 
 /** Format ms remaining into "22h left", "45m left", "Expired". */
@@ -52,13 +53,9 @@ function SentInviteCard({ invite, onCancel }) {
   return (
     <div className={`sent-card ${expired ? 'sent-card--expired' : ''}`}>
       <div className="sent-card__header">
-        <img
-          className="sent-card__avatar"
-          src={`https://picsum.photos/seed/${invite.avatarSeed}/96/96`}
-          alt={invite.recipientName}
-          width={48}
-          height={48}
-        />
+        <div className="sent-card__avatar" aria-hidden="true">
+          {initialsFromDisplayName(invite.recipientName)}
+        </div>
         <div className="sent-card__identity">
           <span className="sent-card__name">{invite.recipientName}</span>
           <span className="sent-card__meta">
@@ -131,13 +128,9 @@ function RecommendationCard({ rec, onInvite }) {
 
   return (
     <div className="rec-card">
-      <img
-        className="rec-card__avatar"
-        src={`https://picsum.photos/seed/${rec.avatarSeed}/96/96`}
-        alt={rec.name}
-        width={40}
-        height={40}
-      />
+      <div className="rec-card__avatar" aria-hidden="true">
+        {initialsFromDisplayName(rec.name)}
+      </div>
       <div className="rec-card__body">
         <span className="rec-card__name">{rec.name}</span>
         <span className="rec-card__meta">

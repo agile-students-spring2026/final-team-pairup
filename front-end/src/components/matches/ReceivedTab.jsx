@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { formatRelativeAgo } from '../../utils/relativeTime';
 import { getReceivedInvites, acceptInvite, declineInvite } from '../../services/mockApi';
 import AcceptCelebration from './AcceptCelebration';
+import { initialsFromDisplayName } from '../../utils/initials';
 import './ReceivedTab.css';
 
 /** Format ms remaining into "46h left", "2h left", "45m left", "Expired". */
@@ -55,13 +56,9 @@ function InviteCard({ invite, onAccept, onDecline }) {
   return (
     <div className="received-card">
       <div className="received-card__header">
-        <img
-          className="received-card__avatar"
-          src={`https://picsum.photos/seed/${invite.avatarSeed}/96/96`}
-          alt={invite.senderName}
-          width={48}
-          height={48}
-        />
+        <div className="received-card__avatar" aria-hidden="true">
+          {initialsFromDisplayName(invite.senderName)}
+        </div>
         <div className="received-card__identity">
           <span className="received-card__name">{invite.senderName}</span>
           <span className="received-card__meta">

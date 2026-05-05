@@ -7,10 +7,16 @@ import React, {
   useState,
 } from "react";
 import { getAuthHeaders } from "../services/mockApi";
+import { apiUrl } from "../config/apiBase";
 
 const ProfileContext = createContext();
 
 const STORAGE_KEY = "pairup_profile_data";
+
+const PRACTICE_OPTIONS_BY_ROLE = {
+  SDE: ["Coding", "System Design", "Behavioral"],
+  PM: ["Product Sense", "Analytical", "Behavioral"],
+};
 
 function createDefaultAvailability() {
   return {
@@ -75,6 +81,29 @@ function uiTimezoneToApi(value) {
   return "America/New_York";
 }
 
+function uiRoleToApiRole(targetRole) {
+  return targetRole === "Product Manager" ? "PM" : "SDE";
+}
+
+function apiRoleToUiRole(role) {
+  return role === "PM" ? "Product Manager" : "Software Engineer";
+}
+
+function getValidPracticeFocus(apiRole, currentWeakestArea) {
+  const options = PRACTICE_OPTIONS_BY_ROLE[apiRole] || PRACTICE_OPTIONS_BY_ROLE.SDE;
+
+  if (options.includes(currentWeakestArea)) {
+    return [currentWeakestArea];
+  }
+
+  return [options[0]];
+}
+
+function getValidWeakestArea(apiRole, currentWeakestArea) {
+  const practiceFocus = getValidPracticeFocus(apiRole, currentWeakestArea);
+  return practiceFocus[0];
+}
+
 function apiAvailabilityToUi(apiAvailability = {}) {
   const result = createDefaultAvailability();
 
@@ -90,6 +119,7 @@ function apiAvailabilityToUi(apiAvailability = {}) {
 
   Object.entries(apiAvailability).forEach(([apiDay, values]) => {
     const uiDay = dayMap[apiDay];
+
     if (!uiDay || !Array.isArray(values)) return;
 
     result[uiDay] = {
@@ -103,30 +133,49 @@ function apiAvailabilityToUi(apiAvailability = {}) {
 }
 
 function uiAvailabilityToApi(uiAvailability = {}) {
-  const dayMap = {
-    Mon: "mon",
-    Tue: "tue",
-    Wed: "wed",
-    Thu: "thu",
-    Fri: "fri",
-    Sat: "sat",
-    Sun: "sun",
+  return {
+    mon: [
+      !!uiAvailability.Mon?.AM,
+      !!uiAvailability.Mon?.PM,
+      !!uiAvailability.Mon?.EVE,
+    ],
+    tue: [
+      !!uiAvailability.Tue?.AM,
+      !!uiAvailability.Tue?.PM,
+      !!uiAvailability.Tue?.EVE,
+    ],
+    wed: [
+      !!uiAvailability.Wed?.AM,
+      !!uiAvailability.Wed?.PM,
+      !!uiAvailability.Wed?.EVE,
+    ],
+    thu: [
+      !!uiAvailability.Thu?.AM,
+      !!uiAvailability.Thu?.PM,
+      !!uiAvailability.Thu?.EVE,
+    ],
+    fri: [
+      !!uiAvailability.Fri?.AM,
+      !!uiAvailability.Fri?.PM,
+      !!uiAvailability.Fri?.EVE,
+    ],
+    sat: [
+      !!uiAvailability.Sat?.AM,
+      !!uiAvailability.Sat?.PM,
+      !!uiAvailability.Sat?.EVE,
+    ],
+    sun: [
+      !!uiAvailability.Sun?.AM,
+      !!uiAvailability.Sun?.PM,
+      !!uiAvailability.Sun?.EVE,
+    ],
   };
-
-  const result = {};
-
-  Object.entries(dayMap).forEach(([uiDay, apiDay]) => {
-    const row = uiAvailability[uiDay] || {};
-    result[apiDay] = [!!row.AM, !!row.PM, !!row.EVE];
-  });
-
-  return result;
 }
 
 function mapApiUserToProfile(apiUser) {
   return {
     displayName: apiUser.displayName || "",
-    targetRole: apiUser.role === "PM" ? "Product Manager" : "Software Engineer",
+    targetRole: apiRoleToUiRole(apiUser.role),
     companyTier: apiUser.targetTier || "FAANG",
     timeline: apiTimelineToUi(apiUser.timeline || "1-3 months"),
     overallLevel: apiUser.level || "Intermediate",
@@ -147,33 +196,17 @@ function mapApiUserToProfile(apiUser) {
   };
 }
 
-function mapProfileToPatchPayload(profile) {
-  return {
-    displayName: profile.displayName,
-    role: profile.targetRole === "Product Manager" ? "PM" : "SDE",
-    targetTier: profile.companyTier,
-    timeline: uiTimelineToApi(profile.timeline),
-    level: profile.overallLevel,
-    background: profile.background,
-    bio: profile.bio,
-    linkedinUrl: profile.linkedinUrl || null,
-    timezone: uiTimezoneToApi(profile.timezone),
-    availability: uiAvailabilityToApi(profile.availability),
-    whoGoesFirst: profile.whoGoesFirst,
-    weakestArea: profile.wantsToImprove || null,
-  };
-}
-
 export function ProfileProvider({ children }) {
   const [profile, setProfile] = useState(() => {
-    // If the saved profile belongs to a different user, ignore it
     const saved = localStorage.getItem(STORAGE_KEY);
     const savedUserId = localStorage.getItem("lastProfileUserId");
     const currentUserId = localStorage.getItem("userId");
+
     if (saved && savedUserId && currentUserId && savedUserId !== currentUserId) {
       localStorage.removeItem(STORAGE_KEY);
       return DEFAULT_PROFILE;
     }
+
     return saved ? JSON.parse(saved) : DEFAULT_PROFILE;
   });
 
@@ -181,41 +214,72 @@ export function ProfileProvider({ children }) {
   const [fetchTrigger, setFetchTrigger] = useState(0);
 
   const refetchProfile = useCallback(() => {
-    setFetchTrigger(n => n + 1);
+    setFetchTrigger((n) => n + 1);
   }, []);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
-    const meUrl = userId ? `/api/users/me?userId=${userId}` : "/api/users/me";
-    fetch(meUrl, { cache: "no-store", headers: getAuthHeaders() })
+
+    const meUrl = userId
+      ? apiUrl(`/api/users/me?userId=${userId}`)
+      : apiUrl("/api/users/me");
+
+    fetch(meUrl, {
+      cache: "no-store",
+      headers: getAuthHeaders(),
+    })
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);
         }
+
         return res.json();
       })
       .then((data) => {
         const nextProfile = mapApiUserToProfile(data.user);
+
         setProfile(nextProfile);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProfile));
+
         const uid = localStorage.getItem("userId");
-        if (uid) localStorage.setItem("lastProfileUserId", uid);
+
+        if (uid) {
+          localStorage.setItem("lastProfileUserId", uid);
+        }
       })
       .catch(() => {
-        // API failed (e.g. server restarted and lost in-memory user).
-        // Patch displayName from localStorage so at least the name is correct.
         const savedName = localStorage.getItem("fullName");
+
         if (savedName) {
-          setProfile((prev) => ({ ...prev, displayName: savedName }));
+          setProfile((prev) => ({
+            ...prev,
+            displayName: savedName,
+          }));
         }
       });
   }, [fetchTrigger]);
 
   const updateField = useCallback((field, value) => {
-    setProfile((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setProfile((prev) => {
+      if (field === "targetRole") {
+        const apiRole = uiRoleToApiRole(value);
+        const validWeakestArea = getValidWeakestArea(
+          apiRole,
+          prev.wantsToImprove
+        );
+
+        return {
+          ...prev,
+          targetRole: value,
+          wantsToImprove: validWeakestArea,
+        };
+      }
+
+      return {
+        ...prev,
+        [field]: value,
+      };
+    });
   }, []);
 
   const toggleAvailability = useCallback((day, band) => {
@@ -232,33 +296,35 @@ export function ProfileProvider({ children }) {
   }, []);
 
   const saveProfile = useCallback(async () => {
+    const apiRole = uiRoleToApiRole(profile.targetRole);
+    const practiceFocus = getValidPracticeFocus(
+      apiRole,
+      profile.wantsToImprove
+    );
+    const weakestArea = getValidWeakestArea(apiRole, profile.wantsToImprove);
+
     const payload = {
       displayName: profile.displayName,
+      role: apiRole,
+      practiceFocus,
+      weakestArea,
       bio: profile.bio,
       linkedinUrl: profile.linkedinUrl || null,
       background: profile.background,
       whoGoesFirst: profile.whoGoesFirst,
       targetTier: profile.companyTier,
       level: profile.overallLevel,
-      timeline:
-        profile.timeline === "1–3 months"
-          ? "1-3 months"
-          : profile.timeline === "3–6 months"
-          ? "3-6 months"
-          : profile.timeline,
-      availability: {
-        mon: [!!profile.availability.Mon?.AM, !!profile.availability.Mon?.PM, !!profile.availability.Mon?.EVE],
-        tue: [!!profile.availability.Tue?.AM, !!profile.availability.Tue?.PM, !!profile.availability.Tue?.EVE],
-        wed: [!!profile.availability.Wed?.AM, !!profile.availability.Wed?.PM, !!profile.availability.Wed?.EVE],
-        thu: [!!profile.availability.Thu?.AM, !!profile.availability.Thu?.PM, !!profile.availability.Thu?.EVE],
-        fri: [!!profile.availability.Fri?.AM, !!profile.availability.Fri?.PM, !!profile.availability.Fri?.EVE],
-        sat: [!!profile.availability.Sat?.AM, !!profile.availability.Sat?.PM, !!profile.availability.Sat?.EVE],
-        sun: [!!profile.availability.Sun?.AM, !!profile.availability.Sun?.PM, !!profile.availability.Sun?.EVE],
-      },
+      timeline: uiTimelineToApi(profile.timeline),
+      timezone: uiTimezoneToApi(profile.timezone),
+      availability: uiAvailabilityToApi(profile.availability),
     };
 
     const userId = localStorage.getItem("userId");
-    const meUrl = userId ? `/api/users/me?userId=${userId}` : "/api/users/me";
+
+    const meUrl = userId
+      ? apiUrl(`/api/users/me?userId=${userId}`)
+      : apiUrl("/api/users/me");
+
     const res = await fetch(meUrl, {
       method: "PATCH",
       headers: getAuthHeaders({
@@ -269,10 +335,11 @@ export function ProfileProvider({ children }) {
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => null);
+
       throw new Error(
         errorData?.details?.join(", ") ||
-        errorData?.error ||
-        `HTTP ${res.status}`
+          errorData?.error ||
+          `HTTP ${res.status}`
       );
     }
 

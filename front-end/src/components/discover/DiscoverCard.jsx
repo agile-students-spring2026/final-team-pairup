@@ -1,8 +1,9 @@
 import SharedGoalsBox from "./SharedGoalsBox";
+import { initialsFromDisplayName } from "../../utils/initials";
 
 function DiscoverCard({ user, onSendInvite, onViewProfile }) {
   const isExperienced = user.sessionsCompleted >= 3;
-  const initials = user.displayName.split(' ').map(n => n[0]).join('');
+  const initials = initialsFromDisplayName(user.displayName);
 
   // inviteStatus: null → can invite, "sent" → already sent
   const isSent = user.inviteStatus === 'sent';
@@ -28,7 +29,12 @@ function DiscoverCard({ user, onSendInvite, onViewProfile }) {
         {isExperienced ? (
           <>
             <span className="pill pill--soft">{user.sessionsCompleted} Sessions</span>
-            <span className="pill pill--soft">{Math.round(user.showUpRate * 100)}% Show-up</span>
+            <span className="pill pill--soft">
+              {user.showUpRate != null && !Number.isNaN(user.showUpRate)
+                ? `${Math.round(user.showUpRate * 100)}%`
+                : "—"}{" "}
+              Show-up
+            </span>
           </>
         ) : (
           <span className="pill pill--new">New to PairUp</span>
@@ -38,7 +44,7 @@ function DiscoverCard({ user, onSendInvite, onViewProfile }) {
       <div className="discover-card__tags">
         <span className="pill pill--tag">{user.role}</span>
 
-        {user.practiceFocus.map((tag) => (
+        {(user.practiceFocus || []).map((tag) => (
           <span key={tag} className="pill pill--tag">
             {tag}
           </span>

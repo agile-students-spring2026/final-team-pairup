@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Users } from "lucide-react";
 import "./Auth.css";
 
-const API_BASE = "http://localhost:3000";
+import { API_BASE_URL } from "../../config/apiBase";
 
 function LoginPage({ onLoginSuccess }) {
   const location = useLocation();
@@ -11,6 +11,12 @@ function LoginPage({ onLoginSuccess }) {
     location.state?.accountDeleted && location.state?.message
       ? location.state.message
       : "";
+  
+  //add a message when the session expires
+  // add a message when the session expires (carried via URL search param)
+  const sessionExpiredMessage = location.search.includes("session-expired=1")
+    ? "Your session expired. Please sign in again."
+    : "";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +40,7 @@ function LoginPage({ onLoginSuccess }) {
       try {
         setLoading(true);
 
-        const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -65,7 +71,7 @@ function LoginPage({ onLoginSuccess }) {
     try {
       setLoading(true);
 
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -130,6 +136,9 @@ function LoginPage({ onLoginSuccess }) {
             <h2>{forgot ? "Reset your password" : "Welcome back"}</h2>
             {accountDeletedMessage ? (
               <p className="auth-success-text">{accountDeletedMessage}</p>
+            ) : null}
+            {sessionExpiredMessage ? (
+              <p className="auth-success-text">{sessionExpiredMessage}</p>
             ) : null}
 
             <label>Email</label>

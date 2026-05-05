@@ -4,7 +4,7 @@ import { useProfile } from "../../context/ProfileContext";
 import { getAuthHeaders } from "../../services/mockApi";
 import "./SettingsPage.css";
 
-const API_BASE = "http://localhost:3000";
+import { API_BASE_URL } from "../../config/apiBase";
 
 function ChevronRow({ title, subtitle, danger = false, onClick }) {
   return (
@@ -79,7 +79,7 @@ function SettingsPage({ onLogout }) {
 
       try {
         const response = await fetch(
-          `${API_BASE}/api/settings/notifications`,
+          `${API_BASE_URL}/api/settings/notifications`,
           { headers: getAuthHeaders() }
         );
         const data = await response.json();
@@ -122,7 +122,7 @@ function SettingsPage({ onLogout }) {
       setLoading(true);
       setMessage("");
 
-      const response = await fetch(`${API_BASE}/api/settings/display-name`, {
+      const response = await fetch(`${API_BASE_URL}/api/settings/display-name`, {
         method: "PUT",
         headers: {
           ...getAuthHeaders(),
@@ -163,7 +163,7 @@ function SettingsPage({ onLogout }) {
       setLoading(true);
       setMessage("");
 
-      const response = await fetch(`${API_BASE}/api/settings/email`, {
+      const response = await fetch(`${API_BASE_URL}/api/settings/email`, {
         method: "PUT",
         headers: {
           ...getAuthHeaders(),
@@ -206,7 +206,7 @@ function SettingsPage({ onLogout }) {
       setLoading(true);
       setMessage("");
 
-      const response = await fetch(`${API_BASE}/api/settings/password`, {
+      const response = await fetch(`${API_BASE_URL}/api/settings/password`, {
         method: "PUT",
         headers: {
           ...getAuthHeaders(),
@@ -252,7 +252,7 @@ function SettingsPage({ onLogout }) {
       setLoading(true);
       setMessage("");
 
-      const response = await fetch(`${API_BASE}/api/settings/account`, {
+      const response = await fetch(`${API_BASE_URL}/api/settings/account`, {
         method: "DELETE",
         headers: {
           ...getAuthHeaders(),
@@ -332,7 +332,7 @@ function SettingsPage({ onLogout }) {
     };
 
     try {
-      const response = await fetch(`${API_BASE}/api/settings/notifications`, {
+      const response = await fetch(`${API_BASE_URL}/api/settings/notifications`, {
         method: "PUT",
         headers: {
           ...getAuthHeaders(),

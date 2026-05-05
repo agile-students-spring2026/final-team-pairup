@@ -3,10 +3,14 @@
  * Note: no local mock datasets are used here.
  */
 
+import { apiUrl } from "../config/apiBase";
+
 export const PARTNERS_MOCK_NOW = Date.now();
 
 /** Dispatched after a friend invite is accepted so App can refetch GET /api/friends. */
 export const PARTNERS_REFRESH_EVENT = "pairup:partners-refresh";
+export const AUTH_EXPIRED_EVENT = "pairup:auth-expired";
+let authExpiryNotified = false;
 
 function getStoredUserId() {
   if (typeof window === "undefined") return "current-user";
@@ -52,6 +56,13 @@ async function requestJson(url, options = {}) {
     headers: withBearer(options.headers || {}),
   });
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401) {
+    if (!authExpiryNotified && typeof window !== "undefined") {
+      authExpiryNotified = true;
+      window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+    }
+    throw new Error(data.error || data.message || "Unauthorized");
+  }
   if (!res.ok) {
     throw new Error(data.error || data.message || `HTTP ${res.status}`);
   }
@@ -84,7 +95,7 @@ function apiFriendToPartnerRow({ friendUserId, friendsSince, user }) {
 
 async function fetchLegacyUser(userId) {
   try {
-    const res = await fetch(withAuthQuery(`/api/users/${userId}`), {
+    const res = await fetch(withAuthQuery(apiUrl(`/api/users/${userId}`)), {
       headers: withBearer(),
     });
 
@@ -92,7 +103,8 @@ async function fetchLegacyUser(userId) {
 
     const data = await res.json();
     return data.user || null;
-  } catch {
+  } catch (err) {
+    console.warn("fetchLegacyUser:", err.message);
     return null;
   }
 }
@@ -100,7 +112,7 @@ async function fetchLegacyUser(userId) {
 /** GET /api/friends — returns UI partner rows; [] if the API is unreachable. */
 export async function fetchPartnersFromFriendsApi() {
   try {
-    const res = await fetch("/api/friends", {
+    const res = await fetch(apiUrl("/api/friends"), {
       headers: withBearer(),
     });
 
@@ -108,7 +120,8 @@ export async function fetchPartnersFromFriendsApi() {
 
     const data = await res.json();
     return (data.friends || []).map(apiFriendToPartnerRow);
-  } catch {
+  } catch (err) {
+    console.warn("fetchPartnersFromFriendsApi:", err.message);
     return [];
   }
 }
@@ -130,11 +143,32 @@ export function getDefaultProfileSeed() {
 
 // ── Discover ──────────────────────────────────────────────────────────────────
 
-export async function fetchDiscoverUsers() {
+/** Shuffled sample for Discover browse (GET /api/matches/random). */
+export async function fetchDiscoverRandomUsers() {
   try {
-    const data = await requestJson(withAuthQuery("/api/matches"));
+    const base = withAuthQuery(apiUrl("/api/matches/random"));
+    const url = `${base}&_=${Date.now()}`;
+    const data = await requestJson(url, {
+      cache: "no-store",
+    });
     return data.matches || [];
-  } catch {
+  } catch (err) {
+    console.warn("fetchDiscoverRandomUsers:", err.message);
+    return [];
+  }
+}
+
+/** Ranked algorithm matches (GET /api/matches). */
+export async function fetchDiscoverBestMatches() {
+  try {
+    const base = withAuthQuery(apiUrl("/api/matches"));
+    const url = `${base}&_=${Date.now()}`;
+    const data = await requestJson(url, {
+      cache: "no-store",
+    });
+    return data.matches || [];
+  } catch (err) {
+    console.warn("fetchDiscoverBestMatches:", err.message);
     return [];
   }
 }
@@ -143,9 +177,10 @@ export async function fetchDiscoverUsers() {
 
 export async function fetchUserById(id) {
   try {
-    const data = await requestJson(withAuthQuery(`/api/users/${id}`));
+    const data = await requestJson(withAuthQuery(apiUrl(`/api/users/${id}`)));
     return data.user || null;
-  } catch {
+  } catch (err) {
+    console.warn("fetchUserById:", err.message);
     return null;
   }
 }
@@ -197,7 +232,7 @@ function mapFriendRequestToSentInviteCard(request, user) {
 
 export async function getReceivedInvites() {
   try {
-    const data = await requestJson("/api/friends/requests?box=incoming");
+    const data = await requestJson(apiUrl("/api/friends/requests?box=incoming"));
     const requests = data.requests || [];
     const cards = await Promise.all(
       requests.map(async (r) => {
@@ -214,7 +249,7 @@ export async function getReceivedInvites() {
 /** Returns invites the current user has sent that are still pending. */
 export async function getSentInvites() {
   try {
-    const data = await requestJson("/api/friends/requests?box=outgoing");
+    const data = await requestJson(apiUrl("/api/friends/requests?box=outgoing"));
     const requests = data.requests || [];
     const cards = await Promise.all(
       requests.map(async (r) => {
@@ -232,8 +267,8 @@ export async function getSentInvites() {
 export async function getMatchRecommendations() {
   try {
     const [matchesData, outgoingData] = await Promise.all([
-      requestJson(withAuthQuery("/api/matches")),
-      requestJson("/api/friends/requests?box=outgoing"),
+      requestJson(withAuthQuery(apiUrl("/api/matches"))),
+      requestJson(apiUrl("/api/friends/requests?box=outgoing")),
     ]);
 
     const blockedIds = new Set((outgoingData.requests || []).map((r) => r.toUserId));
@@ -263,7 +298,7 @@ export async function getMatchRecommendations() {
 
 /** Accept a received invite by id. */
 export async function acceptInvite(id) {
-  const res = await fetch(`/api/friends/requests/${id}`, {
+  const res = await fetch(apiUrl(`/api/friends/requests/${id}`), {
     method: "PATCH",
     headers: withBearer({
       "Content-Type": "application/json",
@@ -282,7 +317,7 @@ export async function acceptInvite(id) {
 
 /** Decline a received invite by id. */
 export async function declineInvite(id) {
-  const res = await fetch(`/api/friends/requests/${id}`, {
+  const res = await fetch(apiUrl(`/api/friends/requests/${id}`), {
     method: "PATCH",
     headers: withBearer({
       "Content-Type": "application/json",
@@ -300,7 +335,7 @@ export async function declineInvite(id) {
 
 /** Cancel a sent invite by id. */
 export async function cancelSentInvite(id) {
-  const res = await fetch(`/api/friends/requests/${id}`, {
+  const res = await fetch(apiUrl(`/api/friends/requests/${id}`), {
     method: "PATCH",
     headers: withBearer({
       "Content-Type": "application/json",
