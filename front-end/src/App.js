@@ -305,9 +305,11 @@ function AppRoutes({ initialIsAuthenticated = false }) {
     clearLocalSession();
     setIsAuthenticated(false);
     setIsOnboarding(false);
-    navigate("/login", { replace: true, state: redirectState });
+    const search =
+      redirectState?.reason === "session-expired" ? "?session-expired=1" : "";
+    navigate(`/login${search}`, { replace: true, state: redirectState });
   }
-
+  
   const selectedPartnerIds = useMemo(
     () => new Set(partners.map((p) => p.id)),
     [partners]
@@ -328,7 +330,6 @@ function AppRoutes({ initialIsAuthenticated = false }) {
     return () => window.removeEventListener(PARTNERS_REFRESH_EVENT, mergeFriendsFromApi);
   }, [isAuthenticated]);
 
-  // ←←← PASTE THE NEW useEffect HERE ←←←
   useEffect(() => {
     function onAuthExpired() {
       handleLogout({ redirectState: { reason: "session-expired" } });
